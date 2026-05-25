@@ -540,16 +540,24 @@ a:hover {
 }
 
 .lp-header.lp-header--over-hen .lang-switch {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .lp-header.lp-header--over-hen .lang-btn {
-  color: rgba(248, 250, 252, 0.75);
+  color: rgba(248, 250, 252, 0.9);
+  border-right-color: rgba(255, 255, 255, 0.18);
+}
+
+.lp-header.lp-header--over-hen .lang-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .lp-header.lp-header--over-hen .lang-btn.active {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: #fff;
+  color: var(--chrome);
+  font-weight: 700;
 }
 
 .lp-header.lp-header--over-hen .nav-toggle span,

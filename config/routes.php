@@ -17,6 +17,10 @@ return [
 
     'GET:/login' => ['AuthController', 'loginForm'],
     'POST:/login' => ['AuthController', 'login'],
+    'GET:/forgot-password' => ['AuthController', 'forgotForm'],
+    'POST:/forgot-password' => ['AuthController', 'forgotSend'],
+    'GET:/reset-password' => ['AuthController', 'resetForm'],
+    'POST:/reset-password' => ['AuthController', 'resetSubmit'],
     'POST:/logout' => ['AuthController', 'logout', 'auth' => true],
 
     'GET:/dashboard' => ['DashboardController', 'index', 'auth' => true],
@@ -37,6 +41,7 @@ return [
     'GET:/customers/{id}/attachment' => ['CustomerController', 'attachment', 'auth' => true],
 
     'GET:/leads' => ['LeadsController', 'index', 'auth' => true, 'role' => 'owner'],
+    'GET:/leads/export' => ['LeadsController', 'exportCsv', 'auth' => true, 'role' => 'owner'],
     'POST:/leads/{id}/status' => ['LeadsController', 'updateStatus', 'auth' => true, 'role' => 'owner'],
     'POST:/leads/{id}/convert' => ['LeadsController', 'convert', 'auth' => true, 'role' => 'owner'],
 
@@ -47,6 +52,7 @@ return [
     'POST:/locations/{id}/update' => ['LocationController', 'update', 'auth' => true, 'role' => 'owner'],
 
     'GET:/reservations' => ['ReservationController', 'index', 'auth' => true],
+    'GET:/reservations/export' => ['ReservationController', 'exportCsv', 'auth' => true],
     'GET:/reservations/calendar' => ['ReservationController', 'calendar', 'auth' => true],
     'GET:/reservations/create' => ['ReservationController', 'createForm', 'auth' => true],
     'POST:/reservations' => ['ReservationController', 'create', 'auth' => true],

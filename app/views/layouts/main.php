@@ -18,7 +18,7 @@ $locale = Lang::locale();
     <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?> — <?= Lang::e('app.name') ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Serif:wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= htmlspecialchars(Router::url('/css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 <body class="theme-titanium">
@@ -53,11 +53,11 @@ $locale = Lang::locale();
     <?php endif; ?>
     <div class="main-wrap <?= $logged ? '' : 'main-wrap-full' ?>">
         <?php if ($logged): ?>
-        <button type="button" class="sidebar-backdrop" id="sidebarBackdrop" aria-label="Fechar menu" tabindex="-1"></button>
+        <button type="button" class="sidebar-backdrop" id="sidebarBackdrop" aria-label="<?= Lang::e('a11y.close_menu') ?>" tabindex="-1"></button>
         <?php endif; ?>
         <header class="topbar">
             <?php if ($logged): ?>
-            <button type="button" class="icon-btn sidebar-toggle" id="sidebarToggle" aria-label="Menu">
+            <button type="button" class="icon-btn sidebar-toggle" id="sidebarToggle" aria-label="<?= Lang::e('a11y.open_menu') ?>">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
             <?php endif; ?>

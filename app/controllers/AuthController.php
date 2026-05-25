@@ -41,10 +41,95 @@ final class AuthController
         }
         LoginRateLimiter::clear();
         Auth::login($user);
-        self::logPrivacyConsent((int) $user['id']);
+        Auth::recordPrivacyConsent((int) $user['id']);
         Flash::success(Lang::get('auth.welcome'));
         $dest = Auth::isPartner() ? '/cars' : '/dashboard';
         header('Location: ' . Router::url($dest));
+        exit;
+    }
+
+    public function forgotForm(): void
+    {
+        if (Auth::check()) {
+            header('Location: ' . Router::url('/dashboard'));
+            exit;
+        }
+        View::render('auth/forgot', ['title' => Lang::get('auth.forgot_title')], 'auth');
+    }
+
+    public function forgotSend(): void
+    {
+        if (!Csrf::validate($_POST['_csrf'] ?? null)) {
+            Flash::error(Lang::get('error.csrf'));
+            header('Location: ' . Router::url('/forgot-password'));
+            exit;
+        }
+        $email = trim((string) ($_POST['email'] ?? ''));
+        $user = $email !== '' ? User::findByEmail($email) : null;
+        if ($user && (int) $user['is_active']) {
+            try {
+                $token = PasswordReset::createForUser((int) $user['id']);
+                $link = Router::url('/reset-password') . '?token=' . urlencode($token);
+                $body = Lang::get('auth.reset_email_body', [
+                    'name' => (string) $user['name'],
+                    'link' => $link,
+                    'minutes' => '60',
+                ]);
+                Mail::send($email, Lang::get('auth.reset_email_subject'), $body);
+            } catch (Throwable $e) {
+                AppError::log($e);
+            }
+        }
+        Flash::success(Lang::get('auth.forgot_sent'));
+        header('Location: ' . Router::url('/login'));
+        exit;
+    }
+
+    public function resetForm(): void
+    {
+        if (Auth::check()) {
+            header('Location: ' . Router::url('/dashboard'));
+            exit;
+        }
+        $token = trim((string) ($_GET['token'] ?? ''));
+        if ($token === '' || PasswordReset::findValidUserId($token) === null) {
+            Flash::error(Lang::get('auth.reset_invalid'));
+            header('Location: ' . Router::url('/forgot-password'));
+            exit;
+        }
+        View::render('auth/reset', ['title' => Lang::get('auth.reset_title'), 'token' => $token], 'auth');
+    }
+
+    public function resetSubmit(): void
+    {
+        if (!Csrf::validate($_POST['_csrf'] ?? null)) {
+            Flash::error(Lang::get('error.csrf'));
+            header('Location: ' . Router::url('/forgot-password'));
+            exit;
+        }
+        $token = trim((string) ($_POST['token'] ?? ''));
+        $pass = (string) ($_POST['password'] ?? '');
+        $pass2 = (string) ($_POST['password_confirm'] ?? '');
+        if ($pass !== $pass2) {
+            Flash::error(Lang::get('auth.reset_mismatch'));
+            header('Location: ' . Router::url('/reset-password') . '?token=' . urlencode($token));
+            exit;
+        }
+        $err = PasswordPolicy::validate($pass);
+        if ($err !== null) {
+            Flash::error(Lang::get('user.password_' . $err));
+            header('Location: ' . Router::url('/reset-password') . '?token=' . urlencode($token));
+            exit;
+        }
+        $userId = PasswordReset::consume($token);
+        if ($userId === null) {
+            Flash::error(Lang::get('auth.reset_invalid'));
+            header('Location: ' . Router::url('/forgot-password'));
+            exit;
+        }
+        User::updatePassword($userId, $pass);
+        Flash::success(Lang::get('auth.reset_ok'));
+        header('Location: ' . Router::url('/login'));
         exit;
     }
 
@@ -60,21 +145,4 @@ final class AuthController
         exit;
     }
 
-    private static function logPrivacyConsent(int $userId): void
-    {
-        try {
-            $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
-            $ua = (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
-            $stmt = Database::pdo()->prepare(
-                'INSERT INTO privacy_login_consent (user_id, ip_hash, user_agent_hash, created_at) VALUES (?, ?, ?, NOW())'
-            );
-            $stmt->execute([
-                $userId,
-                hash('sha256', $ip),
-                hash('sha256', $ua),
-            ]);
-        } catch (\Throwable) {
-            /* Tabela pode ainda não existir — executar migration 003 */
-        }
-    }
 }

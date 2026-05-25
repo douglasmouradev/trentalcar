@@ -8,16 +8,52 @@ final class ReservationController
     {
         PartnerForbiddenMiddleware::handle();
         $op = Auth::isOwner() ? null : Auth::id();
+        $filters = Reservation::filtersFromQuery();
         $page = Pagination::currentPage();
         $perPage = Pagination::perPage();
-        $p = Reservation::forOperatorPaginated($op, $page, $perPage);
+        $p = Reservation::forOperatorPaginated($op, $page, $perPage, $filters);
         View::render('reservations/index', [
             'title' => Lang::get('nav.reservations'),
             'reservations' => $p['rows'],
             'pagination' => $p,
             'paginationBase' => Router::url('/reservations'),
-            'listQuery' => [],
+            'listQuery' => array_filter($filters, static fn ($v) => $v !== ''),
+            'filters' => $filters,
         ], 'main');
+    }
+
+    public function exportCsv(): void
+    {
+        PartnerForbiddenMiddleware::handle();
+        $op = Auth::isOwner() ? null : Auth::id();
+        $filters = Reservation::filtersFromQuery();
+        $csvRows = [];
+        foreach (Reservation::exportRows($op, $filters) as $row) {
+            $csvRows[] = [
+                (string) $row['code'],
+                (string) $row['customer_name'],
+                trim((string) $row['brand'] . ' ' . (string) $row['model'] . ' (' . (string) $row['license_plate'] . ')'),
+                (string) $row['pickup_date'] . ' ' . substr((string) $row['pickup_time'], 0, 5),
+                (string) $row['return_date'] . ' ' . substr((string) $row['return_time'], 0, 5),
+                Lang::get('status.' . $row['status']),
+                number_format((float) $row['final_amount'], 2, ',', ''),
+                (string) $row['payment_status'],
+            ];
+        }
+        CsvResponse::download(
+            'reservas-' . date('Y-m-d') . '.csv',
+            [
+                Lang::get('reservation.code'),
+                Lang::get('reservation.customer'),
+                Lang::get('reservation.car'),
+                Lang::get('reservation.pickup'),
+                Lang::get('reservation.return'),
+                Lang::get('reservation.status'),
+                Lang::get('reservation.amount'),
+                Lang::get('reservation.payment'),
+            ],
+            $csvRows
+        );
     }
 
     public function calendar(): void
@@ -176,7 +212,7 @@ final class ReservationController
         }
         $result = Reservation::transition((int) $id, $action);
         if ($result !== true) {
-            Flash::error(Lang::get(is_string($result) ? $result : 'flash.error'));
+            Flash::error(Lang::get((string) $result));
             header('Location: ' . Router::url('/reservations/' . $id));
             exit;
         }

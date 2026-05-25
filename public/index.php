@@ -21,22 +21,17 @@ Env::load(BASE_PATH . '/.env');
 // Carrega configuração da app depois de Env::load e autoloader disponíveis
 $appCfg = Config::app();
 
-// Validação mínima de ambiente em produção
-if (($appCfg['env'] ?? 'production') === 'production') {
-    $required = ['APP_URL', 'DB_HOST', 'DB_DATABASE', 'DB_USERNAME'];
-    $missing = [];
-    foreach ($required as $name) {
-        if (($_ENV[$name] ?? '') === '') {
-            $missing[] = $name;
-        }
-    }
-    if ($missing !== []) {
-        AppError::log(new RuntimeException('Env vars em falta: ' . implode(', ', $missing)));
-        http_response_code(503);
-        header('Content-Type: text/plain; charset=UTF-8');
-        echo 'Service misconfigured.';
-        exit;
-    }
+try {
+    ProductionGuard::validateBoot();
+} catch (Throwable $bootErr) {
+    AppError::log($bootErr);
+    http_response_code(503);
+    header('Content-Type: text/plain; charset=UTF-8');
+    echo 'Service misconfigured.';
+    exit;
+}
+
+if (ProductionGuard::isProduction()) {
     $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
         || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
     if ($isHttps && !($appCfg['session_secure'] ?? false)) {

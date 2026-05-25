@@ -46,8 +46,9 @@ final class UserController
             'is_active' => !empty($_POST['is_active']) ? 1 : 0,
             'lang_pref' => in_array($_POST['lang_pref'] ?? '', ['pt-BR', 'en-US'], true) ? $_POST['lang_pref'] : 'pt-BR',
         ];
-        if (strlen($data['password']) < 8) {
-            Flash::error(Lang::get('user.password_short'));
+        $passErr = PasswordPolicy::validate($data['password']);
+        if ($passErr !== null) {
+            Flash::error(Lang::get('user.password_' . $passErr));
             header('Location: ' . Router::url('/users/create'));
             exit;
         }
@@ -58,14 +59,12 @@ final class UserController
             exit;
         }
         try {
-            $id = User::create($data);
+            $id = User::createWithPartnerCars($data, self::carIdsFromPost());
         } catch (Throwable $e) {
+            AppError::log($e);
             Flash::error(Lang::get('flash.error'));
             header('Location: ' . Router::url('/users/create'));
             exit;
-        }
-        if ($role === 'partner') {
-            UserCar::syncForUser($id, self::carIdsFromPost());
         }
         Audit::log(Auth::id(), 'create', 'user', $id, null, ['email' => $data['email'], 'role' => $data['role']]);
         Flash::success(Lang::get('flash.saved'));
@@ -115,8 +114,9 @@ final class UserController
         ];
         $pass = (string) ($_POST['password'] ?? '');
         if ($pass !== '') {
-            if (strlen($pass) < 8) {
-                Flash::error(Lang::get('user.password_short'));
+            $passErr = PasswordPolicy::validate($pass);
+            if ($passErr !== null) {
+                Flash::error(Lang::get('user.password_' . $passErr));
                 header('Location: ' . Router::url('/users/' . $id . '/edit'));
                 exit;
             }

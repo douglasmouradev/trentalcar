@@ -14,6 +14,7 @@ final class SecurityHeaders
 
         header('X-Content-Type-Options: nosniff');
         header('X-Frame-Options: SAMEORIGIN');
+        header('X-Request-Id: ' . RequestId::get());
         header('Referrer-Policy: strict-origin-when-cross-origin');
         header('Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()');
 
@@ -33,7 +34,7 @@ final class SecurityHeaders
             "script-src 'self' 'nonce-{$nonce}'",
             "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'",
             "font-src 'self' https://fonts.gstatic.com data:",
-            "img-src 'self' data: https://images.unsplash.com https:",
+            "img-src 'self' data: https://images.unsplash.com",
             "connect-src 'self'",
         ];
         if ($isProd) {

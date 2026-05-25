@@ -81,5 +81,28 @@ jobs:
       - name: Docker build
         run: docker compose build
 
+      - name: Production env guard (unit)
+        env:
+          APP_ENV: production
+          APP_DEBUG: true
+          DB_PASSWORD: secret
+          PRIVACY_DPO_EMAIL: dpo@example.com
+          SECURITY_CONTACT_EMAIL: security@example.com
+        run: |
+          php -r "
+          require 'app/helpers/Env.php';
+          require 'app/helpers/ProductionGuard.php';
+          \$_ENV['APP_ENV']='production';
+          \$_ENV['APP_DEBUG']='true';
+          \$_ENV['APP_URL']='https://example.com';
+          \$_ENV['DB_HOST']='h';
+          \$_ENV['DB_DATABASE']='d';
+          \$_ENV['DB_USERNAME']='u';
+          \$_ENV['DB_PASSWORD']='p';
+          \$_ENV['PRIVACY_DPO_EMAIL']='a@b.c';
+          \$_ENV['SECURITY_CONTACT_EMAIL']='s@b.c';
+          try { ProductionGuard::validateBoot(); exit(1); } catch (Throwable) { exit(0); }
+          "
+
       - name: Syntax check (app)
-        run: find app public/index.php config -name '*.php' -print0 | xargs -0 -n1 php -l
+        run: find app public/index.php config bin -name '*.php' -print0 | xargs -0 -n1 php -l

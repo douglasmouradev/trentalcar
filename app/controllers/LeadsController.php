@@ -21,6 +21,38 @@ final class LeadsController
         ], 'main');
     }
 
+    public function exportCsv(): void
+    {
+        $status = isset($_GET['status']) ? (string) $_GET['status'] : '';
+        $csvRows = [];
+        foreach (Lead::exportRows($status !== '' ? $status : null) as $row) {
+            $csvRows[] = [
+                (string) $row['id'],
+                (string) $row['location_text'],
+                trim(implode(' | ', array_filter([
+                    (string) ($row['contact_name'] ?? ''),
+                    (string) ($row['contact_phone'] ?? ''),
+                    (string) ($row['contact_email'] ?? ''),
+                ]))),
+                (string) $row['start_date'] . ' → ' . (string) $row['end_date'],
+                (string) $row['status'],
+                (string) $row['created_at'],
+            ];
+        }
+        CsvResponse::download(
+            'leads-' . date('Y-m-d') . '.csv',
+            [
+                'ID',
+                Lang::get('lead.location'),
+                Lang::get('lead.contact'),
+                Lang::get('lead.dates'),
+                Lang::get('lead.status'),
+                Lang::get('lead.received'),
+            ],
+            $csvRows
+        );
+    }
+
     public function updateStatus(string $id): void
     {
         if (!Csrf::validate($_POST['_csrf'] ?? null)) {

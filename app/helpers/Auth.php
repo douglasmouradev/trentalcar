@@ -117,4 +117,22 @@ final class Auth
         }
         return in_array($carId, self::partnerCarIds(), true);
     }
+
+    public static function recordPrivacyConsent(int $userId): void
+    {
+        try {
+            $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+            $ua = (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
+            $stmt = Database::pdo()->prepare(
+                'INSERT INTO privacy_login_consent (user_id, ip_hash, user_agent_hash, created_at) VALUES (?, ?, ?, NOW())'
+            );
+            $stmt->execute([
+                $userId,
+                hash('sha256', $ip),
+                hash('sha256', $ua),
+            ]);
+        } catch (Throwable) {
+            /* Tabela pode ainda não existir — executar migration 003 */
+        }
+    }
 }

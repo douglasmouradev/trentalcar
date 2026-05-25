@@ -60,6 +60,24 @@ final class Lead
         return (int) Database::pdo()->lastInsertId();
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public static function exportRows(?string $status = null): array
+    {
+        $where = '';
+        $params = [];
+        if ($status !== null && $status !== '') {
+            $where = ' WHERE status = ?';
+            $params[] = $status;
+        }
+        $sql = 'SELECT id, location_text, start_date, end_date, contact_name, contact_phone, contact_email, status, created_at'
+            . ' FROM leads' . $where . ' ORDER BY created_at DESC LIMIT 5000';
+        $stmt = Database::pdo()->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
     public static function setStatus(int $id, string $status, ?string $notes = null): void
     {
         if ($notes !== null) {

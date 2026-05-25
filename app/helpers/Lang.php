@@ -39,8 +39,10 @@ final class Lang
     {
         $all = self::load();
         $text = $all[$key] ?? $key;
-        foreach ($replace as $k => $v) {
-            $text = str_replace(':' . $k, (string) $v, $text);
+        $keys = array_keys($replace);
+        usort($keys, static fn (string $a, string $b): int => strlen($b) <=> strlen($a));
+        foreach ($keys as $k) {
+            $text = str_replace(':' . $k, (string) $replace[$k], $text);
         }
         return $text;
     }

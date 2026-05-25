@@ -15,7 +15,7 @@
 <div class="grid two">
     <div class="card">
         <?php if (!empty($car['image_url'])): ?>
-            <img class="car-photo" src="<?= htmlspecialchars($car['image_url'], ENT_QUOTES, 'UTF-8') ?>" alt="">
+            <img class="car-photo" src="<?= htmlspecialchars($car['image_url'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(trim(($car['brand'] ?? '') . ' ' . ($car['model'] ?? '')), ENT_QUOTES, 'UTF-8') ?>">
         <?php endif; ?>
         <dl class="dl">
             <dt><?= Lang::e('car.plate') ?></dt><dd class="mono"><?= htmlspecialchars($car['license_plate'], ENT_QUOTES, 'UTF-8') ?></dd>

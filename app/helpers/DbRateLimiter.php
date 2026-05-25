@@ -20,7 +20,11 @@ final class DbRateLimiter
                 return false;
             }
             return (int) $row['hits'] >= $max;
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            AppError::log($e);
+            if (ProductionGuard::isProduction()) {
+                return true;
+            }
             return FileRateLimiter::tooMany($bucket, $max, $windowSeconds);
         }
     }
@@ -48,9 +52,13 @@ final class DbRateLimiter
             $upd->execute([$hits, $bucket]);
             $pdo->commit();
             return $hits;
-        } catch (Throwable) {
+        } catch (Throwable $e) {
             if (isset($pdo) && $pdo->inTransaction()) {
                 $pdo->rollBack();
+            }
+            AppError::log($e);
+            if (ProductionGuard::isProduction()) {
+                return 1;
             }
             return FileRateLimiter::hit($bucket, $windowSeconds);
         }

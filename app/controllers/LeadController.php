@@ -55,8 +55,9 @@ final class LeadController
 
         $ipHash = hash('sha256', (string) ($_SERVER['REMOTE_ADDR'] ?? ''));
 
+        $leadId = 0;
         try {
-            Lead::create([
+            $leadId = Lead::create([
                 'location_text' => $local,
                 'start_date' => $inicio,
                 'end_date' => $fim,
@@ -70,12 +71,20 @@ final class LeadController
             ]);
         } catch (Throwable $e) {
             AppError::log($e);
+            if (ProductionGuard::isProduction()) {
+                header('Location: ' . Router::url('/') . '?lead=erro');
+                exit;
+            }
             self::appendJsonlFallback($local, $inicio, $fim, $mesmo, $localDevolucao, $ipHash, $contactName, $contactEmail, $contactPhone);
+        }
+
+        if ($leadId > 0) {
+            self::notifyNewLead($leadId, $local, $inicio, $fim, $contactName, $contactEmail, $contactPhone);
         }
 
         LeadRateLimiter::hit();
 
-        header('Location: ' . Router::url('/') . '?lead=1#frota');
+        header('Location: ' . Router::url('/') . '?lead=ok#frota');
         exit;
     }
 
@@ -107,6 +116,36 @@ final class LeadController
             'ip_hash' => $ipHash,
         ], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n";
         file_put_contents($dir . '/leads.jsonl', $line, FILE_APPEND | LOCK_EX);
+    }
+
+    private static function notifyNewLead(
+        int $leadId,
+        string $local,
+        string $inicio,
+        string $fim,
+        string $contactName,
+        string $contactEmail,
+        string $contactPhone
+    ): void {
+        $to = trim((string) ($_ENV['MAIL_NOTIFY'] ?? $_ENV['SECURITY_CONTACT_EMAIL'] ?? ''));
+        if ($to === '') {
+            return;
+        }
+        try {
+            $body = Lang::get('lead.email_body', [
+                'id' => (string) $leadId,
+                'local' => $local,
+                'inicio' => $inicio,
+                'fim' => $fim,
+                'name' => $contactName,
+                'email' => $contactEmail,
+                'phone' => $contactPhone,
+                'url' => Router::url('/leads'),
+            ]);
+            Mail::send($to, Lang::get('lead.email_subject'), $body);
+        } catch (Throwable $e) {
+            AppError::log($e);
+        }
     }
 
     private static function validDate(string $d): bool

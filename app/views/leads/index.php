@@ -5,6 +5,9 @@ $statuses = ['new', 'contacted', 'converted', 'archived'];
 ?>
 <div class="page-head">
     <h1 class="page-title"><?= Lang::e('nav.leads') ?></h1>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="<?= htmlspecialchars(Router::url('/leads/export') . ($statusFilter !== '' ? '?status=' . urlencode($statusFilter) : ''), ENT_QUOTES, 'UTF-8') ?>"><?= Lang::e('actions.export_csv') ?></a>
+    </div>
 </div>
 <form class="filters card" method="get" action="<?= Router::url('/leads') ?>">
     <label class="label"><?= Lang::e('lead.status') ?></label>

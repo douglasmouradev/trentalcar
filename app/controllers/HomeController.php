@@ -21,7 +21,7 @@ final class HomeController
         header('Content-Type: text/html; charset=UTF-8');
         $lead = (string) ($_GET['lead'] ?? '');
         $leadBanner = match ($lead) {
-            '1' => 'ok',
+            '1', 'ok' => 'ok',
             'limite' => 'limite',
             'erro' => 'erro',
             default => null,

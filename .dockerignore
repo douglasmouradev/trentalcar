@@ -1,0 +1,11 @@
+.git
+.github
+.env
+.phpunit.cache
+vendor
+tests
+site
+storage/logs/*
+storage/leads/*
+!storage/logs/.gitkeep
+!storage/leads/.gitkeep

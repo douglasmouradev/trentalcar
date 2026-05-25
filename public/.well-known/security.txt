@@ -1,6 +1,0 @@
-Contact: mailto:security@example.com
-Expires: 2027-12-31T23:59:59.000Z
-Preferred-Languages: pt, en
-
-# Este ficheiro estático é substituído dinamicamente por GET /.well-known/security.txt
-# Configure SECURITY_CONTACT_EMAIL ou PRIVACY_DPO_EMAIL no .env em produção.

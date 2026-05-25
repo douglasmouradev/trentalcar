@@ -65,6 +65,28 @@ final class User
         return (int) Database::pdo()->lastInsertId();
     }
 
+    /**
+     * @param array<int, int|string> $carIds
+     */
+    public static function createWithPartnerCars(array $data, array $carIds): int
+    {
+        $pdo = Database::pdo();
+        $pdo->beginTransaction();
+        try {
+            $id = self::create($data);
+            if (($data['role'] ?? '') === 'partner') {
+                UserCar::syncForUser($id, $carIds);
+            }
+            $pdo->commit();
+            return $id;
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
+        }
+    }
+
     public static function emailTakenByOther(string $email, int $excludeUserId): bool
     {
         $stmt = Database::pdo()->prepare('SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1');
@@ -93,5 +115,11 @@ final class User
         $params[] = $id;
         $sql = 'UPDATE users SET ' . $fields . ' WHERE id = ?';
         Database::pdo()->prepare($sql)->execute($params);
+    }
+
+    public static function updatePassword(int $id, string $plainPassword): void
+    {
+        $hash = password_hash($plainPassword, PASSWORD_BCRYPT, ['cost' => 12]);
+        Database::pdo()->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([$hash, $id]);
     }
 }

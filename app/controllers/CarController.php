@@ -20,7 +20,7 @@ final class CarController
         $p = Car::searchPaginated($filters, $page, $perPage);
         $listQuery = array_filter(
             ['status' => $filters['status'], 'category' => $filters['category'], 'brand' => $filters['brand'], 'q' => $filters['q']],
-            static fn ($v) => $v !== '' && $v !== null
+            static fn ($v) => (string) $v !== ''
         );
         View::render('cars/index', [
             'title' => Lang::get('nav.cars'),

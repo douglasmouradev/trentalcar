@@ -10,8 +10,13 @@ final class AppError
         if (!is_dir($dir)) {
             @mkdir($dir, 0755, true);
         }
-        $line = date('c') . ' ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() . "\n\n";
-        @file_put_contents($dir . '/app.log', $line, FILE_APPEND | LOCK_EX);
+        $file = $dir . '/app.log';
+        if (is_file($file) && filesize($file) > 5_000_000) {
+            @rename($file, $file . '.' . date('Ymd-His') . '.bak');
+        }
+        $rid = class_exists('RequestId') ? RequestId::get() : '-';
+        $line = date('c') . " [{$rid}] " . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() . "\n\n";
+        @file_put_contents($file, $line, FILE_APPEND | LOCK_EX);
     }
 
     public static function render(Throwable $e): void

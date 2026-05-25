@@ -1,8 +1,10 @@
 parameters:
-    level: 2
+    level: 4
     bootstrapFiles:
         - phpstan-bootstrap.php
     paths:
         - app/helpers
         - app/models
         - app/middleware
+        - app/controllers
+    treatPhpDocTypesAsCertain: false

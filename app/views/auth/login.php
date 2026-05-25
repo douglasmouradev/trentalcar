@@ -29,3 +29,4 @@
     </label>
     <button class="btn btn-primary btn-block auth-submit" type="submit"><?= Lang::e('auth.submit') ?></button>
 </form>
+<p class="auth-foot"><a href="<?= Router::url('/forgot-password') ?>"><?= Lang::e('auth.forgot_link') ?></a></p>

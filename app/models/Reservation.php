@@ -25,44 +25,62 @@ final class Reservation
         return $row ?: null;
     }
 
-    /** @return array<int, array<string, mixed>> */
-    public static function forOperator(?int $operatorId): array
+    /** @return array{status:string,q:string,from:string,to:string} */
+    public static function filtersFromQuery(): array
     {
-        $sql = 'SELECT r.*, c.full_name AS customer_name, car.brand, car.model, car.license_plate, car.color_hex
-                FROM reservations r
-                JOIN customers c ON c.id = r.customer_id
-                JOIN cars car ON car.id = r.car_id';
-        $params = [];
-        if ($operatorId !== null) {
-            $sql .= ' WHERE r.operator_id = ?';
-            $params[] = $operatorId;
-        }
-        $sql .= ' ORDER BY r.pickup_date DESC, r.id DESC';
-        $stmt = Database::pdo()->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll();
+        return [
+            'status' => trim((string) ($_GET['status'] ?? '')),
+            'q' => trim((string) ($_GET['q'] ?? '')),
+            'from' => trim((string) ($_GET['from'] ?? '')),
+            'to' => trim((string) ($_GET['to'] ?? '')),
+        ];
     }
 
     /**
+     * @param array{status?:string,q?:string,from?:string,to?:string} $filters
      * @return array{rows: array<int, array<string, mixed>>, total: int, page: int, perPage: int, totalPages: int}
      */
-    public static function forOperatorPaginated(?int $operatorId, int $page, int $perPage): array
+    public static function forOperatorPaginated(?int $operatorId, int $page, int $perPage, array $filters = []): array
     {
         $base = ' FROM reservations r
                 JOIN customers c ON c.id = r.customer_id
                 JOIN cars car ON car.id = r.car_id';
-        $where = '';
+        $where = [];
         $params = [];
         if ($operatorId !== null) {
-            $where = ' WHERE r.operator_id = ?';
+            $where[] = 'r.operator_id = ?';
             $params[] = $operatorId;
         }
-        $stmt = Database::pdo()->prepare('SELECT COUNT(*)' . $base . $where);
+        $status = trim((string) ($filters['status'] ?? ''));
+        if ($status !== '' && in_array($status, ['pending', 'confirmed', 'active', 'completed', 'cancelled'], true)) {
+            $where[] = 'r.status = ?';
+            $params[] = $status;
+        }
+        $q = trim((string) ($filters['q'] ?? ''));
+        if ($q !== '') {
+            $where[] = '(r.code LIKE ? OR c.full_name LIKE ? OR car.license_plate LIKE ?)';
+            $like = '%' . $q . '%';
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+        }
+        $from = trim((string) ($filters['from'] ?? ''));
+        if ($from !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
+            $where[] = 'r.pickup_date >= ?';
+            $params[] = $from;
+        }
+        $to = trim((string) ($filters['to'] ?? ''));
+        if ($to !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+            $where[] = 'r.pickup_date <= ?';
+            $params[] = $to;
+        }
+        $whereSql = $where === [] ? '' : ' WHERE ' . implode(' AND ', $where);
+        $stmt = Database::pdo()->prepare('SELECT COUNT(*)' . $base . $whereSql);
         $stmt->execute($params);
         $total = (int) $stmt->fetchColumn();
         $meta = Pagination::meta($total, $page, $perPage);
         $sql = 'SELECT r.*, c.full_name AS customer_name, car.brand, car.model, car.license_plate, car.color_hex'
-            . $base . $where . ' ORDER BY r.pickup_date DESC, r.id DESC LIMIT ' . (int) $meta['perPage'] . ' OFFSET ' . (int) $meta['offset'];
+            . $base . $whereSql . ' ORDER BY r.pickup_date DESC, r.id DESC LIMIT ' . (int) $meta['perPage'] . ' OFFSET ' . (int) $meta['offset'];
         $stmt = Database::pdo()->prepare($sql);
         $stmt->execute($params);
         return [
@@ -72,6 +90,53 @@ final class Reservation
             'perPage' => $meta['perPage'],
             'totalPages' => $meta['totalPages'],
         ];
+    }
+
+    /**
+     * @param array{status?:string,q?:string,from?:string,to?:string} $filters
+     * @return array<int, array<string, mixed>>
+     */
+    public static function exportRows(?int $operatorId, array $filters = []): array
+    {
+        $base = ' FROM reservations r
+                JOIN customers c ON c.id = r.customer_id
+                JOIN cars car ON car.id = r.car_id';
+        $where = [];
+        $params = [];
+        if ($operatorId !== null) {
+            $where[] = 'r.operator_id = ?';
+            $params[] = $operatorId;
+        }
+        $status = trim((string) ($filters['status'] ?? ''));
+        if ($status !== '' && in_array($status, ['pending', 'confirmed', 'active', 'completed', 'cancelled'], true)) {
+            $where[] = 'r.status = ?';
+            $params[] = $status;
+        }
+        $q = trim((string) ($filters['q'] ?? ''));
+        if ($q !== '') {
+            $where[] = '(r.code LIKE ? OR c.full_name LIKE ? OR car.license_plate LIKE ?)';
+            $like = '%' . $q . '%';
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+        }
+        $from = trim((string) ($filters['from'] ?? ''));
+        if ($from !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
+            $where[] = 'r.pickup_date >= ?';
+            $params[] = $from;
+        }
+        $to = trim((string) ($filters['to'] ?? ''));
+        if ($to !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+            $where[] = 'r.pickup_date <= ?';
+            $params[] = $to;
+        }
+        $whereSql = $where === [] ? '' : ' WHERE ' . implode(' AND ', $where);
+        $sql = 'SELECT r.code, c.full_name AS customer_name, car.brand, car.model, car.license_plate,
+                r.pickup_date, r.pickup_time, r.return_date, r.return_time, r.status, r.final_amount, r.payment_status'
+            . $base . $whereSql . ' ORDER BY r.pickup_date DESC, r.id DESC LIMIT 5000';
+        $stmt = Database::pdo()->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     public static function nextCode(): string
@@ -344,7 +409,7 @@ final class Reservation
             $sql .= ' AND r.operator_id = ?';
             $params[] = $operatorId;
         }
-        if ($status && $status !== '') {
+        if ($status !== null && $status !== '') {
             $sql .= ' AND r.status = ?';
             $params[] = $status;
         }

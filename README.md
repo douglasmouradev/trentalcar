@@ -16,7 +16,7 @@ SaaS de locação de veículos em **PHP 8.3+** com **MySQL 8.0+**, MVC sem frame
 
    ```bash
    mysql -u root -p < database/schema.sql
-   mysql -u root -p < database/seed.sql   # apenas desenvolvimento
+   php bin/seed.php                       # apenas desenvolvimento (bloqueado em produção)
    php bin/migrate.php                    # migrations incrementais pendentes
    ```
 
@@ -29,7 +29,7 @@ SaaS de locação de veículos em **PHP 8.3+** com **MySQL 8.0+**, MVC sem frame
 
    O ficheiro `public/router.php` encaminha rotas (`/login`, `/frota`, etc.) para `index.php`. Sem ele, só ficheiros estáticos abrem.
 
-   Acesse `http://localhost:8888` (ajuste conforme `APP_URL`). A landing integrada e as páginas **LGPD** (`/privacidade`, `/termos`) só funcionam com este servidor (ou Apache) a apontar para **`public`**. Se pré-visualizar a pasta `site/` fora do PHP, edite o atributo **`data-dev-login-base`** no `site/index.html` para o mesmo URL do passo 5 (por defeito `http://localhost:8888`) — assim **Minha conta** abre o login correcto. Em `file://` sem esse URL, abre-se `site/login.html` com instruções. Para LGPD offline use `privacidade.html` e `termos.html` na pasta `site/`.
+   Acesse `http://localhost:8888` (ajuste conforme `APP_URL`). A landing, login e páginas **LGPD** (`/privacidade`, `/termos`) exigem o servidor a apontar para **`public`** — não há versão estática paralela no repositório.
 
 6. Com Apache, defina o *DocumentRoot* para a pasta `public` ou use o `.htaccess` na raiz do projeto que encaminha para `public/index.php`.
 
@@ -56,11 +56,13 @@ A marca usa `public/assets/img/logo.jpeg` (copiada da raiz do repositório do cl
 
 ## Estrutura principal
 
-- `public/index.php` — front controller.
+- `public/index.php` — front controller; `public/router.php` — router do servidor embutido.
+- `public/landing/` — CSS/JS/SVG da landing (`app/views/landing/page.php`).
 - `config/routes.php` — rotas (método + caminho).
 - `app/controllers`, `app/models`, `app/views`, `app/middleware`, `app/helpers`.
 - `lang/pt-BR.php` e `lang/en-US.php` — traduções.
 - `database/schema.sql` e `database/seed.sql` — schema e dados de exemplo.
+- `storage/logs/`, `storage/leads/` — runtime (gitignored exceto `.gitkeep`).
 
 ## Idioma
 
@@ -69,8 +71,23 @@ Use o seletor no topo ou o parâmetro `?lang=en-US` / `?lang=pt-BR`. O idioma fi
 ## Landing e leads
 
 - O formulário na página inicial (`POST /lead`) grava pedidos na tabela `leads` (painel em **Leads**, perfil dono).
-- Fallback JSONL em `storage/leads/leads.jsonl` se a BD estiver indisponível.
+- Com `MAIL_NOTIFY` ou `SECURITY_CONTACT_EMAIL` no `.env`, novos leads disparam e-mail (`MAIL_DRIVER=log` grava em `storage/logs/mail.log`).
+- Em desenvolvimento, fallback JSONL em `storage/leads/leads.jsonl` se a BD falhar; em produção o pedido falha de forma segura (sem gravar PII em disco).
 - SEO: `GET /sitemap.xml`, `GET /robots.txt` e `GET /.well-known/security.txt` (contacto via `SECURITY_CONTACT_EMAIL`).
+
+## Recuperação de senha
+
+- `GET/POST /forgot-password` e `GET/POST /reset-password` (requer migration `009_password_reset_tokens.sql`).
+- Links de reset são enviados por e-mail; em dev use `MAIL_DRIVER=log` e leia `storage/logs/mail.log`.
+
+## Reservas e exportação
+
+- Lista de reservas com filtros (texto, status, intervalo de datas) e `GET /reservations/export` (CSV).
+- Leads: `GET /leads/export` (CSV), respeitando o filtro de status.
+
+## Monitorização
+
+- `GET /health` — JSON com estado da app, BD, migrations e latência da BD.
 
 ## Docker
 
@@ -85,6 +102,13 @@ App: `http://localhost:8080` · MySQL: porta `3307`. O entrypoint aplica schema 
 
 - Faça cópia regular do MySQL (`mysqldump`) e inclua `storage/customers/` (anexos) se usar uploads de clientes.
 - Após atualizar o código: `php bin/migrate.php` (ou aplique manualmente ficheiros em `database/migrations/`).
+- **Produção:** `APP_ENV=production`, `APP_DEBUG=false`, `DB_PASSWORD` forte, `SESSION_SECURE=true` com HTTPS, e-mails LGPD preenchidos. Nunca execute `bin/seed.php` nem `seed.sql` em produção.
+
+## Qualidade
+
+- Testes: `vendor/bin/phpunit`
+- Análise estática: `vendor/bin/phpstan analyse`
+- CI: GitHub Actions (`.github/workflows/ci.yml`)
 
 ## Relatórios
 
