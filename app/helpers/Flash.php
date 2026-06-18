@@ -14,6 +14,12 @@ final class Flash
         self::set('success', $message);
     }
 
+    /** Flash de sucesso com chave i18n e placeholders. */
+    public static function successKey(string $key, array $replace = []): void
+    {
+        self::success(Lang::get($key, $replace));
+    }
+
     public static function error(string $message): void
     {
         self::set('error', $message);

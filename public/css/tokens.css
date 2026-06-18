@@ -1,0 +1,11 @@
+/* Tokens de marca partilhados — app + landing */
+:root {
+  --brand: #1a3a6c;
+  --brand-hover: #224a82;
+  --brand-bright: #2563eb;
+  --surface-page: #f1f5f9;
+  --surface-card: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --radius-ui: 10px;
+}

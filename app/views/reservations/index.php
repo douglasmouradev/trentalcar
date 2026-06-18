@@ -1,30 +1,42 @@
-<?php declare(strict_types=1);
-/** @var array<int,array<string,mixed>> $reservations */
-/** @var array{status:string,q:string,from:string,to:string} $filters */
-$statuses = ['pending', 'confirmed', 'active', 'completed', 'cancelled'];
-?>
+<?php declare(strict_types=1); /** @var array<int,array<string,mixed>> $reservations */ /** @var array<string,string> $filters */ ?>
 <div class="page-head">
     <h1 class="page-title"><?= Lang::e('nav.reservations') ?></h1>
-    <div class="page-actions">
-        <a class="btn btn-secondary" href="<?= htmlspecialchars(Router::url('/reservations/export') . '?' . http_build_query(array_filter($filters, static fn ($v) => $v !== '')), ENT_QUOTES, 'UTF-8') ?>"><?= Lang::e('actions.export_csv') ?></a>
-        <a class="btn btn-primary" href="<?= Router::url('/reservations/create') ?>"><?= Lang::e('reservation.create') ?></a>
-    </div>
+    <a class="btn btn-primary" href="<?= Router::url('/reservations/create') ?>"><?= Lang::e('reservation.create') ?></a>
 </div>
-<form class="filters card" method="get" action="<?= Router::url('/reservations') ?>">
+<form class="filters card" method="get">
+    <div class="filter-presets">
+        <a class="btn btn-ghost btn-sm" href="<?= Router::url('/reservations?status=active') ?>"><?= Lang::e('filters.active') ?></a>
+        <a class="btn btn-ghost btn-sm" href="<?= Router::url('/reservations?payment_status=unpaid') ?>"><?= Lang::e('filters.unpaid') ?></a>
+        <a class="btn btn-ghost btn-sm" href="<?= Router::url('/reservations?date_from=' . date('Y-m-d') . '&date_to=' . date('Y-m-d')) ?>"><?= Lang::e('filters.today') ?></a>
+    </div>
     <div class="filters-row">
-        <input class="input" type="search" name="q" value="<?= htmlspecialchars($filters['q'], ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= Lang::e('reservation.search_ph') ?>">
+        <input class="input" type="search" name="q" value="<?= htmlspecialchars($filters['q'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= Lang::e('reservation.code') ?>">
         <select class="input" name="status">
-            <option value=""><?= Lang::e('reservation.all_status') ?></option>
-            <?php foreach ($statuses as $s): ?>
-                <option value="<?= $s ?>" <?= $filters['status'] === $s ? 'selected' : '' ?>><?= Lang::e('status.' . $s) ?></option>
+            <option value=""><?= Lang::e('reservation.status') ?></option>
+            <?php foreach (['pending','confirmed','active','completed','cancelled'] as $s): ?>
+                <option value="<?= $s ?>" <?= ($filters['status'] ?? '') === $s ? 'selected' : '' ?>><?= Lang::e('status.' . $s) ?></option>
             <?php endforeach; ?>
         </select>
-        <input class="input" type="date" name="from" value="<?= htmlspecialchars($filters['from'], ENT_QUOTES, 'UTF-8') ?>" aria-label="<?= Lang::e('reservation.from') ?>">
-        <input class="input" type="date" name="to" value="<?= htmlspecialchars($filters['to'], ENT_QUOTES, 'UTF-8') ?>" aria-label="<?= Lang::e('reservation.to') ?>">
+        <select class="input" name="payment_status">
+            <option value=""><?= Lang::e('reservation.payment') ?></option>
+            <?php foreach (['unpaid','partial','paid'] as $p): ?>
+                <option value="<?= $p ?>" <?= ($filters['payment_status'] ?? '') === $p ? 'selected' : '' ?>><?= Lang::e('payment.' . $p) ?></option>
+            <?php endforeach; ?>
+        </select>
+        <input class="input" type="date" name="date_from" value="<?= htmlspecialchars($filters['date_from'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+        <input class="input" type="date" name="date_to" value="<?= htmlspecialchars($filters['date_to'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
         <button class="btn btn-secondary" type="submit"><?= Lang::e('actions.filter') ?></button>
     </div>
 </form>
-<div class="table-wrap card">
+<?php if ($reservations === []): ?>
+    <?php View::partial('partials/empty_state', [
+        'titleKey' => 'empty.reservations.title',
+        'leadKey' => 'empty.reservations.lead',
+        'ctaUrl' => Router::url('/reservations/create'),
+        'ctaKey' => 'empty.reservations.cta',
+    ]); ?>
+<?php else: ?>
+<div class="table-wrap card mt table--responsive">
     <table class="table">
         <thead>
         <tr>
@@ -40,24 +52,18 @@ $statuses = ['pending', 'confirmed', 'active', 'completed', 'cancelled'];
         <tbody>
         <?php foreach ($reservations as $r): ?>
             <tr>
-                <td class="mono"><?= htmlspecialchars($r['code'], ENT_QUOTES, 'UTF-8') ?></td>
-                <td><?= htmlspecialchars($r['customer_name'], ENT_QUOTES, 'UTF-8') ?></td>
-                <td>
-                    <div class="cell-vehicle">
-                        <span class="swatch" style="background:<?= htmlspecialchars($r['color_hex'], ENT_QUOTES, 'UTF-8') ?>"></span>
-                        <span>
-                            <span class="cell-vehicle-name"><?= htmlspecialchars($r['brand'] . ' ' . $r['model'], ENT_QUOTES, 'UTF-8') ?></span>
-                            <span class="cell-vehicle-plate mono"><?= htmlspecialchars($r['license_plate'], ENT_QUOTES, 'UTF-8') ?></span>
-                        </span>
-                    </div>
+                <td data-label="<?= Lang::e('reservation.code') ?>" class="mono"><?= htmlspecialchars($r['code'], ENT_QUOTES, 'UTF-8') ?></td>
+                <td data-label="<?= Lang::e('reservation.customer') ?>"><?= htmlspecialchars($r['customer_name'], ENT_QUOTES, 'UTF-8') ?></td>
+                <td data-label="<?= Lang::e('reservation.car') ?>">
+                    <span class="swatch" style="background:<?= htmlspecialchars($r['color_hex'], ENT_QUOTES, 'UTF-8') ?>"></span>
+                    <?= htmlspecialchars($r['brand'] . ' ' . $r['model'], ENT_QUOTES, 'UTF-8') ?>
                 </td>
-                <td><?= htmlspecialchars($r['pickup_date'] . ' ' . substr((string) $r['pickup_time'], 0, 5), ENT_QUOTES, 'UTF-8') ?></td>
-                <td><?= htmlspecialchars($r['return_date'] . ' ' . substr((string) $r['return_time'], 0, 5), ENT_QUOTES, 'UTF-8') ?></td>
-                <td><span class="badge st-<?= htmlspecialchars($r['status'], ENT_QUOTES, 'UTF-8') ?>"><?= Lang::e('status.' . $r['status']) ?></span></td>
-                <td><a class="btn btn-sm btn-secondary" href="<?= Router::url('/reservations/' . (int) $r['id']) ?>"><?= Lang::e('actions.view') ?></a></td>
+                <td data-label="<?= Lang::e('reservation.pickup') ?>"><?= htmlspecialchars($r['pickup_date'], ENT_QUOTES, 'UTF-8') ?></td>
+                <td data-label="<?= Lang::e('reservation.return') ?>"><?= htmlspecialchars($r['return_date'], ENT_QUOTES, 'UTF-8') ?></td>
+                <td data-label="<?= Lang::e('reservation.status') ?>"><?= Ui::statusBadge((string) $r['status']) ?></td>
+                <td data-label=""><a class="btn btn-sm btn-secondary" href="<?= Router::url('/reservations/' . (int) $r['id']) ?>"><?= Lang::e('actions.view') ?></a></td>
             </tr>
         <?php endforeach; ?>
-        <?php if ($reservations === []): ?><tr><td colspan="7" class="muted"><?= Lang::e('table.empty') ?></td></tr><?php endif; ?>
         </tbody>
     </table>
     <?php if (!empty($pagination)): View::partial('partials/pagination', [
@@ -69,3 +75,4 @@ $statuses = ['pending', 'confirmed', 'active', 'completed', 'cancelled'];
         'perPage' => (int) $pagination['perPage'],
     ]); endif; ?>
 </div>
+<?php endif; ?>

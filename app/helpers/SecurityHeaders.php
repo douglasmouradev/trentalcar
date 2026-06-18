@@ -14,7 +14,6 @@ final class SecurityHeaders
 
         header('X-Content-Type-Options: nosniff');
         header('X-Frame-Options: SAMEORIGIN');
-        header('X-Request-Id: ' . RequestId::get());
         header('Referrer-Policy: strict-origin-when-cross-origin');
         header('Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()');
 
@@ -24,14 +23,13 @@ final class SecurityHeaders
             header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
         }
 
-        $nonce = CspNonce::get();
         $csp = [
             "default-src 'self'",
             "base-uri 'self'",
             "form-action 'self'",
             "frame-ancestors 'self'",
             "object-src 'none'",
-            "script-src 'self' 'nonce-{$nonce}'",
+            "script-src 'self'",
             "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'",
             "font-src 'self' https://fonts.gstatic.com data:",
             "img-src 'self' data: https://images.unsplash.com",

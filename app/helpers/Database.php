@@ -32,10 +32,8 @@ final class Database
         try {
             self::$pdo = new PDO($dsn, $c['username'], $c['password'], $opts);
         } catch (PDOException $e) {
+            // Em ambiente de produção, não expor credenciais nem DSN
             AppError::log($e);
-            if (PHP_SAPI === 'cli') {
-                throw new RuntimeException('Database connection failed', 0, $e);
-            }
             http_response_code(500);
             header('Content-Type: text/html; charset=UTF-8');
             echo '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Base de dados indisponível</title></head><body>';

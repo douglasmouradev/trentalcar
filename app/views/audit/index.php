@@ -2,9 +2,16 @@
 <div class="page-head">
     <h1 class="page-title"><?= Lang::e('nav.audit') ?></h1>
 </div>
+<?php if ($logs === []): ?>
+    <?php View::partial('partials/empty_state', [
+        'titleKey' => 'empty.audit.title',
+        'leadKey' => 'empty.audit.lead',
+        'icon' => 'users',
+    ]); ?>
+<?php else: ?>
 <div class="table-wrap card">
     <table class="table">
-        <thead><tr><th>ID</th><th><?= Lang::e('reservation.operator') ?></th><th>Action</th><th>Entity</th><th>IP</th><th>When</th></tr></thead>
+        <thead><tr><th>ID</th><th><?= Lang::e('reservation.operator') ?></th><th><?= Lang::e('audit.action') ?></th><th><?= Lang::e('audit.entity') ?></th><th><?= Lang::e('audit.ip') ?></th><th><?= Lang::e('audit.when') ?></th></tr></thead>
         <tbody>
         <?php foreach ($logs as $log): ?>
             <tr>
@@ -16,7 +23,6 @@
                 <td class="mono"><?= htmlspecialchars($log['created_at'], ENT_QUOTES, 'UTF-8') ?></td>
             </tr>
         <?php endforeach; ?>
-        <?php if ($logs === []): ?><tr><td colspan="6" class="muted"><?= Lang::e('table.empty') ?></td></tr><?php endif; ?>
         </tbody>
     </table>
     <?php if (!empty($pagination)): View::partial('partials/pagination', [
@@ -28,3 +34,4 @@
         'perPage' => (int) $pagination['perPage'],
     ]); endif; ?>
 </div>
+<?php endif; ?>

@@ -4,6 +4,8 @@
 /** @var array<int,array<string,mixed>> $partnerCars */
 /** @var int $partnerActiveRes */
 /** @var float $revenueMonth */
+/** @var float $revenuePrevMonth */
+/** @var string|null $revenueDelta */
 /** @var int $fleet */
 /** @var int $activeRes */
 /** @var int $occupancy */
@@ -19,33 +21,9 @@ $fmt = static fn (float $v) => 'R$ ' . number_format($v, 2, ',', '.');
 <div class="page-head">
     <h1 class="page-title"><?= Lang::e('nav.dashboard') ?></h1>
 </div>
+<?php View::partial('partials/dashboard_alerts', ['alerts' => $alerts ?? []]); ?>
 
-<?php if (!empty($isPartner)): ?>
-    <p class="muted"><?= Lang::e('dashboard.partner_intro') ?></p>
-    <div class="grid kpis">
-        <div class="card kpi"><div class="kpi-label"><?= Lang::e('dashboard.partner_my_cars') ?></div><div class="kpi-value"><?= count($partnerCars) ?></div></div>
-        <div class="card kpi"><div class="kpi-label"><?= Lang::e('dashboard.partner_active_res') ?></div><div class="kpi-value"><?= (int) $partnerActiveRes ?></div></div>
-    </div>
-    <div class="card mt">
-        <h2 class="card-title"><?= Lang::e('dashboard.partner_car_list') ?></h2>
-        <div class="table-wrap">
-            <table class="table">
-                <thead><tr><th><?= Lang::e('car.plate') ?></th><th><?= Lang::e('car.model') ?></th><th><?= Lang::e('car.status') ?></th><th></th></tr></thead>
-                <tbody>
-                <?php foreach ($partnerCars as $car): ?>
-                    <tr>
-                        <td class="mono"><?= htmlspecialchars((string) $car['license_plate'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars((string) $car['brand'] . ' ' . (string) $car['model'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars((string) $car['status'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><a class="btn btn-sm btn-secondary" href="<?= Router::url('/cars/' . (int) $car['id']) ?>"><?= Lang::e('actions.view') ?></a></td>
-                    </tr>
-                <?php endforeach; ?>
-                <?php if ($partnerCars === []): ?><tr><td colspan="4" class="muted"><?= Lang::e('dashboard.partner_no_cars') ?></td></tr><?php endif; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-<?php elseif (!$isOwner): ?>
+<?php if (!$isOwner): ?>
     <div class="grid kpis">
         <div class="card kpi"><div class="kpi-label"><?= Lang::e('dashboard.operator_today') ?></div><div class="kpi-value"><?= (int) $myTodayCount ?></div></div>
         <div class="card kpi"><div class="kpi-label"><?= Lang::e('dashboard.operator_upcoming') ?></div><div class="kpi-value"><?= count($myToday) ?></div></div>
@@ -71,12 +49,25 @@ $fmt = static fn (float $v) => 'R$ ' . number_format($v, 2, ',', '.');
         </div>
     </div>
 <?php else: ?>
+    <div class="card quick-actions">
+        <span class="muted"><?= Lang::e('dashboard.quick_actions') ?>:</span>
+        <a class="btn btn-secondary btn-sm" href="<?= Router::url('/reservations/create') ?>"><?= Lang::e('dashboard.quick_reservation') ?></a>
+        <a class="btn btn-secondary btn-sm" href="<?= Router::url('/customers/create') ?>"><?= Lang::e('dashboard.quick_customer') ?></a>
+        <a class="btn btn-secondary btn-sm" href="<?= Router::url('/reservations/calendar') ?>"><?= Lang::e('dashboard.quick_calendar') ?></a>
+    </div>
     <div class="grid kpis">
-        <div class="card kpi"><div class="kpi-label"><?= Lang::e('dashboard.revenue_month') ?></div><div class="kpi-value"><?= $fmt($revenueMonth) ?></div></div>
-        <div class="card kpi"><div class="kpi-label"><?= Lang::e('dashboard.fleet') ?></div><div class="kpi-value"><?= (int) $fleet ?></div></div>
-        <div class="card kpi"><div class="kpi-label"><?= Lang::e('dashboard.active_res') ?></div><div class="kpi-value"><?= (int) $activeRes ?></div></div>
-        <div class="card kpi"><div class="kpi-label"><?= Lang::e('dashboard.occupancy') ?></div><div class="kpi-value"><?= (int) $occupancy ?>%</div></div>
-        <div class="card kpi"><div class="kpi-label"><?= Lang::e('dashboard.unpaid') ?></div><div class="kpi-value"><?= (int) $unpaid ?></div></div>
+        <div class="card kpi">
+            <div class="kpi-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div class="kpi-label"><?= Lang::e('dashboard.revenue_month') ?></div>
+            <div class="kpi-value"><?= $fmt($revenueMonth) ?></div>
+            <?php if (!empty($revenueDelta)): ?>
+                <div class="kpi-delta"><?= htmlspecialchars($revenueDelta, ENT_QUOTES, 'UTF-8') ?> <?= Lang::e('dashboard.revenue_delta') ?></div>
+            <?php endif; ?>
+        </div>
+        <div class="card kpi"><div class="kpi-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M7 17h10M5 11l1-4h12l1 4M6 11h12v6H6z"/></svg></div><div class="kpi-label"><?= Lang::e('dashboard.fleet') ?></div><div class="kpi-value"><?= (int) $fleet ?></div></div>
+        <div class="card kpi"><div class="kpi-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div class="kpi-label"><?= Lang::e('dashboard.active_res') ?></div><div class="kpi-value"><?= (int) $activeRes ?></div></div>
+        <div class="card kpi"><div class="kpi-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div class="kpi-label"><?= Lang::e('dashboard.occupancy') ?></div><div class="kpi-value"><?= (int) $occupancy ?>%</div></div>
+        <div class="card kpi"><div class="kpi-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="kpi-label"><?= Lang::e('dashboard.unpaid') ?></div><div class="kpi-value"><?= (int) $unpaid ?></div></div>
     </div>
 
     <div class="grid two mt">
@@ -87,9 +78,14 @@ $fmt = static fn (float $v) => 'R$ ' . number_format($v, 2, ',', '.');
                 $max = max(1, ...array_values($chartDays));
                 foreach ($chartDays as $day => $c):
                     $h = (int) round(($c / $max) * 100);
+                    $dayLabel = substr((string) $day, -2);
                     ?>
-                    <div class="bar" title="<?= htmlspecialchars($day . ': ' . $c, ENT_QUOTES, 'UTF-8') ?>">
-                        <div class="bar-fill" style="height:<?= $h ?>%"></div>
+                    <div class="bar-col" title="<?= htmlspecialchars($day . ': ' . $c, ENT_QUOTES, 'UTF-8') ?>">
+                        <span class="bar-value"><?= (int) $c ?></span>
+                        <div class="bar">
+                            <div class="bar-fill" style="height:<?= $h ?>%"></div>
+                        </div>
+                        <span class="bar-label"><?= htmlspecialchars($dayLabel, ENT_QUOTES, 'UTF-8') ?></span>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -98,7 +94,7 @@ $fmt = static fn (float $v) => 'R$ ' . number_format($v, 2, ',', '.');
             <h2 class="card-title"><?= Lang::e('dashboard.chart_category') ?></h2>
             <ul class="list-plain">
                 <?php foreach ($revenueByCategory as $cat): ?>
-                    <li><span class="mono"><?= htmlspecialchars((string) $cat['category'], ENT_QUOTES, 'UTF-8') ?></span> — <?= $fmt((float) $cat['total']) ?></li>
+                    <li><span class="mono"><?= Ui::categoryLabel((string) $cat['category']) ?></span> — <?= $fmt((float) $cat['total']) ?></li>
                 <?php endforeach; ?>
                 <?php if ($revenueByCategory === []): ?><li class="muted"><?= Lang::e('table.empty') ?></li><?php endif; ?>
             </ul>

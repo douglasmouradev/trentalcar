@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 final class PasswordReset
 {
-    private const TTL_SECONDS = 3600;
-
-    public static function createForUser(int $userId): string
+    public static function create(int $userId): string
     {
         $token = bin2hex(random_bytes(32));
         $hash = hash('sha256', $token);
-        $expires = gmdate('Y-m-d H:i:s', time() + self::TTL_SECONDS);
         $pdo = Database::pdo();
-        $pdo->prepare('DELETE FROM password_reset_tokens WHERE user_id = ?')->execute([$userId]);
-        $pdo->prepare(
-            'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)'
-        )->execute([$userId, $hash, $expires]);
+        $pdo->prepare('UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = ? AND used_at IS NULL')
+            ->execute([$userId]);
+        $stmt = $pdo->prepare(
+            'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))'
+        );
+        $stmt->execute([$userId, $hash]);
         return $token;
     }
 
@@ -23,21 +22,19 @@ final class PasswordReset
     {
         $hash = hash('sha256', $token);
         $stmt = Database::pdo()->prepare(
-            'SELECT user_id FROM password_reset_tokens WHERE token_hash = ? AND expires_at > UTC_TIMESTAMP() LIMIT 1'
+            'SELECT user_id FROM password_reset_tokens
+             WHERE token_hash = ? AND used_at IS NULL AND expires_at > NOW() LIMIT 1'
         );
         $stmt->execute([$hash]);
         $uid = $stmt->fetchColumn();
         return $uid !== false ? (int) $uid : null;
     }
 
-    public static function consume(string $token): ?int
+    public static function consume(string $token): void
     {
-        $userId = self::findValidUserId($token);
-        if ($userId === null) {
-            return null;
-        }
         $hash = hash('sha256', $token);
-        Database::pdo()->prepare('DELETE FROM password_reset_tokens WHERE token_hash = ?')->execute([$hash]);
-        return $userId;
+        Database::pdo()->prepare(
+            'UPDATE password_reset_tokens SET used_at = NOW() WHERE token_hash = ? AND used_at IS NULL'
+        )->execute([$hash]);
     }
 }

@@ -77,6 +77,86 @@
     syncReturn();
   }
 
+  var header = document.getElementById('lp-header');
+  if (header) {
+    var onScroll = function () {
+      header.classList.toggle('is-scrolled', window.scrollY > 12);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  document.querySelectorAll('[data-car-id]').forEach(function (link) {
+    link.addEventListener('click', function () {
+      var id = link.getAttribute('data-car-id');
+      var label = link.getAttribute('data-car-label') || link.closest('.lp-car')?.querySelector('h3')?.textContent || '';
+      setSelectedCar(id, label.trim());
+      document.querySelectorAll('.lp-car--selected').forEach(function (c) {
+        c.classList.remove('lp-car--selected');
+      });
+      var card = link.closest('.lp-car');
+      if (card) {
+        card.classList.add('lp-car--selected');
+      }
+    });
+  });
+
+  function setSelectedCar(id, label) {
+    var input = document.getElementById('lead-car-id');
+    if (input && id) {
+      input.value = id;
+    }
+    var banner = document.getElementById('lead-car-selected');
+    if (!label) {
+      if (banner) {
+        banner.remove();
+      }
+      if (input) {
+        input.value = '0';
+      }
+      return;
+    }
+    if (!banner) {
+      banner = document.createElement('p');
+      banner.className = 'lp-car-selected';
+      banner.id = 'lead-car-selected';
+      banner.setAttribute('role', 'status');
+      var form = document.getElementById('form-busca');
+      if (form) {
+        form.parentNode.insertBefore(banner, form);
+      }
+    }
+    var clearLabel = document.documentElement.lang.startsWith('en') ? 'Clear vehicle' : 'Remover veículo';
+    banner.innerHTML =
+      (document.documentElement.lang.startsWith('en') ? 'Selected vehicle: ' : 'Veículo selecionado: ') +
+      '<strong></strong> <button type="button" class="lp-car-selected-clear" id="lead-car-clear" aria-label="' +
+      clearLabel +
+      '">&times;</button>';
+    var strong = banner.querySelector('strong');
+    if (strong) {
+      strong.textContent = label;
+    }
+    var clearBtn = banner.querySelector('#lead-car-clear');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function () {
+        setSelectedCar('', '');
+        document.querySelectorAll('.lp-car--selected').forEach(function (c) {
+          c.classList.remove('lp-car--selected');
+        });
+      });
+    }
+  }
+
+  var existingClear = document.getElementById('lead-car-clear');
+  if (existingClear) {
+    existingClear.addEventListener('click', function () {
+      setSelectedCar('', '');
+      document.querySelectorAll('.lp-car--selected').forEach(function (c) {
+        c.classList.remove('lp-car--selected');
+      });
+    });
+  }
+
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     var io = new IntersectionObserver(
       function (entries) {

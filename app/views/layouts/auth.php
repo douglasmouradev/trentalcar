@@ -10,11 +10,12 @@ $locale = Lang::locale();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1a3a6c">
+    <meta name="app-base-url" content="<?= htmlspecialchars(rtrim(Router::url('/'), '/'), ENT_QUOTES, 'UTF-8') ?>">
     <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?> — <?= Lang::e('app.name') ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= htmlspecialchars(Router::url('/css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 <body class="theme-titanium auth-page">
 <a class="skip-link" href="#auth-main"><?= Lang::e('a11y.skip_content') ?></a>
@@ -64,8 +65,8 @@ $locale = Lang::locale();
     </div>
 </div>
 <?php include APP_PATH . '/views/partials/cookie_notice.php'; ?>
-<script<?= CspNonce::attr() ?>>window.APP_BASE_URL = <?= json_encode(rtrim(Router::url('/'), '/'), JSON_THROW_ON_ERROR) ?>;</script>
-<script src="<?= htmlspecialchars(Router::url('/js/cookie-notice.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
-<script src="<?= htmlspecialchars(Router::url('/js/lang-switcher.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars(Asset::url('/js/cookie-notice.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars(Asset::url('/js/lang-switcher.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars(Asset::url('/js/auth-ui.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
 </body>
 </html>

@@ -2,46 +2,37 @@ services:
   app:
     build: .
     ports:
-      - "8080:80"
-    env_file:
-      - .env
+      - "8888:80"
     volumes:
       - .:/var/www/html
-      - app_storage:/var/www/html/storage
-      - app_uploads:/var/www/html/public/assets/uploads
     environment:
-      APACHE_DOCUMENT_ROOT: /var/www/html/public
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8888
       DB_HOST: db
-      DB_PORT: 3306
-      DB_USERNAME: root
-      DB_PASSWORD: root
       DB_DATABASE: titanium_rental_car
+      DB_USERNAME: titanium
+      DB_PASSWORD: titanium
     depends_on:
       db:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
 
   db:
     image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: titanium_rental_car
+      MYSQL_USER: titanium
+      MYSQL_PASSWORD: titanium
     ports:
       - "3307:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
       interval: 5s
       timeout: 5s
-      retries: 20
+      retries: 10
 
 volumes:
-  mysql_data:
-  app_storage:
-  app_uploads:
+  db_data:

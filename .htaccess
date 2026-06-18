@@ -1,4 +1,9 @@
 RewriteEngine On
+
+# Bloqueia acesso directo a ficheiros sensíveis se o DocumentRoot apontar para a raiz do projecto
+RewriteRule ^\.env$ - [F,L]
+RewriteRule ^(app|config|database|storage|lang|tests|vendor|bin)/ - [F,L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ public/index.php [QSA,L]

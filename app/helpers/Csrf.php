@@ -24,4 +24,10 @@ final class Csrf
             && isset($_SESSION['_csrf'])
             && hash_equals($_SESSION['_csrf'], $token);
     }
+
+    public static function regenerate(): void
+    {
+        unset($_SESSION['_csrf']);
+        self::token();
+    }
 }

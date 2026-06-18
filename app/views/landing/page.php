@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 /** @var string $title */
 /** @var string|null $lead_banner ok|limite|erro|null */
+/** @var array<int,array<string,mixed>> $fleetCars */
 $asset = static function (string $path): string {
     return htmlspecialchars(Router::url($path), ENT_QUOTES, 'UTF-8');
 };
@@ -12,20 +13,6 @@ $locale = Lang::locale();
 $htmlLang = str_replace('_', '-', $locale);
 $metaDesc = Lang::get('landing.meta_description');
 $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
-$henMarquee = static function (string $langKey): string {
-    $raw = Lang::get($langKey);
-    $items = array_filter(array_map('trim', explode(',', $raw)));
-    if ($items === []) {
-        return '';
-    }
-    $chunks = [];
-    foreach ([0, 1] as $_dup) {
-        foreach ($items as $item) {
-            $chunks[] = '<span>' . htmlspecialchars($item, ENT_QUOTES, 'UTF-8') . '</span>';
-        }
-    }
-    return implode('', $chunks);
-};
 ?><!DOCTYPE html>
 <html lang="<?= htmlspecialchars($htmlLang, ENT_QUOTES, 'UTF-8') ?>" data-app-origin="<?= htmlspecialchars($appRoot, ENT_QUOTES, 'UTF-8') ?>">
 <head>
@@ -38,6 +25,9 @@ $henMarquee = static function (string $langKey): string {
   <meta name="description" content="<?= htmlspecialchars($metaDesc, ENT_QUOTES, 'UTF-8') ?>">
   <meta name="theme-color" content="#1a3a6c">
   <link rel="canonical" href="<?= htmlspecialchars($canonical, ENT_QUOTES, 'UTF-8') ?>">
+  <link rel="alternate" hreflang="pt-BR" href="<?= htmlspecialchars(Router::url('/?lang=pt-BR'), ENT_QUOTES, 'UTF-8') ?>">
+  <link rel="alternate" hreflang="en-US" href="<?= htmlspecialchars(Router::url('/?lang=en-US'), ENT_QUOTES, 'UTF-8') ?>">
+  <link rel="alternate" hreflang="x-default" href="<?= htmlspecialchars($canonical, ENT_QUOTES, 'UTF-8') ?>">
   <meta property="og:type" content="website">
   <meta property="og:title" content="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>">
   <meta property="og:description" content="<?= htmlspecialchars($metaDesc, ENT_QUOTES, 'UTF-8') ?>">
@@ -52,14 +42,23 @@ $henMarquee = static function (string $langKey): string {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Serif:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="<?= $asset('/landing/css/site.css') ?>">
+  <link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/landing/css/site.css'), ENT_QUOTES, 'UTF-8') ?>">
+  <script type="application/ld+json"><?= json_encode([
+      '@context' => 'https://schema.org',
+      '@type' => 'AutoRental',
+      'name' => Lang::get('app.name'),
+      'url' => $canonical,
+      'telephone' => Contact::phoneDisplay(),
+      'email' => Contact::email(),
+      'areaServed' => 'BR',
+  ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?></script>
 </head>
 <body class="lp-body">
   <a class="skip-link" href="#conteudo"><?= Lang::e('a11y.skip_content') ?></a>
 
-  <header class="site-header lp-header">
+  <header class="site-header lp-header" id="lp-header">
     <a class="brand" href="#topo" id="topo">
-      <img src="<?= $asset('/landing/assets/mark.svg') ?>" width="36" height="36" alt="">
+      <img src="<?= $asset('/assets/img/logo.jpeg') ?>" width="40" height="40" alt="<?= Lang::e('app.name') ?>">
       <span class="brand-text">
         <span class="brand-name">Titanium Rental Car</span>
         <span class="brand-sub"><?= Lang::e('landing.brand_sub') ?></span>
@@ -75,6 +74,8 @@ $henMarquee = static function (string $langKey): string {
       </button>
       <nav class="site-nav" id="site-nav" data-site-nav aria-label="<?= Lang::e('landing.nav_main') ?>">
         <a href="#frota"><?= Lang::e('landing.nav_frota') ?></a>
+        <a href="<?= $asset('/reservar') ?>"><?= Lang::e('booking.title') ?></a>
+        <a href="<?= $asset('/consultar') ?>"><?= Lang::e('consult.title') ?></a>
         <a href="#vantagens"><?= Lang::e('landing.nav_vantagens') ?></a>
         <a href="#como-funciona"><?= Lang::e('landing.nav_como') ?></a>
         <a href="#faq"><?= Lang::e('landing.nav_faq') ?></a>
@@ -92,39 +93,40 @@ $henMarquee = static function (string $langKey): string {
     </div>
   </div>
 
-  <div class="lp-hen-progress" id="lp-hen-progress" aria-hidden="true"><span class="lp-hen-progress-fill"></span></div>
-
-  <section class="lp-hen-intro" id="lp-hen-intro" aria-labelledby="lp-hen-headline">
-    <p class="visually-hidden"><?= Lang::e('landing.hen_ref') ?></p>
-    <div class="lp-hen-intro-track">
-      <div class="lp-hen-intro-sticky">
-        <div class="lp-hen-marquee lp-hen-marquee--top" aria-hidden="true">
-          <div class="lp-hen-marquee-inner"><?= $henMarquee('landing.hen_marquee_row1') ?></div>
+  <section class="lp-scroll-zoom" aria-hidden="true">
+    <p class="visually-hidden"><?= Lang::e('landing.opener_ref') ?></p>
+    <div class="lp-scroll-zoom-track">
+      <div class="lp-stuck-grid">
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t1') ?></div>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t2') ?></div>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t3') ?></div>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t4') ?></div>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t5') ?></div>
+        <div class="lp-opener-cell lp-opener-cell--center">
+          <b><?= Lang::e('landing.opener_center') ?></b>
+          <span class="lp-opener-cell-sub"><?= Lang::e('landing.opener_center_sub') ?></span>
         </div>
-        <div class="lp-hen-marquee lp-hen-marquee--mid" aria-hidden="true">
-          <div class="lp-hen-marquee-inner"><?= $henMarquee('landing.hen_marquee_row2') ?></div>
-        </div>
-        <div class="lp-hen-hero-copy">
-          <h2 id="lp-hen-headline" class="lp-hen-headline">
-            <span class="lp-hen-line"><?= Lang::e('landing.hen_line_1') ?></span>
-            <span class="lp-hen-line lp-hen-line--accent"><?= Lang::e('landing.hen_line_2') ?></span>
-          </h2>
-          <p class="lp-hen-brand">
-            <span class="lp-hen-brand-name"><?= Lang::e('landing.opener_center') ?></span>
-            <span class="lp-hen-brand-sub"><?= Lang::e('landing.opener_center_sub') ?></span>
-          </p>
-        </div>
-        <div class="lp-hen-marquee lp-hen-marquee--bot" aria-hidden="true">
-          <div class="lp-hen-marquee-inner"><?= $henMarquee('landing.hen_marquee_row3') ?></div>
-        </div>
-        <p class="lp-hen-scroll-cue" aria-hidden="true"><?= Lang::e('landing.hen_scroll_cue') ?></p>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t6') ?></div>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t7') ?></div>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t8') ?></div>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t9') ?></div>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t10') ?></div>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t11') ?></div>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t12') ?></div>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t13') ?></div>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t14') ?></div>
+        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t15') ?></div>
       </div>
     </div>
   </section>
 
   <main id="conteudo">
     <?php if (($lead_banner ?? null) === 'ok'): ?>
-      <p class="lp-lead-banner lp-lead-banner--ok" role="status"><?= Lang::e('landing.lead_ok') ?></p>
+      <p class="lp-lead-banner lp-lead-banner--ok" role="status"><?= Lang::e('landing.lead_ok') ?>
+        <?php if (!empty($leadWhatsappUrl)): ?>
+          <a class="btn btn-sm btn-secondary" href="<?= htmlspecialchars((string) $leadWhatsappUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener"><?= Lang::e('landing.lead_whatsapp') ?></a>
+        <?php endif; ?>
+      </p>
     <?php elseif (($lead_banner ?? null) === 'limite'): ?>
       <p class="lp-lead-banner lp-lead-banner--warn" role="alert"><?= Lang::e('landing.lead_limite') ?></p>
     <?php elseif (($lead_banner ?? null) === 'erro'): ?>
@@ -133,49 +135,30 @@ $henMarquee = static function (string $langKey): string {
     <section class="lp-hero" aria-labelledby="lp-hero-title">
       <div class="lp-hero-stage">
         <a class="lp-hero-brand" href="#topo" aria-label="<?= Lang::e('app.name') ?>">
-          <img class="lp-hero-brand-logo" src="<?= $asset('/assets/img/logo.jpeg') ?>" alt="" width="200" height="80" decoding="async" fetchpriority="high">
+          <img class="lp-hero-brand-logo" src="<?= $asset('/assets/img/logo.jpeg') ?>" alt="<?= Lang::e('app.name') ?>" width="200" height="80" decoding="async" fetchpriority="high">
         </a>
         <div class="lp-hero-inner">
           <p class="lp-hero-kicker"><?= Lang::e('landing.hero_kicker') ?></p>
           <h1 id="lp-hero-title"><?= Lang::e('landing.hero_title') ?></h1>
           <p class="lp-hero-lead"><?= Lang::e('landing.hero_lead') ?></p>
+          <div class="lp-hero-actions">
+            <a class="btn btn-primary btn-lg" href="#reserva"><?= Lang::e('landing.nav_reservar') ?></a>
+            <a class="btn btn-hero-ghost btn-lg" href="#frota"><?= Lang::e('landing.nav_frota') ?></a>
+          </div>
         </div>
       </div>
       <div class="lp-booking-anchor" id="reserva"></div>
       <div class="lp-booking-wrap">
-        <form class="lp-booking" id="form-busca" method="post" action="<?= $asset('/lead') ?>" aria-describedby="lp-booking-hint">
-          <?= Csrf::field() ?>
-          <p class="lp-booking-title"><?= Lang::e('landing.form_title') ?></p>
-          <p id="lp-booking-hint" class="lp-booking-hint"><?= Lang::e('landing.lead_hint') ?></p>
-          <div class="lp-booking-grid">
-            <label class="lp-field lp-field--grow">
-              <span class="lp-label"><?= Lang::e('landing.form_local_label') ?></span>
-              <input class="lp-input" type="text" name="local" maxlength="240" autocomplete="address-level2" placeholder="<?= Lang::e('landing.form_local_ph') ?>" required>
-            </label>
-            <label class="lp-field">
-              <span class="lp-label"><?= Lang::e('landing.form_pickup') ?></span>
-              <input class="lp-input" type="date" name="inicio" required aria-required="true">
-            </label>
-            <label class="lp-field">
-              <span class="lp-label"><?= Lang::e('landing.form_return') ?></span>
-              <input class="lp-input" type="date" name="fim" required aria-required="true">
-            </label>
-            <div class="lp-field lp-field--btn">
-              <span class="lp-label lp-label--ghost" aria-hidden="true">&nbsp;</span>
-              <button type="submit" class="btn btn-search"><?= Lang::e('landing.form_submit') ?></button>
-            </div>
-          </div>
-          <label class="lp-same-return">
-            <input type="checkbox" name="mesmo_local" value="1" checked>
-            <?= Lang::e('landing.form_same_return') ?>
-          </label>
-          <div class="lp-return-location" id="lp-return-location">
-            <label class="lp-field lp-field--grow">
-              <span class="lp-label"><?= Lang::e('landing.form_return_local_label') ?></span>
-              <input class="lp-input" type="text" name="local_devolucao" maxlength="240" autocomplete="address-level2" placeholder="<?= Lang::e('landing.form_return_local_ph') ?>">
-            </label>
-          </div>
-        </form>
+        <?php
+        View::partial('partials/landing_lead_form', [
+            'asset' => $asset,
+            'leadOld' => $leadOld ?? [],
+            'leadErrors' => $leadErrors ?? [],
+            'selectedCar' => $selectedCar ?? null,
+            'formAction' => '/lead',
+            'returnPath' => '/',
+        ]);
+        ?>
       </div>
     </section>
 
@@ -221,8 +204,9 @@ $henMarquee = static function (string $langKey): string {
     </section>
 
     <section class="lp-section lp-section--wide" id="frota" data-reveal>
-      <header class="lp-section-head" data-hen-parallax>
-        <h2 data-hen-split><?= Lang::e('landing.fleet_title') ?></h2>
+      <header class="lp-section-head">
+        <span class="lp-section-eyebrow"><?= Lang::e('landing.nav_frota') ?></span>
+        <h2><?= Lang::e('landing.fleet_title') ?></h2>
         <p><?= Lang::e('landing.fleet_lead') ?></p>
       </header>
       <div class="lp-fleet-toolbar">
@@ -238,115 +222,15 @@ $henMarquee = static function (string $langKey): string {
         </div>
       </div>
       <div class="lp-fleet" id="lp-fleet-grid">
-        <article class="lp-car" data-category="economy">
-          <div class="lp-car-img">
-            <img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&amp;fit=crop&amp;w=720&amp;h=460&amp;q=80" alt="" width="360" height="230" loading="lazy">
-          </div>
-          <div class="lp-car-body">
-            <p class="lp-car-group"><?= Lang::e('landing.car_a_group') ?></p>
-            <h3><?= Lang::e('landing.car_a_title') ?></h3>
-            <ul class="lp-car-specs">
-              <li><?= Lang::e('landing.car_a_l1') ?></li>
-              <li><?= Lang::e('landing.car_a_l2') ?></li>
-              <li><?= Lang::e('landing.car_a_l3') ?></li>
-            </ul>
-            <p class="lp-car-price"><?= Lang::e('landing.car_price_from') ?> <strong>R$ 89</strong> <span><?= Lang::e('landing.car_per_day') ?></span></p>
-            <p class="lp-car-disclaimer"><?= Lang::e('landing.car_disclaimer') ?></p>
-            <a class="btn btn-block btn-primary" href="#contato"><?= Lang::e('landing.car_cta') ?></a>
-          </div>
-        </article>
-        <article class="lp-car" data-category="compact">
-          <div class="lp-car-img">
-            <img src="https://images.unsplash.com/photo-1471478331149-c72f17e33c73?auto=format&amp;fit=crop&amp;w=720&amp;h=460&amp;q=80" alt="" width="360" height="230" loading="lazy">
-          </div>
-          <div class="lp-car-body">
-            <p class="lp-car-group"><?= Lang::e('landing.car_b_group') ?></p>
-            <h3><?= Lang::e('landing.car_b_title') ?></h3>
-            <ul class="lp-car-specs">
-              <li><?= Lang::e('landing.car_b_l1') ?></li>
-              <li><?= Lang::e('landing.car_b_l2') ?></li>
-              <li><?= Lang::e('landing.car_b_l3') ?></li>
-            </ul>
-            <p class="lp-car-price"><?= Lang::e('landing.car_price_from') ?> <strong>R$ 109</strong> <span><?= Lang::e('landing.car_per_day') ?></span></p>
-            <p class="lp-car-disclaimer"><?= Lang::e('landing.car_disclaimer') ?></p>
-            <a class="btn btn-block btn-primary" href="#contato"><?= Lang::e('landing.car_cta') ?></a>
-          </div>
-        </article>
-        <article class="lp-car" data-category="sedan">
-          <div class="lp-car-img">
-            <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&amp;fit=crop&amp;w=720&amp;h=460&amp;q=80" alt="" width="360" height="230" loading="lazy">
-          </div>
-          <div class="lp-car-body">
-            <p class="lp-car-group"><?= Lang::e('landing.car_c_group') ?></p>
-            <h3><?= Lang::e('landing.car_c_title') ?></h3>
-            <ul class="lp-car-specs">
-              <li><?= Lang::e('landing.car_c_l1') ?></li>
-              <li><?= Lang::e('landing.car_c_l2') ?></li>
-              <li><?= Lang::e('landing.car_c_l3') ?></li>
-            </ul>
-            <p class="lp-car-price"><?= Lang::e('landing.car_price_from') ?> <strong>R$ 149</strong> <span><?= Lang::e('landing.car_per_day') ?></span></p>
-            <p class="lp-car-disclaimer"><?= Lang::e('landing.car_disclaimer') ?></p>
-            <a class="btn btn-block btn-primary" href="#contato"><?= Lang::e('landing.car_cta') ?></a>
-          </div>
-        </article>
-        <article class="lp-car" data-category="suv">
-          <div class="lp-car-img">
-            <img src="https://images.unsplash.com/photo-1519817914152-22d216bb9170?auto=format&amp;fit=crop&amp;w=720&amp;h=460&amp;q=80" alt="" width="360" height="230" loading="lazy">
-          </div>
-          <div class="lp-car-body">
-            <p class="lp-car-group"><?= Lang::e('landing.car_d_group') ?></p>
-            <h3><?= Lang::e('landing.car_d_title') ?></h3>
-            <ul class="lp-car-specs">
-              <li><?= Lang::e('landing.car_d_l1') ?></li>
-              <li><?= Lang::e('landing.car_d_l2') ?></li>
-              <li><?= Lang::e('landing.car_d_l3') ?></li>
-            </ul>
-            <p class="lp-car-price"><?= Lang::e('landing.car_price_from') ?> <strong>R$ 189</strong> <span><?= Lang::e('landing.car_per_day') ?></span></p>
-            <p class="lp-car-disclaimer"><?= Lang::e('landing.car_disclaimer') ?></p>
-            <a class="btn btn-block btn-primary" href="#contato"><?= Lang::e('landing.car_cta') ?></a>
-          </div>
-        </article>
-        <article class="lp-car" data-category="exec">
-          <div class="lp-car-img">
-            <img src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&amp;fit=crop&amp;w=720&amp;h=460&amp;q=80" alt="" width="360" height="230" loading="lazy">
-          </div>
-          <div class="lp-car-body">
-            <p class="lp-car-group"><?= Lang::e('landing.car_e_group') ?></p>
-            <h3><?= Lang::e('landing.car_e_title') ?></h3>
-            <ul class="lp-car-specs">
-              <li><?= Lang::e('landing.car_e_l1') ?></li>
-              <li><?= Lang::e('landing.car_e_l2') ?></li>
-              <li><?= Lang::e('landing.car_e_l3') ?></li>
-            </ul>
-            <p class="lp-car-price"><?= Lang::e('landing.car_price_from') ?> <strong>R$ 229</strong> <span><?= Lang::e('landing.car_per_day') ?></span></p>
-            <p class="lp-car-disclaimer"><?= Lang::e('landing.car_disclaimer') ?></p>
-            <a class="btn btn-block btn-primary" href="#contato"><?= Lang::e('landing.car_cta') ?></a>
-          </div>
-        </article>
-        <article class="lp-car" data-category="util">
-          <div class="lp-car-img">
-            <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&amp;fit=crop&amp;w=720&amp;h=460&amp;q=80" alt="" width="360" height="230" loading="lazy">
-          </div>
-          <div class="lp-car-body">
-            <p class="lp-car-group"><?= Lang::e('landing.car_f_group') ?></p>
-            <h3><?= Lang::e('landing.car_f_title') ?></h3>
-            <ul class="lp-car-specs">
-              <li><?= Lang::e('landing.car_f_l1') ?></li>
-              <li><?= Lang::e('landing.car_f_l2') ?></li>
-              <li><?= Lang::e('landing.car_f_l3') ?></li>
-            </ul>
-            <p class="lp-car-price"><?= Lang::e('landing.car_price_from') ?> <strong>R$ 199</strong> <span><?= Lang::e('landing.car_per_day') ?></span></p>
-            <p class="lp-car-disclaimer"><?= Lang::e('landing.car_disclaimer') ?></p>
-            <a class="btn btn-block btn-primary" href="#contato"><?= Lang::e('landing.car_cta') ?></a>
-          </div>
-        </article>
+        <?php include APP_PATH . '/views/partials/landing_fleet.php'; ?>
       </div>
     </section>
 
     <section class="lp-section lp-section--muted" id="vantagens" data-reveal>
       <div class="lp-section--wide lp-split">
-        <header class="lp-section-head" data-hen-parallax>
-          <h2 data-hen-split><?= Lang::e('landing.adv_title') ?></h2>
+        <header class="lp-section-head">
+          <span class="lp-section-eyebrow"><?= Lang::e('landing.nav_vantagens') ?></span>
+          <h2><?= Lang::e('landing.adv_title') ?></h2>
           <p><?= Lang::e('landing.adv_lead') ?></p>
         </header>
         <ul class="lp-benefits">
@@ -359,8 +243,9 @@ $henMarquee = static function (string $langKey): string {
     </section>
 
     <section class="lp-section lp-section--wide" id="como-funciona" data-reveal>
-      <header class="lp-section-head" data-hen-parallax>
-        <h2 data-hen-split><?= Lang::e('landing.steps_title') ?></h2>
+      <header class="lp-section-head">
+        <span class="lp-section-eyebrow"><?= Lang::e('landing.nav_como') ?></span>
+        <h2><?= Lang::e('landing.steps_title') ?></h2>
         <p><?= Lang::e('landing.steps_lead') ?></p>
       </header>
       <ol class="lp-steps">
@@ -389,8 +274,9 @@ $henMarquee = static function (string $langKey): string {
     </section>
 
     <section class="lp-section lp-section--wide" id="faq" data-reveal>
-      <header class="lp-section-head" data-hen-parallax>
-        <h2 data-hen-split><?= Lang::e('landing.faq_title') ?></h2>
+      <header class="lp-section-head">
+        <span class="lp-section-eyebrow">FAQ</span>
+        <h2><?= Lang::e('landing.faq_title') ?></h2>
       </header>
       <div class="lp-faq">
         <details class="lp-faq-item">
@@ -415,9 +301,9 @@ $henMarquee = static function (string $langKey): string {
           <p><?= Lang::e('landing.cta_lead') ?></p>
         </div>
         <div class="lp-cta-actions">
-          <a class="btn btn-primary btn-lg" href="https://wa.me/5511999999999?text=Ol%C3%A1%2C%20gostaria%20de%20alugar%20um%20carro%20%28Titanium%29." rel="noopener noreferrer" target="_blank"><?= Lang::e('landing.cta_wa') ?></a>
-          <a class="btn btn-ghost btn-lg" href="tel:+551140028822">(11) 4002-8822</a>
-          <a class="btn btn-ghost btn-lg" href="mailto:reservas@titaniumrental.com.br?subject=Reserva%20-%20Titanium">reservas@titaniumrental.com.br</a>
+          <a class="btn btn-primary btn-lg" href="<?= htmlspecialchars(Contact::whatsappUrl(), ENT_QUOTES, 'UTF-8') ?>" rel="noopener noreferrer" target="_blank"><?= Lang::e('landing.cta_wa') ?></a>
+          <a class="btn btn-ghost btn-lg" href="tel:<?= htmlspecialchars(Contact::phoneTel(), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars(Contact::phoneDisplay(), ENT_QUOTES, 'UTF-8') ?></a>
+          <a class="btn btn-ghost btn-lg" href="mailto:<?= htmlspecialchars(Contact::email(), ENT_QUOTES, 'UTF-8') ?>?subject=Reserva%20-%20Titanium"><?= htmlspecialchars(Contact::email(), ENT_QUOTES, 'UTF-8') ?></a>
         </div>
       </div>
     </section>
@@ -461,7 +347,7 @@ $henMarquee = static function (string $langKey): string {
   <?php include APP_PATH . '/views/partials/cookie_notice.php'; ?>
   <script src="<?= $asset('/js/lang-switcher.js') ?>" defer></script>
   <script src="<?= $asset('/js/cookie-notice.js') ?>" defer></script>
-  <script src="<?= $asset('/landing/js/scroll-hen.js') ?>" defer></script>
   <script src="<?= $asset('/landing/js/site.js') ?>" defer></script>
+  <script src="<?= $asset('/landing/js/lead-form.js') ?>" defer></script>
 </body>
 </html>

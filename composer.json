@@ -11,8 +11,7 @@
   },
   "scripts": {
     "test": "phpunit",
-    "migrate": "php bin/migrate.php",
-    "phpstan": "phpstan analyse --configuration=phpstan.neon"
+    "phpstan": "phpstan analyse --memory-limit=512M"
   },
   "config": {
     "sort-packages": true

@@ -25,6 +25,11 @@ final class LocationController
             exit;
         }
         $d = $this->sanitize($_POST);
+        if (!$this->isValidLocationData($d)) {
+            Flash::error(Lang::get('flash.validation_error'));
+            header('Location: ' . Router::url('/locations/create'));
+            exit;
+        }
         $id = Location::create($d);
         Audit::log(Auth::id(), 'create', 'location', $id, null, $d);
         Flash::success(Lang::get('flash.saved'));
@@ -56,6 +61,11 @@ final class LocationController
             return;
         }
         $d = $this->sanitize($_POST);
+        if (!$this->isValidLocationData($d)) {
+            Flash::error(Lang::get('flash.validation_error'));
+            header('Location: ' . Router::url('/locations/' . $id . '/edit'));
+            exit;
+        }
         Location::update((int) $id, $d);
         Audit::log(Auth::id(), 'update', 'location', (int) $id, $old, $d);
         Flash::success(Lang::get('flash.saved'));
@@ -75,5 +85,14 @@ final class LocationController
             'phone' => trim((string) ($post['phone'] ?? '')) ?: null,
             'is_active' => isset($post['is_active']) ? 1 : 0,
         ];
+    }
+
+    /** @param array<string, mixed> $d */
+    private function isValidLocationData(array $d): bool
+    {
+        return ($d['name'] ?? '') !== ''
+            && ($d['address'] ?? '') !== ''
+            && ($d['city'] ?? '') !== ''
+            && ($d['state'] ?? '') !== '';
     }
 }

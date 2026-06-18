@@ -10,22 +10,28 @@ final class ApiRateLimiter
     private const MAX = 240;
     private const WINDOW = 300;
 
-    private static function bucket(): string
+    private static function path(): string
     {
-        return DbRateLimiter::clientBucket('api');
+        $dir = BASE_PATH . '/storage/logs';
+        $ip = preg_replace('/[^a-fA-F0-9.:]/', '_', $_SERVER['REMOTE_ADDR'] ?? 'unknown');
+        return $dir . '/api_' . $ip . '.json';
     }
 
-    /**
-     * Retorna true se estiver dentro do limite e atualiza o contador.
-     */
     public static function hit(): bool
     {
-        return DbRateLimiter::hit(self::bucket(), self::WINDOW) <= self::MAX;
+        $now = time();
+        $snap = FileRateStore::mutate(self::path(), static function (?array $data) use ($now): array {
+            if (!is_array($data) || !isset($data['count'], $data['first_at']) || $now - (int) $data['first_at'] > self::WINDOW) {
+                return ['count' => 1, 'first_at' => $now];
+            }
+            return [
+                'count' => (int) $data['count'] + 1,
+                'first_at' => (int) $data['first_at'],
+            ];
+        });
+        return (int) ($snap['count'] ?? 0) <= self::MAX;
     }
 
-    /**
-     * Garante que o IP não está acima do limite; responde 429 e termina se estiver.
-     */
     public static function guardJson(): void
     {
         if (self::hit()) {

@@ -4,21 +4,42 @@ declare(strict_types=1);
 
 final class CustomerController
 {
+    private const ATTACHMENT_PATTERN = '/^cust_[a-f0-9]{16}\.(pdf|jpg|png|webp|doc|docx)$/';
+
     public function index(): void
     {
         PartnerForbiddenMiddleware::handle();
-        $q = trim((string) ($_GET['q'] ?? ''));
+        $createdBy = Auth::isOwner() ? null : Auth::id();
         $page = Pagination::currentPage();
         $perPage = Pagination::perPage();
-        $p = Customer::paginated($page, $perPage, $q !== '' ? $q : null);
-        $listQuery = $q !== '' ? ['q' => $q] : [];
+        $filters = array_filter([
+            'q' => trim((string) ($_GET['q'] ?? '')),
+            'type' => trim((string) ($_GET['type'] ?? '')),
+        ], static fn (string $v): bool => $v !== '');
+        $p = Customer::paginated($page, $perPage, $createdBy, $filters);
         View::render('customers/index', [
             'title' => Lang::get('nav.customers'),
             'customers' => $p['rows'],
-            'search' => $q,
             'pagination' => $p,
             'paginationBase' => Router::url('/customers'),
-            'listQuery' => $listQuery,
+            'listQuery' => $filters,
+            'filters' => $filters,
+        ], 'main');
+    }
+
+    public function show(string $id): void
+    {
+        PartnerForbiddenMiddleware::handle();
+        $c = Customer::find((int) $id);
+        if (!$c || !AccessControl::canAccessCustomer($c)) {
+            http_response_code(404);
+            View::render('errors/404', ['title' => Lang::get('error.404_title')], 'main');
+            return;
+        }
+        View::render('customers/show', [
+            'title' => (string) $c['full_name'],
+            'customer' => $c,
+            'reservations' => Reservation::forCustomer((int) $id),
         ], 'main');
     }
 
@@ -37,6 +58,11 @@ final class CustomerController
             exit;
         }
         $d = $this->sanitize($_POST);
+        if (!$this->isValidCustomerData($d)) {
+            Flash::error(Lang::get('flash.validation_error'));
+            header('Location: ' . Router::url('/customers/create'));
+            exit;
+        }
         $d['created_by'] = Auth::id();
         $attachment = $this->handleAttachmentUpload($_FILES['attachment'] ?? null, null);
         if ($attachment === false) {
@@ -61,7 +87,7 @@ final class CustomerController
     {
         PartnerForbiddenMiddleware::handle();
         $c = Customer::find((int) $id);
-        if (!$c) {
+        if (!$c || !AccessControl::canAccessCustomer($c)) {
             http_response_code(404);
             View::render('errors/404', ['title' => Lang::get('error.404_title')], 'main');
             return;
@@ -78,11 +104,16 @@ final class CustomerController
             exit;
         }
         $old = Customer::find((int) $id);
-        if (!$old) {
+        if (!$old || !AccessControl::canAccessCustomer($old)) {
             http_response_code(404);
             return;
         }
         $d = $this->sanitize($_POST);
+        if (!$this->isValidCustomerData($d)) {
+            Flash::error(Lang::get('flash.validation_error'));
+            header('Location: ' . Router::url('/customers/' . $id . '/edit'));
+            exit;
+        }
         $attachment = $this->handleAttachmentUpload($_FILES['attachment'] ?? null, $old);
         if ($attachment === false) {
             header('Location: ' . Router::url('/customers/' . $id . '/edit'));
@@ -96,30 +127,27 @@ final class CustomerController
         exit;
     }
 
-    public function attachment(string $id): void
+    public function downloadAttachment(string $id): void
     {
         PartnerForbiddenMiddleware::handle();
         $c = Customer::find((int) $id);
-        if (!$c || empty($c['attachment_path'])) {
+        if (!$c || empty($c['attachment_path']) || !AccessControl::canAccessCustomer($c)) {
             http_response_code(404);
             return;
         }
-        $path = CustomerAttachment::filesystemPath((string) $c['attachment_path']);
+        $path = self::resolveAttachmentPath((string) $c['attachment_path']);
         if ($path === null) {
             http_response_code(404);
             return;
         }
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->file($path) ?: 'application/octet-stream';
-        $name = basename($path);
+        $filename = basename($path);
         header('Content-Type: ' . $mime);
-        header('Content-Disposition: attachment; filename="' . rawurlencode($name) . '"');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Content-Length: ' . (string) filesize($path));
         header('X-Content-Type-Options: nosniff');
-        header('Cache-Control: private, no-store, no-cache, must-revalidate');
-        header('Pragma: no-cache');
         readfile($path);
-        exit;
     }
 
     /** @param array<string, mixed> $post */
@@ -137,6 +165,20 @@ final class CustomerController
             'zip_code' => trim((string) ($post['zip_code'] ?? '')) ?: null,
             'notes' => trim((string) ($post['notes'] ?? '')) ?: null,
         ];
+    }
+
+    /** @param array<string, mixed> $d */
+    private function isValidCustomerData(array $d): bool
+    {
+        if (($d['full_name'] ?? '') === '' || ($d['document'] ?? '') === '' || ($d['phone'] ?? '') === '') {
+            return false;
+        }
+        $type = (string) ($d['type'] ?? 'individual');
+        if (!in_array($type, ['individual', 'company'], true)) {
+            return false;
+        }
+        $email = (string) ($d['email'] ?? '');
+        return $email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
     }
 
     /**
@@ -184,9 +226,29 @@ final class CustomerController
         }
 
         if (!empty($existing['attachment_path'])) {
-            CustomerAttachment::deleteFile((string) $existing['attachment_path']);
+            $oldFs = self::resolveAttachmentPath((string) $existing['attachment_path']);
+            if ($oldFs !== null && is_file($oldFs)) {
+                @unlink($oldFs);
+            }
         }
 
-        return CustomerAttachment::storeRelative($name);
+        return $name;
+    }
+
+    private static function resolveAttachmentPath(string $stored): ?string
+    {
+        $name = basename(parse_url($stored, PHP_URL_PATH) ?: $stored);
+        if (!preg_match(self::ATTACHMENT_PATTERN, $name)) {
+            return null;
+        }
+        $base = realpath(BASE_PATH . '/storage/customers');
+        if ($base === false) {
+            return null;
+        }
+        $full = realpath($base . DIRECTORY_SEPARATOR . $name);
+        if ($full === false || !str_starts_with($full, $base . DIRECTORY_SEPARATOR)) {
+            return null;
+        }
+        return $full;
     }
 }

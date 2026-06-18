@@ -7,11 +7,11 @@
 <label class="label"><?= Lang::e('customer.name') ?></label>
 <input class="input" name="full_name" required value="<?= htmlspecialchars((string) ($c['full_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
 <label class="label"><?= Lang::e('customer.document') ?></label>
-<input class="input" name="document" required value="<?= htmlspecialchars((string) ($c['document'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+<input class="input" name="document" required data-mask="document" value="<?= htmlspecialchars((string) ($c['document'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
 <label class="label"><?= Lang::e('customer.email') ?></label>
 <input class="input" type="email" name="email" value="<?= htmlspecialchars((string) ($c['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
 <label class="label"><?= Lang::e('customer.phone') ?></label>
-<input class="input" name="phone" required value="<?= htmlspecialchars((string) ($c['phone'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+<input class="input" name="phone" required data-mask="phone" value="<?= htmlspecialchars((string) ($c['phone'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
 <label class="label"><?= Lang::e('location.address') ?></label>
 <input class="input" name="address" value="<?= htmlspecialchars((string) ($c['address'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
 <div class="grid two">
@@ -31,10 +31,10 @@
 
 <div class="field-group">
     <label class="label" for="customer-attachment"><?= Lang::e('customer.attachment') ?></label>
-    <input class="input" id="customer-attachment" type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.heic,.heif">
-    <?php if (!empty($c['attachment_path'])): ?>
+    <input class="input" id="customer-attachment" type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx">
+    <?php if (!empty($c['attachment_path']) && !empty($c['id'])): ?>
         <p class="help-text">
-            <a href="<?= htmlspecialchars(CustomerAttachment::downloadUrl((int) ($c['id'] ?? 0)), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer">
+            <a href="<?= htmlspecialchars(Router::url('/customers/' . (int) $c['id'] . '/attachment'), ENT_QUOTES, 'UTF-8') ?>" rel="noopener noreferrer">
                 <?= Lang::e('customer.attachment_view') ?>
             </a>
         </p>

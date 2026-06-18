@@ -5,19 +5,23 @@ declare(strict_types=1);
 final class Customer
 {
     /** @return array<int, array<string, mixed>> */
-    public static function searchAutocomplete(string $q, int $limit = 20): array
+    public static function searchAutocomplete(string $q, int $limit = 20, ?int $createdBy = null): array
     {
         $q = trim($q);
         if ($q === '') {
             return [];
         }
         $like = '%' . $q . '%';
-        $stmt = Database::pdo()->prepare(
-            'SELECT id, type, full_name, document, email, phone FROM customers
-             WHERE full_name LIKE ? OR document LIKE ? OR email LIKE ?
-             ORDER BY full_name LIMIT ' . (int) $limit
-        );
-        $stmt->execute([$like, $like, $like]);
+        $sql = 'SELECT id, type, full_name, document, email, phone FROM customers
+             WHERE (full_name LIKE ? OR document LIKE ? OR email LIKE ?)';
+        $params = [$like, $like, $like];
+        if ($createdBy !== null) {
+            $sql .= ' AND created_by = ?';
+            $params[] = $createdBy;
+        }
+        $sql .= ' ORDER BY full_name LIMIT ' . (int) $limit;
+        $stmt = Database::pdo()->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
@@ -30,22 +34,35 @@ final class Customer
     }
 
     /** @return array<int, array<string, mixed>> */
-    public static function all(): array
+    public static function all(?int $createdBy = null): array
     {
-        return Database::pdo()->query('SELECT * FROM customers ORDER BY full_name')->fetchAll();
+        if ($createdBy === null) {
+            return Database::pdo()->query('SELECT * FROM customers ORDER BY full_name')->fetchAll();
+        }
+        $stmt = Database::pdo()->prepare('SELECT * FROM customers WHERE created_by = ? ORDER BY full_name');
+        $stmt->execute([$createdBy]);
+        return $stmt->fetchAll();
     }
 
     /**
      * @return array{rows: array<int, array<string, mixed>>, total: int, page: int, perPage: int, totalPages: int}
      */
-    public static function paginated(int $page, int $perPage, ?string $q = null): array
+    public static function paginated(int $page, int $perPage, ?int $createdBy = null, array $filters = []): array
     {
-        $where = '';
+        $where = ' WHERE 1=1';
         $params = [];
-        if ($q !== null && trim($q) !== '') {
-            $like = '%' . trim($q) . '%';
-            $where = ' WHERE full_name LIKE ? OR document LIKE ? OR email LIKE ? OR phone LIKE ?';
-            $params = [$like, $like, $like, $like];
+        if ($createdBy !== null) {
+            $where .= ' AND created_by = ?';
+            $params[] = $createdBy;
+        }
+        if (!empty($filters['type']) && in_array($filters['type'], ['individual', 'company'], true)) {
+            $where .= ' AND type = ?';
+            $params[] = $filters['type'];
+        }
+        if (!empty($filters['q'])) {
+            $like = '%' . trim((string) $filters['q']) . '%';
+            $where .= ' AND (full_name LIKE ? OR document LIKE ? OR email LIKE ? OR phone LIKE ?)';
+            array_push($params, $like, $like, $like, $like);
         }
         $stmt = Database::pdo()->prepare('SELECT COUNT(*) FROM customers' . $where);
         $stmt->execute($params);
@@ -63,13 +80,6 @@ final class Customer
             'perPage' => $meta['perPage'],
             'totalPages' => $meta['totalPages'],
         ];
-    }
-
-    public static function reservationCount(int $id): int
-    {
-        $stmt = Database::pdo()->prepare('SELECT COUNT(*) FROM reservations WHERE customer_id = ?');
-        $stmt->execute([$id]);
-        return (int) $stmt->fetchColumn();
     }
 
     public static function create(array $d): int

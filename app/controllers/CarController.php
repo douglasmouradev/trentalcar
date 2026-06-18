@@ -20,7 +20,7 @@ final class CarController
         $p = Car::searchPaginated($filters, $page, $perPage);
         $listQuery = array_filter(
             ['status' => $filters['status'], 'category' => $filters['category'], 'brand' => $filters['brand'], 'q' => $filters['q']],
-            static fn ($v) => (string) $v !== ''
+            static fn (mixed $v): bool => is_string($v) && $v !== ''
         );
         View::render('cars/index', [
             'title' => Lang::get('nav.cars'),
@@ -46,7 +46,19 @@ final class CarController
             View::render('errors/403', ['title' => Lang::get('error.403_title')], 'main');
             return;
         }
-        View::render('cars/show', ['title' => $car['brand'] . ' ' . $car['model'], 'car' => $car], 'main');
+        $myQuota = null;
+        $carPartners = [];
+        if (Auth::isPartner()) {
+            $myQuota = UserCar::quotaForUserCar((int) Auth::id(), (int) $car['id']);
+        } elseif (Auth::isOwner()) {
+            $carPartners = UserCar::partnersForCar((int) $car['id']);
+        }
+        View::render('cars/show', [
+            'title' => $car['brand'] . ' ' . $car['model'],
+            'car' => $car,
+            'myQuota' => $myQuota,
+            'carPartners' => $carPartners,
+        ], 'main');
     }
 
     public function createForm(): void
@@ -63,6 +75,11 @@ final class CarController
             exit;
         }
         $d = $this->sanitize($_POST);
+        if (!$this->isValidCarData($d)) {
+            Flash::error(Lang::get('flash.validation_error'));
+            header('Location: ' . Router::url('/cars/create'));
+            exit;
+        }
         $upload = $this->handleUpload('image');
         if ($upload === false) {
             header('Location: ' . Router::url('/cars/create'));
@@ -104,6 +121,11 @@ final class CarController
             return;
         }
         $d = $this->sanitize($_POST);
+        if (!$this->isValidCarData($d)) {
+            Flash::error(Lang::get('flash.validation_error'));
+            header('Location: ' . Router::url('/cars/' . $id . '/edit'));
+            exit;
+        }
         $uploaded = $this->handleUpload('image');
         if ($uploaded === false) {
             header('Location: ' . Router::url('/cars/' . $id . '/edit'));
@@ -130,14 +152,8 @@ final class CarController
         }
         $old = Car::find((int) $id);
         if ($old) {
-            $active = Car::activeReservationCount((int) $id);
-            if ($active > 0) {
-                Flash::error(Lang::get('car.delete_has_reservations'));
-                header('Location: ' . Router::url('/cars/' . $id));
-                exit;
-            }
             Audit::log(Auth::id(), 'delete', 'car', (int) $id, $old, null);
-            Car::softDelete((int) $id);
+            Car::delete((int) $id);
             Flash::success(Lang::get('flash.deleted'));
         }
         header('Location: ' . Router::url('/cars'));
@@ -147,19 +163,47 @@ final class CarController
     /** @param array<string, mixed> $post */
     private function sanitize(array $post): array
     {
+        $colorHex = trim((string) ($post['color_hex'] ?? '#CCCCCC'));
+        if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $colorHex)) {
+            $colorHex = '#CCCCCC';
+        }
+
+        $category = (string) ($post['category'] ?? 'standard');
+        $allowedCategories = ['economy', 'standard', 'suv', 'luxury', 'van', 'truck'];
+        if (!in_array($category, $allowedCategories, true)) {
+            $category = 'standard';
+        }
+
+        $status = (string) ($post['status'] ?? 'available');
+        $allowedStatuses = ['available', 'rented', 'maintenance', 'inactive'];
+        if (!in_array($status, $allowedStatuses, true)) {
+            $status = 'available';
+        }
+
+        $transmission = (string) ($post['transmission'] ?? 'automatic');
+        if (!in_array($transmission, ['manual', 'automatic'], true)) {
+            $transmission = 'automatic';
+        }
+
+        $fuel = (string) ($post['fuel'] ?? 'flex');
+        $allowedFuels = ['flex', 'gasoline', 'diesel', 'electric', 'hybrid'];
+        if (!in_array($fuel, $allowedFuels, true)) {
+            $fuel = 'flex';
+        }
+
         return [
             'license_plate' => strtoupper(trim((string) ($post['license_plate'] ?? ''))),
             'brand' => trim((string) ($post['brand'] ?? '')),
             'model' => trim((string) ($post['model'] ?? '')),
             'year' => (int) ($post['year'] ?? date('Y')),
             'color' => trim((string) ($post['color'] ?? '')),
-            'color_hex' => trim((string) ($post['color_hex'] ?? '#CCCCCC')),
-            'category' => (string) ($post['category'] ?? 'standard'),
+            'color_hex' => $colorHex,
+            'category' => $category,
             'seats' => (int) ($post['seats'] ?? 5),
-            'transmission' => (string) ($post['transmission'] ?? 'automatic'),
-            'fuel' => (string) ($post['fuel'] ?? 'flex'),
+            'transmission' => $transmission,
+            'fuel' => $fuel,
             'daily_rate' => (float) ($post['daily_rate'] ?? 0),
-            'status' => (string) ($post['status'] ?? 'available'),
+            'status' => $status,
             'location_id' => (int) ($post['location_id'] ?? 0),
             'mileage' => (int) ($post['mileage'] ?? 0),
             'monthly_fuel' => max(0.0, (float) ($post['monthly_fuel'] ?? 0)),
@@ -169,6 +213,16 @@ final class CarController
             'monthly_extra' => max(0.0, (float) ($post['monthly_extra'] ?? 0)),
             'notes' => trim((string) ($post['notes'] ?? '')) ?: null,
         ];
+    }
+
+    /** @param array<string, mixed> $d */
+    private function isValidCarData(array $d): bool
+    {
+        return ($d['license_plate'] ?? '') !== ''
+            && ($d['brand'] ?? '') !== ''
+            && ($d['model'] ?? '') !== ''
+            && (int) ($d['location_id'] ?? 0) > 0
+            && Location::isActive((int) $d['location_id']);
     }
 
     /** @return string|null file URL, null if no upload, false on validation failure */
@@ -198,6 +252,12 @@ final class CarController
         $name = 'car_' . bin2hex(random_bytes(8)) . '.' . $allowed[$mime];
         $dest = $dir . '/' . $name;
         if (!move_uploaded_file($_FILES[$field]['tmp_name'], $dest)) {
+            Flash::error(Lang::get('upload.failed'));
+            return false;
+        }
+        $reencoded = SecureImage::reencode($dest, $mime, $dest);
+        if ($reencoded === null) {
+            @unlink($dest);
             Flash::error(Lang::get('upload.failed'));
             return false;
         }

@@ -13,18 +13,26 @@
         <select class="input" name="status">
             <option value=""><?= Lang::e('car.status') ?></option>
             <?php foreach (['available','rented','maintenance','inactive'] as $s): ?>
-                <option value="<?= $s ?>" <?= $filters['status'] === $s ? 'selected' : '' ?>><?= Lang::e('car.' . ($s === 'available' ? 'available' : ($s === 'rented' ? 'rented' : ($s === 'maintenance' ? 'maintenance' : 'inactive')))) ?></option>
+                <option value="<?= $s ?>" <?= $filters['status'] === $s ? 'selected' : '' ?>><?= Lang::e('car.' . $s) ?></option>
             <?php endforeach; ?>
         </select>
         <select class="input" name="category">
             <option value=""><?= Lang::e('car.category') ?></option>
             <?php foreach (['economy','standard','suv','luxury','van','truck'] as $c): ?>
-                <option value="<?= $c ?>" <?= $filters['category'] === $c ? 'selected' : '' ?>><?= htmlspecialchars($c, ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="<?= $c ?>" <?= $filters['category'] === $c ? 'selected' : '' ?>><?= Lang::e('category.' . $c) ?></option>
             <?php endforeach; ?>
         </select>
         <button class="btn btn-secondary" type="submit"><?= Lang::e('actions.filter') ?></button>
     </div>
 </form>
+<?php if ($cars === []): ?>
+    <?php View::partial('partials/empty_state', [
+        'titleKey' => 'empty.cars.title',
+        'leadKey' => 'empty.cars.lead',
+        'ctaUrl' => $canEdit ? Router::url('/cars/create') : null,
+        'ctaKey' => $canEdit ? 'empty.cars.cta' : null,
+    ]); ?>
+<?php else: ?>
 <div class="table-wrap card mt">
     <table class="table">
         <thead>
@@ -60,9 +68,9 @@
                 <td class="td-swatch"><span class="swatch" style="background:<?= htmlspecialchars($car['color_hex'], ENT_QUOTES, 'UTF-8') ?>"></span></td>
                 <td class="mono"><?= htmlspecialchars($car['license_plate'], ENT_QUOTES, 'UTF-8') ?></td>
                 <td><?= htmlspecialchars($car['brand'] . ' ' . $car['model'], ENT_QUOTES, 'UTF-8') ?></td>
-                <td><?= htmlspecialchars($car['category'], ENT_QUOTES, 'UTF-8') ?></td>
-                <td class="mono">R$ <?= number_format((float) $car['daily_rate'], 2, ',', '.') ?></td>
-                <td><span class="badge"><?= htmlspecialchars($car['status'], ENT_QUOTES, 'UTF-8') ?></span></td>
+                <td><?= Ui::categoryLabel((string) $car['category']) ?></td>
+                <td class="mono"><?= Formatter::money((float) $car['daily_rate']) ?></td>
+                <td><?= Ui::carStatusBadge((string) $car['status']) ?></td>
                 <td class="actions">
                     <a class="btn btn-sm btn-secondary" href="<?= Router::url('/cars/' . (int) $car['id']) ?>"><?= Lang::e('actions.view') ?></a>
                     <?php if ($canEdit): ?>
@@ -71,7 +79,6 @@
                 </td>
             </tr>
         <?php endforeach; ?>
-        <?php if ($cars === []): ?><tr><td colspan="8" class="muted"><?= Lang::e('table.empty') ?></td></tr><?php endif; ?>
         </tbody>
     </table>
     <?php if (!empty($pagination)): View::partial('partials/pagination', [
@@ -83,3 +90,4 @@
         'perPage' => (int) $pagination['perPage'],
     ]); endif; ?>
 </div>
+<?php endif; ?>

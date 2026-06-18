@@ -21,29 +21,38 @@ Env::load(BASE_PATH . '/.env');
 // Carrega configuração da app depois de Env::load e autoloader disponíveis
 $appCfg = Config::app();
 
-try {
-    ProductionGuard::validateBoot();
-} catch (Throwable $bootErr) {
-    AppError::log($bootErr);
-    http_response_code(503);
-    header('Content-Type: text/plain; charset=UTF-8');
-    echo 'Service misconfigured.';
-    exit;
-}
-
-if (ProductionGuard::isProduction()) {
-    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
-    if ($isHttps && !($appCfg['session_secure'] ?? false)) {
-        AppError::log(new RuntimeException('SESSION_SECURE deve ser true em produção com HTTPS'));
+// Validação mínima de ambiente em produção
+if (($appCfg['env'] ?? 'production') === 'production') {
+    $required = ['APP_URL', 'DB_HOST', 'DB_DATABASE', 'DB_USERNAME', 'APP_KEY', 'HEALTH_TOKEN'];
+    $missing = [];
+    foreach ($required as $name) {
+        if (($_ENV[$name] ?? '') === '') {
+            $missing[] = $name;
+        }
+    }
+    $block = false;
+    if ($missing !== []) {
+        AppError::log(new RuntimeException('Env vars em falta: ' . implode(', ', $missing)));
+        $block = true;
+    }
+    if (!empty($appCfg['debug'])) {
+        AppError::log(new RuntimeException('APP_DEBUG=true em produção — bloqueando arranque'));
+        $block = true;
+    }
+    if (empty($appCfg['session_secure'])) {
+        AppError::log(new RuntimeException('SESSION_SECURE=false em produção — bloqueando arranque'));
+        $block = true;
+    }
+    if ($block) {
         http_response_code(503);
-        header('Content-Type: text/plain; charset=UTF-8');
-        echo 'Service misconfigured.';
+        header('Content-Type: text/html; charset=UTF-8');
+        echo '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Indisponível</title></head><body><p>Configuração inválida.</p></body></html>';
         exit;
     }
 }
 
 $lifetime = (int) ($appCfg['session_lifetime'] ?? 480) * 60;
+ini_set('session.gc_maxlifetime', (string) $lifetime);
 $secure = (bool) ($appCfg['session_secure'] ?? false);
 session_set_cookie_params([
     'lifetime' => $lifetime,
@@ -58,22 +67,10 @@ SecurityHeaders::send();
 
 if (isset($_GET['lang']) && in_array($_GET['lang'], ['pt-BR', 'en-US'], true)) {
     Lang::setLocale($_GET['lang']);
-    if (Auth::check()) {
-        $uid = Auth::id();
-        if ($uid !== null) {
-            $stmt = Database::pdo()->prepare('UPDATE users SET lang_pref = ? WHERE id = ?');
-            $stmt->execute([$_GET['lang'], $uid]);
-            Auth::refreshUserFromDb();
-        }
-    }
     $back = Auth::check()
-        ? Router::url(Auth::isPartner() ? '/cars' : '/dashboard')
+        ? Router::url(Auth::isPartner() ? '/partner/profile' : '/dashboard')
         : Router::url('/');
-    $ref = $_SERVER['HTTP_REFERER'] ?? '';
-    $host = parse_url($appCfg['url'] ?? '', PHP_URL_HOST);
-    if ($ref !== '' && $host && str_contains($ref, $host)) {
-        $back = $ref;
-    }
+    $back = SafeRedirect::sameOriginOr($back, $_SERVER['HTTP_REFERER'] ?? null, $appCfg['url'] ?? '');
     header('Location: ' . $back);
     exit;
 }

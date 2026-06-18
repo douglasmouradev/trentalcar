@@ -34,6 +34,21 @@ final class Auth
         return self::role() === 'partner';
     }
 
+    public static function isOperator(): bool
+    {
+        return self::role() === 'operator';
+    }
+
+    public static function isStaff(): bool
+    {
+        return in_array(self::role(), ['owner', 'operator'], true);
+    }
+
+    public static function mustChangePassword(): bool
+    {
+        return !empty($_SESSION['user']['must_change_password']);
+    }
+
     /** @return array<int, int> */
     public static function partnerCarIds(): array
     {
@@ -47,6 +62,46 @@ final class Auth
     public static function login(array $user): void
     {
         session_regenerate_id(true);
+        self::setSessionUser($user);
+        $_SESSION['_last_activity'] = time();
+        Csrf::regenerate();
+    }
+
+    /** Revalida sessão contra a BD e expira por inactividade. */
+    public static function ensureValidSession(): bool
+    {
+        if (!self::check()) {
+            return false;
+        }
+
+        $lifetime = (int) (Config::app()['session_lifetime'] ?? 480) * 60;
+        $now = time();
+        $last = (int) ($_SESSION['_last_activity'] ?? $now);
+        if ($now - $last > $lifetime) {
+            self::logout();
+            return false;
+        }
+        $_SESSION['_last_activity'] = $now;
+
+        $id = self::id();
+        if ($id === null) {
+            self::logout();
+            return false;
+        }
+
+        $row = User::findForSession($id);
+        if ($row === null) {
+            self::logout();
+            return false;
+        }
+
+        self::setSessionUser($row);
+        return true;
+    }
+
+    /** Atualiza dados do utilizador na sessão sem rotacionar sessão/CSRF. */
+    public static function setSessionUser(array $user): void
+    {
         $carIds = [];
         if (($user['role'] ?? '') === 'partner') {
             $carIds = UserCar::carIdsForUser((int) $user['id']);
@@ -58,11 +113,11 @@ final class Auth
             'role' => $user['role'],
             'lang_pref' => $user['lang_pref'] ?? 'pt-BR',
             'car_ids' => $carIds,
+            'must_change_password' => (int) ($user['must_change_password'] ?? 0),
         ];
-        if (!empty($_SESSION['lang'])) {
-            return;
+        if (empty($_SESSION['lang'])) {
+            $_SESSION['lang'] = $user['lang_pref'] ?? 'pt-BR';
         }
-        $_SESSION['lang'] = $user['lang_pref'] ?? 'pt-BR';
     }
 
     public static function logout(): void
@@ -75,39 +130,16 @@ final class Auth
         session_destroy();
     }
 
-    public static function ensureActive(): void
+    public static function refreshUserFromDb(): void
     {
-        if (!self::check()) {
-            return;
-        }
         $id = self::id();
         if ($id === null) {
             return;
         }
-        $stmt = Database::pdo()->prepare(
-            'SELECT id, name, email, role, lang_pref, is_active FROM users WHERE id = ?'
-        );
-        $stmt->execute([$id]);
-        $row = $stmt->fetch();
-        if (!$row || !(int) ($row['is_active'] ?? 0)) {
-            self::logout();
-            header('Location: ' . Router::url('/login'));
-            exit;
+        $row = User::findForSession($id);
+        if ($row) {
+            self::setSessionUser($row);
         }
-        $carIds = ($row['role'] ?? '') === 'partner' ? UserCar::carIdsForUser((int) $row['id']) : [];
-        $_SESSION['user'] = [
-            'id' => (int) $row['id'],
-            'name' => (string) $row['name'],
-            'email' => (string) $row['email'],
-            'role' => (string) $row['role'],
-            'lang_pref' => (string) ($row['lang_pref'] ?? 'pt-BR'),
-            'car_ids' => $carIds,
-        ];
-    }
-
-    public static function refreshUserFromDb(): void
-    {
-        self::ensureActive();
     }
 
     public static function partnerMayViewCar(int $carId): bool
@@ -116,23 +148,5 @@ final class Auth
             return true;
         }
         return in_array($carId, self::partnerCarIds(), true);
-    }
-
-    public static function recordPrivacyConsent(int $userId): void
-    {
-        try {
-            $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
-            $ua = (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
-            $stmt = Database::pdo()->prepare(
-                'INSERT INTO privacy_login_consent (user_id, ip_hash, user_agent_hash, created_at) VALUES (?, ?, ?, NOW())'
-            );
-            $stmt->execute([
-                $userId,
-                hash('sha256', $ip),
-                hash('sha256', $ua),
-            ]);
-        } catch (Throwable) {
-            /* Tabela pode ainda não existir — executar migration 003 */
-        }
     }
 }

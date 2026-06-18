@@ -1,11 +1,10 @@
 USE titanium_rental_car;
 
--- ATENÇÃO: dados de DEMONSTRAÇÃO — NÃO execute em produção.
--- Senhas conhecidas abaixo; use apenas em desenvolvimento/CI.
-INSERT INTO users (name, email, password_hash, role, phone, is_active, lang_pref) VALUES
-('Carlos Titanium', 'owner@titaniumrental.com', '$2y$12$uu.TgIm3w8Y9tc7Obp1kAOlQRjSOAdH32KW0ce63tG1D3VYScIgxS', 'owner', '(11) 99999-0001', 1, 'pt-BR'),
-('Ana Operadora', 'operator@titaniumrental.com', '$2y$12$uu.TgIm3w8Y9tc7Obp1kAOlQRjSOAdH32KW0ce63tG1D3VYScIgxS', 'operator', '(11) 98888-0002', 1, 'pt-BR'),
-('Cotista Demo', 'partner@titaniumrental.com', '$2y$12$uu.TgIm3w8Y9tc7Obp1kAOlQRjSOAdH32KW0ce63tG1D3VYScIgxS', 'partner', '(11) 97777-0003', 1, 'pt-BR');
+-- Contas de demonstração — altere a senha no primeiro acesso (must_change_password=1)
+INSERT INTO users (name, email, password_hash, role, phone, is_active, must_change_password, lang_pref) VALUES
+('Carlos Titanium', 'owner@titaniumrental.com', '$2y$12$xpF/1qt9QPGLlmWE0DwUCu9KyuiK1UdhMojVR3fngzCbSaJ3hcfdq', 'owner', '(11) 99999-0001', 1, 1, 'pt-BR'),
+('Ana Operadora', 'operator@titaniumrental.com', '$2y$12$xpF/1qt9QPGLlmWE0DwUCu9KyuiK1UdhMojVR3fngzCbSaJ3hcfdq', 'operator', '(11) 98888-0002', 1, 1, 'pt-BR'),
+('Cotista Demo', 'partner@titaniumrental.com', '$2y$12$xpF/1qt9QPGLlmWE0DwUCu9KyuiK1UdhMojVR3fngzCbSaJ3hcfdq', 'partner', '(11) 97777-0003', 1, 1, 'pt-BR');
 
 INSERT INTO locations (name, address, city, state, zip_code, phone, is_active) VALUES
 ('Matriz Paulista', 'Av. Paulista, 1000', 'São Paulo', 'SP', '01310-100', '(11) 3000-1000', 1),
@@ -21,7 +20,7 @@ INSERT INTO cars (license_plate, brand, model, year, color, color_hex, category,
 ('PQR6I78', 'Volkswagen', 'T-Cross', 2024, 'Cinza', '#6B7280', 'suv', 5, 'automatic', 'flex', 249.00, 'available', 3, 3000, 520.00, 100.00, 70.00, 100.00, 0.00, NULL, NULL),
 ('STU9J01', 'Renault', 'Kwid', 2023, 'Laranja', '#EA580C', 'economy', 5, 'manual', 'flex', 99.90, 'inactive', 1, 15000, 280.00, 40.00, 40.00, 80.00, 0.00, NULL, NULL);
 
-INSERT INTO user_cars (user_id, car_id) VALUES (3, 1);
+INSERT INTO user_cars (user_id, car_id, quota_percent) VALUES (3, 1, 40.00);
 
 INSERT INTO customers (type, full_name, document, email, phone, address, city, state, zip_code, created_by, notes) VALUES
 ('individual', 'João da Silva', '12345678901', 'joao@email.com', '(11) 91111-1111', 'Rua A, 10', 'São Paulo', 'SP', '01000-000', 2, NULL),

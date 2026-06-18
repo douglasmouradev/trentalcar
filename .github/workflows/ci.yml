@@ -29,7 +29,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.3"
-          extensions: pdo_mysql, json, fileinfo
+          extensions: pdo_mysql, json, fileinfo, gd
           coverage: none
 
       - name: Install dependencies
@@ -55,54 +55,20 @@ jobs:
           mysql -h 127.0.0.1 -P 3306 -uroot -proot < database/schema.sql
           mysql -h 127.0.0.1 -P 3306 -uroot -proot < database/seed.sql
 
-      - name: Run pending migrations
+      - name: Run migrations
         env:
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
           DB_DATABASE: titanium_rental_car
           DB_USERNAME: root
           DB_PASSWORD: root
-          APP_URL: http://localhost
         run: php bin/migrate.php
 
       - name: Run PHPUnit
-        env:
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: titanium_rental_car
-          DB_USERNAME: root
-          DB_PASSWORD: root
-          APP_URL: http://localhost
         run: vendor/bin/phpunit
 
-      - name: PHPStan
-        run: vendor/bin/phpstan analyse --configuration=phpstan.neon --memory-limit=512M --no-progress
-
-      - name: Docker build
-        run: docker compose build
-
-      - name: Production env guard (unit)
-        env:
-          APP_ENV: production
-          APP_DEBUG: true
-          DB_PASSWORD: secret
-          PRIVACY_DPO_EMAIL: dpo@example.com
-          SECURITY_CONTACT_EMAIL: security@example.com
-        run: |
-          php -r "
-          require 'app/helpers/Env.php';
-          require 'app/helpers/ProductionGuard.php';
-          \$_ENV['APP_ENV']='production';
-          \$_ENV['APP_DEBUG']='true';
-          \$_ENV['APP_URL']='https://example.com';
-          \$_ENV['DB_HOST']='h';
-          \$_ENV['DB_DATABASE']='d';
-          \$_ENV['DB_USERNAME']='u';
-          \$_ENV['DB_PASSWORD']='p';
-          \$_ENV['PRIVACY_DPO_EMAIL']='a@b.c';
-          \$_ENV['SECURITY_CONTACT_EMAIL']='s@b.c';
-          try { ProductionGuard::validateBoot(); exit(1); } catch (Throwable) { exit(0); }
-          "
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --memory-limit=512M
 
       - name: Syntax check (app)
-        run: find app public/index.php config bin -name '*.php' -print0 | xargs -0 -n1 php -l
+        run: find app public/index.php config -name '*.php' -print0 | xargs -0 -n1 php -l

@@ -6,23 +6,26 @@
 ?>
 <div class="page-head">
     <h1 class="page-title"><?= Lang::e('nav.reports') ?></h1>
-    <div class="page-actions">
-        <a class="btn btn-secondary" href="<?= htmlspecialchars(Router::url('/reports/export') . '?' . http_build_query(['from' => $from, 'to' => $to]), ENT_QUOTES, 'UTF-8') ?>"><?= Lang::e('reports.export_csv') ?></a>
-    </div>
 </div>
-<form class="filters card" method="get">
-    <div class="filters-row">
+<div class="filters card">
+    <form class="filters-row" method="get">
         <input class="input" type="date" name="from" value="<?= htmlspecialchars($from, ENT_QUOTES, 'UTF-8') ?>">
         <input class="input" type="date" name="to" value="<?= htmlspecialchars($to, ENT_QUOTES, 'UTF-8') ?>">
         <button class="btn btn-secondary" type="submit"><?= Lang::e('actions.filter') ?></button>
-    </div>
-</form>
+    </form>
+    <form method="post" action="<?= htmlspecialchars(Router::url('/reports/export'), ENT_QUOTES, 'UTF-8') ?>" class="filters-row mt inline-form">
+        <?= Csrf::field() ?>
+        <input type="hidden" name="from" value="<?= htmlspecialchars($from, ENT_QUOTES, 'UTF-8') ?>">
+        <input type="hidden" name="to" value="<?= htmlspecialchars($to, ENT_QUOTES, 'UTF-8') ?>">
+        <button class="btn btn-secondary" type="submit"><?= Lang::e('reports.export_csv') ?></button>
+    </form>
+</div>
 <div class="grid two mt">
     <div class="card">
         <h2 class="card-title"><?= Lang::e('nav.reports') ?> (<?= htmlspecialchars($from, ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars($to, ENT_QUOTES, 'UTF-8') ?>)</h2>
         <div class="table-wrap">
             <table class="table">
-                <thead><tr><th>Mês</th><th>Reservas</th><th>Total</th></tr></thead>
+                <thead><tr><th><?= Lang::e('reports.month') ?></th><th><?= Lang::e('reports.reservations_count') ?></th><th><?= Lang::e('reports.total') ?></th></tr></thead>
                 <tbody>
                 <?php foreach ($monthly as $row): ?>
                     <tr>
@@ -40,7 +43,7 @@
         <h2 class="card-title"><?= Lang::e('nav.cars') ?> (<?= Lang::e('car.status') ?>)</h2>
         <ul class="list-plain">
             <?php foreach ($fleet as $row): ?>
-                <li><span class="mono"><?= htmlspecialchars((string) $row['status'], ENT_QUOTES, 'UTF-8') ?></span> — <?= (int) $row['c'] ?></li>
+                <li><span class="mono"><?= Ui::carStatusBadge((string) $row['status']) ?></span> — <?= (int) $row['c'] ?></li>
             <?php endforeach; ?>
         </ul>
     </div>

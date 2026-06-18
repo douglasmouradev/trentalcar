@@ -4,20 +4,64 @@ declare(strict_types=1);
 
 final class Lead
 {
-    /** @return array{rows: array<int, array<string, mixed>>, total: int, page: int, perPage: int, totalPages: int} */
-    public static function paginated(int $page, int $perPage, ?string $status = null): array
+    public const STATUSES = ['new', 'contacted', 'converted', 'discarded'];
+
+    public static function create(array $d): int
     {
-        $where = '';
+        $stmt = Database::pdo()->prepare(
+            'INSERT INTO leads (full_name, email, phone, local, inicio, fim, mesmo_local, local_devolucao, car_id, ip_hash)
+             VALUES (?,?,?,?,?,?,?,?,?,?)'
+        );
+        $stmt->execute([
+            $d['full_name'],
+            $d['email'],
+            $d['phone'],
+            $d['local'],
+            $d['inicio'],
+            $d['fim'],
+            (int) ($d['mesmo_local'] ?? 1),
+            $d['local_devolucao'] ?? null,
+            $d['car_id'] ?? null,
+            $d['ip_hash'] ?? null,
+        ]);
+        return (int) Database::pdo()->lastInsertId();
+    }
+
+    public static function find(int $id): ?array
+    {
+        $sql = 'SELECT l.*, c.brand AS car_brand, c.model AS car_model, c.license_plate AS car_plate
+                FROM leads l
+                LEFT JOIN cars c ON c.id = l.car_id
+                WHERE l.id = ?';
+        $stmt = Database::pdo()->prepare($sql);
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    /**
+     * @return array{rows: array<int, array<string, mixed>>, total: int, page: int, perPage: int, totalPages: int}
+     */
+    public static function paginated(int $page, int $perPage, ?string $status = null, ?string $q = null): array
+    {
+        $where = ' WHERE 1=1';
         $params = [];
-        if ($status !== null && $status !== '') {
-            $where = ' WHERE status = ?';
+        if ($status !== null && $status !== '' && in_array($status, self::STATUSES, true)) {
+            $where .= ' AND l.status = ?';
             $params[] = $status;
         }
-        $stmt = Database::pdo()->prepare('SELECT COUNT(*) FROM leads' . $where);
+        if ($q !== null && trim($q) !== '') {
+            $like = '%' . trim($q) . '%';
+            $where .= ' AND (l.full_name LIKE ? OR l.email LIKE ? OR l.phone LIKE ? OR l.local LIKE ?)';
+            array_push($params, $like, $like, $like, $like);
+        }
+        $base = ' FROM leads l LEFT JOIN cars c ON c.id = l.car_id';
+        $stmt = Database::pdo()->prepare('SELECT COUNT(*)' . $base . $where);
         $stmt->execute($params);
         $total = (int) $stmt->fetchColumn();
         $meta = Pagination::meta($total, $page, $perPage);
-        $sql = 'SELECT * FROM leads' . $where . ' ORDER BY created_at DESC LIMIT '
+        $sql = 'SELECT l.*, c.brand AS car_brand, c.model AS car_model, c.license_plate AS car_plate'
+            . $base . $where . ' ORDER BY l.created_at DESC LIMIT '
             . (int) $meta['perPage'] . ' OFFSET ' . (int) $meta['offset'];
         $stmt = Database::pdo()->prepare($sql);
         $stmt->execute($params);
@@ -30,62 +74,38 @@ final class Lead
         ];
     }
 
-    public static function find(int $id): ?array
+    public static function updateStatus(int $id, string $status, ?string $notes = null): void
     {
-        $stmt = Database::pdo()->prepare('SELECT * FROM leads WHERE id = ?');
-        $stmt->execute([$id]);
-        $row = $stmt->fetch();
-        return $row ?: null;
-    }
-
-    public static function create(array $d): int
-    {
-        $stmt = Database::pdo()->prepare(
-            'INSERT INTO leads (location_text, start_date, end_date, same_location, return_location_text,
-             contact_name, contact_email, contact_phone, ip_hash, status)
-             VALUES (?,?,?,?,?,?,?,?,?,?)'
-        );
-        $stmt->execute([
-            $d['location_text'],
-            $d['start_date'],
-            $d['end_date'],
-            (int) ($d['same_location'] ?? 1),
-            $d['return_location_text'] ?? null,
-            $d['contact_name'] ?? null,
-            $d['contact_email'] ?? null,
-            $d['contact_phone'] ?? null,
-            $d['ip_hash'],
-            $d['status'] ?? 'new',
-        ]);
-        return (int) Database::pdo()->lastInsertId();
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    public static function exportRows(?string $status = null): array
-    {
-        $where = '';
-        $params = [];
-        if ($status !== null && $status !== '') {
-            $where = ' WHERE status = ?';
-            $params[] = $status;
-        }
-        $sql = 'SELECT id, location_text, start_date, end_date, contact_name, contact_phone, contact_email, status, created_at'
-            . ' FROM leads' . $where . ' ORDER BY created_at DESC LIMIT 5000';
-        $stmt = Database::pdo()->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll();
-    }
-
-    public static function setStatus(int $id, string $status, ?string $notes = null): void
-    {
-        if ($notes !== null) {
-            $stmt = Database::pdo()->prepare('UPDATE leads SET status = ?, notes = ? WHERE id = ?');
-            $stmt->execute([$status, $notes, $id]);
+        if (!in_array($status, self::STATUSES, true)) {
             return;
         }
-        $stmt = Database::pdo()->prepare('UPDATE leads SET status = ? WHERE id = ?');
-        $stmt->execute([$status, $id]);
+        $stmt = Database::pdo()->prepare('UPDATE leads SET status = ?, notes = COALESCE(?, notes) WHERE id = ?');
+        $stmt->execute([$status, $notes, $id]);
+    }
+
+    public static function countNew(): int
+    {
+        return (int) Database::pdo()->query("SELECT COUNT(*) FROM leads WHERE status = 'new'")->fetchColumn();
+    }
+
+    public static function countStale(int $hours = 24): int
+    {
+        $hours = max(1, $hours);
+        $stmt = Database::pdo()->prepare(
+            "SELECT COUNT(*) FROM leads WHERE status = 'new' AND created_at < DATE_SUB(NOW(), INTERVAL ? HOUR)"
+        );
+        $stmt->execute([$hours]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    public static function recentNew(int $limit = 5): array
+    {
+        $stmt = Database::pdo()->prepare(
+            "SELECT id, full_name, email, inicio, fim, created_at FROM leads WHERE status = 'new' ORDER BY created_at DESC LIMIT ?"
+        );
+        $stmt->bindValue(1, max(1, $limit), PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 }

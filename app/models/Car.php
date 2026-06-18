@@ -5,12 +5,12 @@ declare(strict_types=1);
 final class Car
 {
     /**
-     * @param array<string, scalar|null> $filters
+     * @param array<string, scalar|null|array<int, int>> $filters
      * @return array{0: string, 1: array<int, mixed>}
      */
     private static function filterSql(array $filters): array
     {
-        $sql = ' AND c.deleted_at IS NULL';
+        $sql = '';
         $params = [];
         if (!empty($filters['status'])) {
             $sql .= ' AND c.status = ?';
@@ -46,7 +46,7 @@ final class Car
         return [$sql, $params];
     }
 
-    /** @param array<string, scalar|null> $filters */
+    /** @param array<string, scalar|null|array<int, int>> $filters */
     public static function search(array $filters = []): array
     {
         [$frag, $params] = self::filterSql($filters);
@@ -58,7 +58,7 @@ final class Car
     }
 
     /**
-     * @param array<string, scalar|null> $filters
+     * @param array<string, scalar|null|array<int, int>> $filters
      * @return array{rows: array<int, array<string, mixed>>, total: int, page: int, perPage: int, totalPages: int}
      */
     public static function searchPaginated(array $filters, int $page, int $perPage): array
@@ -85,7 +85,7 @@ final class Car
     public static function find(int $id): ?array
     {
         $stmt = Database::pdo()->prepare(
-            'SELECT c.*, l.name AS location_name FROM cars c LEFT JOIN locations l ON l.id = c.location_id WHERE c.id = ? AND c.deleted_at IS NULL'
+            'SELECT c.*, l.name AS location_name FROM cars c LEFT JOIN locations l ON l.id = c.location_id WHERE c.id = ?'
         );
         $stmt->execute([$id]);
         $row = $stmt->fetch();
@@ -136,20 +136,36 @@ final class Car
         ]);
     }
 
-    public static function activeReservationCount(int $id): int
+    public static function delete(int $id): void
     {
-        $stmt = Database::pdo()->prepare(
-            "SELECT COUNT(*) FROM reservations WHERE car_id = ? AND status IN ('pending','confirmed','active')"
-        );
+        $stmt = Database::pdo()->prepare('DELETE FROM cars WHERE id = ?');
         $stmt->execute([$id]);
-        return (int) $stmt->fetchColumn();
     }
 
-    public static function softDelete(int $id): void
+    /** @return array<int, array<string, mixed>> */
+    public static function forPublicLanding(int $limit = 12): array
     {
-        $stmt = Database::pdo()->prepare(
-            "UPDATE cars SET deleted_at = NOW(), status = 'inactive' WHERE id = ? AND deleted_at IS NULL"
-        );
-        $stmt->execute([$id]);
+        $sql = "SELECT c.*, l.name AS location_name FROM cars c
+                LEFT JOIN locations l ON l.id = c.location_id
+                WHERE c.status IN ('available','rented')
+                ORDER BY c.daily_rate ASC, c.brand, c.model
+                LIMIT " . (int) $limit;
+        return Database::pdo()->query($sql)->fetchAll();
+    }
+
+    public static function landingFilterKey(string $category): string
+    {
+        return match ($category) {
+            'economy' => 'economy',
+            'suv' => 'suv',
+            'luxury' => 'exec',
+            'van', 'truck' => 'util',
+            default => 'sedan',
+        };
+    }
+
+    public static function isAvailableForDates(int $carId, string $start, string $end): bool
+    {
+        return !Reservation::hasConflict($carId, $start, '09:00:00', $end, '18:00:00', null);
     }
 }

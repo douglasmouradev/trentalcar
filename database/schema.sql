@@ -17,6 +17,8 @@ CREATE TABLE users (
   phone         VARCHAR(30),
   avatar_url    VARCHAR(255),
   is_active     TINYINT(1)          NOT NULL DEFAULT 1,
+  must_change_password TINYINT(1)   NOT NULL DEFAULT 0,
+  totp_secret       VARCHAR(64)     NULL DEFAULT NULL,
   lang_pref     ENUM('pt-BR','en-US') NOT NULL DEFAULT 'pt-BR',
   created_at    DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -59,7 +61,6 @@ CREATE TABLE cars (
   notes            TEXT,
   created_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deleted_at       DATETIME      NULL DEFAULT NULL,
   FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE SET NULL
 );
 
@@ -79,13 +80,12 @@ CREATE TABLE customers (
   created_by    INT UNSIGNED,
   created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
-  INDEX idx_customers_document (document)
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE reservations (
   id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  code                VARCHAR(16)   NOT NULL UNIQUE,
+  code                VARCHAR(12)   NOT NULL UNIQUE,
   customer_id         INT UNSIGNED  NOT NULL,
   car_id              INT UNSIGNED  NOT NULL,
   operator_id         INT UNSIGNED  NOT NULL,
@@ -130,67 +130,16 @@ CREATE TABLE audit_logs (
 CREATE INDEX idx_reservations_dates  ON reservations(pickup_date, return_date);
 CREATE INDEX idx_reservations_car    ON reservations(car_id, status);
 CREATE INDEX idx_reservations_status ON reservations(status);
+CREATE INDEX idx_reservations_operator ON reservations(operator_id);
 CREATE INDEX idx_cars_status         ON cars(status);
-CREATE INDEX idx_cars_deleted        ON cars(deleted_at);
-
-CREATE TABLE leads (
-  id                    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  location_text         VARCHAR(240) NOT NULL,
-  start_date            DATE         NOT NULL,
-  end_date              DATE         NOT NULL,
-  same_location         TINYINT(1)   NOT NULL DEFAULT 1,
-  return_location_text  VARCHAR(240),
-  contact_name          VARCHAR(120),
-  contact_email         VARCHAR(180),
-  contact_phone         VARCHAR(30),
-  ip_hash               CHAR(64)     NOT NULL,
-  status                ENUM('new','contacted','converted','archived') NOT NULL DEFAULT 'new',
-  notes                 TEXT,
-  created_at            DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_leads_created (created_at),
-  INDEX idx_leads_status (status)
-);
-
-CREATE TABLE rate_limits (
-  id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  bucket_key   VARCHAR(128) NOT NULL,
-  hits         INT UNSIGNED NOT NULL DEFAULT 0,
-  window_start INT UNSIGNED NOT NULL,
-  UNIQUE KEY uk_rate_limits_bucket (bucket_key)
-);
-
-CREATE TABLE schema_migrations (
-  version    VARCHAR(64) NOT NULL PRIMARY KEY,
-  applied_at DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-INSERT INTO schema_migrations (version) VALUES
-  ('001_initial_schema.sql'),
-  ('002_cars_monthly_expenses.sql'),
-  ('003_privacy_login_consent.sql'),
-  ('004_customers_attachment.sql'),
-  ('005_partner_role_user_cars.sql'),
-  ('006_leads_rate_limits_soft_delete.sql'),
-  ('007_reservation_code_length.sql'),
-  ('008_leads_contact.sql'),
-  ('009_password_reset_tokens.sql');
-
-CREATE TABLE password_reset_tokens (
-  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id    INT UNSIGNED NOT NULL,
-  token_hash CHAR(64)     NOT NULL,
-  expires_at DATETIME     NOT NULL,
-  created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_password_reset_token (token_hash),
-  KEY idx_password_reset_user (user_id),
-  KEY idx_password_reset_expires (expires_at),
-  CONSTRAINT fk_password_reset_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE INDEX idx_customers_created_by ON customers(created_by);
+CREATE INDEX idx_audit_created ON audit_logs(created_at);
 
 CREATE TABLE user_cars (
-  user_id    INT UNSIGNED NOT NULL,
-  car_id     INT UNSIGNED NOT NULL,
-  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  user_id       INT UNSIGNED NOT NULL,
+  car_id        INT UNSIGNED NOT NULL,
+  quota_percent DECIMAL(5,2) NOT NULL DEFAULT 100.00,
+  created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (user_id, car_id),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE,

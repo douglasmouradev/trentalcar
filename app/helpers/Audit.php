@@ -5,20 +5,17 @@ declare(strict_types=1);
 final class Audit
 {
     /** @var list<string> */
-    private const SENSITIVE_KEYS = [
-        'password',
-        'password_hash',
+    private const SENSITIVE_FIELDS = [
         'document',
-        'cpf',
-        'cnpj',
         'phone',
         'email',
-        'contact_email',
-        'contact_phone',
-        'contact_name',
-        'full_name',
         'address',
+        'full_name',
         'notes',
+        'password',
+        'password_hash',
+        'attachment_path',
+        'totp_secret',
     ];
 
     public static function log(
@@ -29,8 +26,8 @@ final class Audit
         ?array $oldData = null,
         ?array $newData = null
     ): void {
-        $ipRaw = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
-        $ip = $ipRaw !== '' ? hash('sha256', $ipRaw) : null;
+        $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+        $ipStored = is_string($ip) && $ip !== '' ? hash('sha256', $ip) : null;
         $stmt = Database::pdo()->prepare(
             'INSERT INTO audit_logs (user_id, action, entity, entity_id, old_data, new_data, ip_address)
              VALUES (?, ?, ?, ?, ?, ?, ?)'
@@ -40,30 +37,31 @@ final class Audit
             $action,
             $entity,
             $entityId,
-            $oldData === null ? null : json_encode(self::sanitize($oldData), JSON_THROW_ON_ERROR),
-            $newData === null ? null : json_encode(self::sanitize($newData), JSON_THROW_ON_ERROR),
-            $ip,
+            $oldData === null ? null : json_encode(self::redact($oldData), JSON_THROW_ON_ERROR),
+            $newData === null ? null : json_encode(self::redact($newData), JSON_THROW_ON_ERROR),
+            $ipStored,
         ]);
     }
 
-    /**
-     * @param array<string, mixed> $data
-     * @return array<string, mixed>
-     */
-    public static function sanitize(array $data): array
+    /** @param array<string, mixed> $data */
+    private static function redact(array $data): array
     {
-        $out = [];
-        foreach ($data as $key => $value) {
-            if (in_array($key, self::SENSITIVE_KEYS, true)) {
-                $out[$key] = '[redacted]';
+        $out = $data;
+        foreach (self::SENSITIVE_FIELDS as $field) {
+            if (!isset($out[$field]) || !is_string($out[$field]) || $out[$field] === '') {
                 continue;
             }
-            if ($key === 'attachment_path' || $key === 'image_path') {
-                $out[$key] = $value ? '[file]' : null;
-                continue;
-            }
-            $out[$key] = $value;
+            $out[$field] = self::mask($out[$field]);
         }
         return $out;
+    }
+
+    private static function mask(string $value): string
+    {
+        $len = strlen($value);
+        if ($len <= 4) {
+            return '****';
+        }
+        return str_repeat('*', $len - 4) . substr($value, -4);
     }
 }

@@ -25,62 +25,104 @@ final class Reservation
         return $row ?: null;
     }
 
-    /** @return array{status:string,q:string,from:string,to:string} */
-    public static function filtersFromQuery(): array
+    public static function findByCodeAndEmail(string $code, string $email): ?array
     {
-        return [
-            'status' => trim((string) ($_GET['status'] ?? '')),
-            'q' => trim((string) ($_GET['q'] ?? '')),
-            'from' => trim((string) ($_GET['from'] ?? '')),
-            'to' => trim((string) ($_GET['to'] ?? '')),
-        ];
+        $code = strtoupper(trim($code));
+        $email = trim($email);
+        if ($code === '' || $email === '') {
+            return null;
+        }
+        $sql = 'SELECT r.*, c.full_name AS customer_name, c.email AS customer_email,
+                car.brand, car.model, car.license_plate,
+                pl.name AS pickup_location_name, rl.name AS return_location_name
+                FROM reservations r
+                JOIN customers c ON c.id = r.customer_id
+                JOIN cars car ON car.id = r.car_id
+                JOIN locations pl ON pl.id = r.pickup_location_id
+                JOIN locations rl ON rl.id = r.return_location_id
+                WHERE r.code = ? AND LOWER(c.email) = LOWER(?)
+                LIMIT 1';
+        $stmt = Database::pdo()->prepare($sql);
+        $stmt->execute([$code, $email]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    public static function addExtraCharges(int $id, float $amount): void
+    {
+        if ($amount <= 0) {
+            return;
+        }
+        Database::pdo()->prepare(
+            'UPDATE reservations SET extra_charges = extra_charges + ?, final_amount = final_amount + ? WHERE id = ?'
+        )->execute([$amount, $amount, $id]);
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    public static function forOperator(?int $operatorId): array
+    {
+        $sql = 'SELECT r.*, c.full_name AS customer_name, car.brand, car.model, car.license_plate, car.color_hex
+                FROM reservations r
+                JOIN customers c ON c.id = r.customer_id
+                JOIN cars car ON car.id = r.car_id';
+        $params = [];
+        if ($operatorId !== null) {
+            $sql .= ' WHERE r.operator_id = ?';
+            $params[] = $operatorId;
+        }
+        $sql .= ' ORDER BY r.pickup_date DESC, r.id DESC';
+        $stmt = Database::pdo()->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     /**
-     * @param array{status?:string,q?:string,from?:string,to?:string} $filters
      * @return array{rows: array<int, array<string, mixed>>, total: int, page: int, perPage: int, totalPages: int}
      */
-    public static function forOperatorPaginated(?int $operatorId, int $page, int $perPage, array $filters = []): array
-    {
+    public static function forOperatorPaginated(
+        ?int $operatorId,
+        int $page,
+        int $perPage,
+        array $filters = []
+    ): array {
         $base = ' FROM reservations r
                 JOIN customers c ON c.id = r.customer_id
                 JOIN cars car ON car.id = r.car_id';
-        $where = [];
+        $where = '';
         $params = [];
         if ($operatorId !== null) {
-            $where[] = 'r.operator_id = ?';
+            $where = ' WHERE r.operator_id = ?';
             $params[] = $operatorId;
+        } else {
+            $where = ' WHERE 1=1';
         }
-        $status = trim((string) ($filters['status'] ?? ''));
-        if ($status !== '' && in_array($status, ['pending', 'confirmed', 'active', 'completed', 'cancelled'], true)) {
-            $where[] = 'r.status = ?';
-            $params[] = $status;
+        if (!empty($filters['status'])) {
+            $where .= ' AND r.status = ?';
+            $params[] = $filters['status'];
         }
-        $q = trim((string) ($filters['q'] ?? ''));
-        if ($q !== '') {
-            $where[] = '(r.code LIKE ? OR c.full_name LIKE ? OR car.license_plate LIKE ?)';
-            $like = '%' . $q . '%';
-            $params[] = $like;
-            $params[] = $like;
-            $params[] = $like;
+        if (!empty($filters['payment_status'])) {
+            $where .= ' AND r.payment_status = ?';
+            $params[] = $filters['payment_status'];
         }
-        $from = trim((string) ($filters['from'] ?? ''));
-        if ($from !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
-            $where[] = 'r.pickup_date >= ?';
-            $params[] = $from;
+        if (!empty($filters['q'])) {
+            $like = '%' . trim((string) $filters['q']) . '%';
+            $where .= ' AND (r.code LIKE ? OR c.full_name LIKE ? OR car.license_plate LIKE ?)';
+            array_push($params, $like, $like, $like);
         }
-        $to = trim((string) ($filters['to'] ?? ''));
-        if ($to !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
-            $where[] = 'r.pickup_date <= ?';
-            $params[] = $to;
+        if (!empty($filters['date_from'])) {
+            $where .= ' AND r.pickup_date >= ?';
+            $params[] = $filters['date_from'];
         }
-        $whereSql = $where === [] ? '' : ' WHERE ' . implode(' AND ', $where);
-        $stmt = Database::pdo()->prepare('SELECT COUNT(*)' . $base . $whereSql);
+        if (!empty($filters['date_to'])) {
+            $where .= ' AND r.pickup_date <= ?';
+            $params[] = $filters['date_to'];
+        }
+        $stmt = Database::pdo()->prepare('SELECT COUNT(*)' . $base . $where);
         $stmt->execute($params);
         $total = (int) $stmt->fetchColumn();
         $meta = Pagination::meta($total, $page, $perPage);
         $sql = 'SELECT r.*, c.full_name AS customer_name, car.brand, car.model, car.license_plate, car.color_hex'
-            . $base . $whereSql . ' ORDER BY r.pickup_date DESC, r.id DESC LIMIT ' . (int) $meta['perPage'] . ' OFFSET ' . (int) $meta['offset'];
+            . $base . $where . ' ORDER BY r.pickup_date DESC, r.id DESC LIMIT ' . (int) $meta['perPage'] . ' OFFSET ' . (int) $meta['offset'];
         $stmt = Database::pdo()->prepare($sql);
         $stmt->execute($params);
         return [
@@ -92,76 +134,76 @@ final class Reservation
         ];
     }
 
-    /**
-     * @param array{status?:string,q?:string,from?:string,to?:string} $filters
-     * @return array<int, array<string, mixed>>
-     */
-    public static function exportRows(?int $operatorId, array $filters = []): array
-    {
-        $base = ' FROM reservations r
-                JOIN customers c ON c.id = r.customer_id
-                JOIN cars car ON car.id = r.car_id';
-        $where = [];
-        $params = [];
-        if ($operatorId !== null) {
-            $where[] = 'r.operator_id = ?';
-            $params[] = $operatorId;
-        }
-        $status = trim((string) ($filters['status'] ?? ''));
-        if ($status !== '' && in_array($status, ['pending', 'confirmed', 'active', 'completed', 'cancelled'], true)) {
-            $where[] = 'r.status = ?';
-            $params[] = $status;
-        }
-        $q = trim((string) ($filters['q'] ?? ''));
-        if ($q !== '') {
-            $where[] = '(r.code LIKE ? OR c.full_name LIKE ? OR car.license_plate LIKE ?)';
-            $like = '%' . $q . '%';
-            $params[] = $like;
-            $params[] = $like;
-            $params[] = $like;
-        }
-        $from = trim((string) ($filters['from'] ?? ''));
-        if ($from !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
-            $where[] = 'r.pickup_date >= ?';
-            $params[] = $from;
-        }
-        $to = trim((string) ($filters['to'] ?? ''));
-        if ($to !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
-            $where[] = 'r.pickup_date <= ?';
-            $params[] = $to;
-        }
-        $whereSql = $where === [] ? '' : ' WHERE ' . implode(' AND ', $where);
-        $sql = 'SELECT r.code, c.full_name AS customer_name, car.brand, car.model, car.license_plate,
-                r.pickup_date, r.pickup_time, r.return_date, r.return_time, r.status, r.final_amount, r.payment_status'
-            . $base . $whereSql . ' ORDER BY r.pickup_date DESC, r.id DESC LIMIT 5000';
-        $stmt = Database::pdo()->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll();
-    }
-
     public static function nextCode(): string
     {
-        return self::nextCodeLocked(Database::pdo());
+        $pdo = Database::pdo();
+        return self::nextCodeLocked($pdo);
     }
 
-    private static function nextCodeLocked(PDO $pdo): string
+    /** Cria reserva com verificação de conflito e código numa transação. */
+    public static function createSafely(array $d): int
     {
-        $year = (int) date('Y');
-        $prefix = 'TRC-' . $year . '-';
-        $stmt = $pdo->prepare(
-            "SELECT code FROM reservations WHERE code LIKE ? ORDER BY id DESC LIMIT 1 FOR UPDATE"
-        );
-        $stmt->execute([$prefix . '%']);
-        $last = $stmt->fetchColumn();
-        $n = 1;
-        if (is_string($last) && preg_match('/TRC-\d+-(\d+)/', $last, $m)) {
-            $n = (int) $m[1] + 1;
+        $pdo = Database::pdo();
+        $pdo->beginTransaction();
+        try {
+            self::assertNoConflict(
+                $pdo,
+                (int) $d['car_id'],
+                (string) $d['pickup_date'],
+                (string) $d['pickup_time'],
+                (string) $d['return_date'],
+                (string) $d['return_time'],
+                null
+            );
+            $d['code'] = self::nextCodeLocked($pdo);
+            $id = self::insertWithPdo($pdo, $d);
+            $pdo->commit();
+            return $id;
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
         }
-        return $prefix . str_pad((string) $n, 4, '0', STR_PAD_LEFT);
+    }
+
+    /** Atualiza reserva com verificação de conflito numa transação. */
+    public static function updateSafely(int $id, array $d): void
+    {
+        $pdo = Database::pdo();
+        $pdo->beginTransaction();
+        try {
+            self::assertNoConflict(
+                $pdo,
+                (int) $d['car_id'],
+                (string) $d['pickup_date'],
+                (string) $d['pickup_time'],
+                (string) $d['return_date'],
+                (string) $d['return_time'],
+                $id
+            );
+            self::updateWithPdo($pdo, $id, $d);
+            $pdo->commit();
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    public static function create(array $d): int
+    {
+        return self::insertWithPdo(Database::pdo(), $d);
+    }
+
+    public static function update(int $id, array $d): void
+    {
+        self::updateWithPdo(Database::pdo(), $id, $d);
     }
 
     /**
-     * Verifica sobreposição de intervalos para o mesmo veículo.
+     * Verifica sobreposição de reservas activas para o mesmo veículo.
      */
     public static function hasConflict(
         int $carId,
@@ -187,9 +229,62 @@ final class Reservation
         return (int) $stmt->fetchColumn() > 0;
     }
 
-    public static function create(array $d): int
+    private static function assertNoConflict(
+        PDO $pdo,
+        int $carId,
+        string $pickupDate,
+        string $pickupTime,
+        string $returnDate,
+        string $returnTime,
+        ?int $excludeReservationId
+    ): void {
+        $pickup = $pickupDate . ' ' . $pickupTime;
+        $ret = $returnDate . ' ' . $returnTime;
+        $sql = "SELECT id FROM reservations
+                WHERE car_id = ? AND status IN " . self::BLOCKING . "
+                AND CONCAT(pickup_date, ' ', pickup_time) < ?
+                AND CONCAT(return_date, ' ', return_time) > ?
+                LIMIT 1 FOR UPDATE";
+        $params = [$carId, $ret, $pickup];
+        if ($excludeReservationId !== null) {
+            $sql = str_replace(' LIMIT 1 FOR UPDATE', ' AND id <> ? LIMIT 1 FOR UPDATE', $sql);
+            $params[] = $excludeReservationId;
+        }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        if ($stmt->fetch()) {
+            throw new ReservationConflictException();
+        }
+    }
+
+    private static function nextCodeLocked(PDO $pdo): string
     {
-        $stmt = Database::pdo()->prepare(
+        $lock = $pdo->query("SELECT GET_LOCK('titanium_res_code', 10)")->fetchColumn();
+        if ((int) $lock !== 1) {
+            throw new RuntimeException('Could not acquire code lock');
+        }
+        try {
+            $year = (int) date('Y');
+            $prefix = 'TRC-' . $year . '-';
+            $stmt = $pdo->prepare(
+                "SELECT code FROM reservations WHERE code LIKE ? ORDER BY id DESC LIMIT 1"
+            );
+            $stmt->execute([$prefix . '%']);
+            $last = $stmt->fetchColumn();
+            $n = 1;
+            if (is_string($last) && preg_match('/TRC-\d+-(\d+)/', $last, $m)) {
+                $n = (int) $m[1] + 1;
+            }
+            return $prefix . str_pad((string) $n, 4, '0', STR_PAD_LEFT);
+        } finally {
+            $pdo->query("SELECT RELEASE_LOCK('titanium_res_code')");
+        }
+    }
+
+    /** @param array<string, mixed> $d */
+    private static function insertWithPdo(PDO $pdo, array $d): int
+    {
+        $stmt = $pdo->prepare(
             'INSERT INTO reservations (code, customer_id, car_id, operator_id, pickup_location_id, return_location_id,
              pickup_date, pickup_time, return_date, return_time, daily_rate, total_days, total_amount, discount, final_amount,
              status, payment_status, payment_method, notes)
@@ -201,169 +296,15 @@ final class Reservation
             $d['daily_rate'], $d['total_days'], $d['total_amount'], $d['discount'], $d['final_amount'],
             $d['status'], $d['payment_status'], $d['payment_method'] ?? null, $d['notes'] ?? null,
         ]);
-        return (int) Database::pdo()->lastInsertId();
+        $newId = (int) $pdo->lastInsertId();
+        self::reconcileCarStatus((int) $d['car_id']);
+        return $newId;
     }
 
-    /**
-     * Cria reserva com verificação atómica de conflito (evita race condition).
-     *
-     * @return int|false ID criado ou false se houver conflito / carro indisponível
-     */
-    public static function createAtomic(array $d): int|false
+    /** @param array<string, mixed> $d */
+    private static function updateWithPdo(PDO $pdo, int $id, array $d): void
     {
-        $pdo = Database::pdo();
-        $pdo->beginTransaction();
-        try {
-            $lock = $pdo->prepare('SELECT id FROM cars WHERE id = ? AND deleted_at IS NULL FOR UPDATE');
-            $lock->execute([$d['car_id']]);
-            if (!$lock->fetch()) {
-                $pdo->rollBack();
-                return false;
-            }
-            if (self::hasConflict(
-                $d['car_id'],
-                $d['pickup_date'],
-                $d['pickup_time'],
-                $d['return_date'],
-                $d['return_time'],
-                null
-            )) {
-                $pdo->rollBack();
-                return false;
-            }
-            if (empty($d['code'])) {
-                $d['code'] = self::nextCodeLocked($pdo);
-            }
-            $id = self::create($d);
-            self::refreshCarAvailability($pdo, (int) $d['car_id']);
-            $pdo->commit();
-            return $id;
-        } catch (Throwable $e) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
-            throw $e;
-        }
-    }
-
-    /**
-     * @return bool false se houver conflito
-     */
-    public static function updateAtomic(int $id, array $d): bool
-    {
-        $pdo = Database::pdo();
-        $pdo->beginTransaction();
-        try {
-            $prev = $pdo->prepare('SELECT car_id FROM reservations WHERE id = ? FOR UPDATE');
-            $prev->execute([$id]);
-            $prevRow = $prev->fetch();
-            $oldCarId = $prevRow ? (int) $prevRow['car_id'] : (int) $d['car_id'];
-
-            $lock = $pdo->prepare('SELECT id FROM cars WHERE id = ? AND deleted_at IS NULL FOR UPDATE');
-            $lock->execute([$d['car_id']]);
-            if (!$lock->fetch()) {
-                $pdo->rollBack();
-                return false;
-            }
-            if (self::hasConflict(
-                $d['car_id'],
-                $d['pickup_date'],
-                $d['pickup_time'],
-                $d['return_date'],
-                $d['return_time'],
-                $id
-            )) {
-                $pdo->rollBack();
-                return false;
-            }
-            self::update($id, $d);
-            self::refreshCarAvailability($pdo, (int) $d['car_id']);
-            if ($oldCarId !== (int) $d['car_id']) {
-                self::refreshCarAvailability($pdo, $oldCarId);
-            }
-            $pdo->commit();
-            return true;
-        } catch (Throwable $e) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
-            throw $e;
-        }
-    }
-
-    /**
-     * @return true|string true em sucesso ou chave de erro Lang
-     */
-    public static function transition(int $id, string $action): true|string
-    {
-        $pdo = Database::pdo();
-        $pdo->beginTransaction();
-        try {
-            $stmt = $pdo->prepare('SELECT * FROM reservations WHERE id = ? FOR UPDATE');
-            $stmt->execute([$id]);
-            $r = $stmt->fetch();
-            if (!$r) {
-                $pdo->rollBack();
-                return 'error.404_title';
-            }
-            $status = (string) $r['status'];
-            $carId = (int) $r['car_id'];
-            $newStatus = match ($action) {
-                'confirm' => $status === 'pending' ? 'confirmed' : null,
-                'activate' => $status === 'confirmed' ? 'active' : null,
-                'complete' => $status === 'active' ? 'completed' : null,
-                'cancel' => in_array($status, ['pending', 'confirmed', 'active'], true) ? 'cancelled' : null,
-                default => null,
-            };
-            if ($newStatus === null) {
-                $pdo->rollBack();
-                return 'reservation.invalid_transition';
-            }
-            if ($newStatus === 'completed') {
-                $upd = $pdo->prepare(
-                    'UPDATE reservations SET status = ?, actual_return_at = NOW() WHERE id = ?'
-                );
-                $upd->execute([$newStatus, $id]);
-            } else {
-                $upd = $pdo->prepare('UPDATE reservations SET status = ? WHERE id = ?');
-                $upd->execute([$newStatus, $id]);
-            }
-            self::refreshCarAvailability($pdo, $carId);
-            $pdo->commit();
-            return true;
-        } catch (Throwable $e) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
-            throw $e;
-        }
-    }
-
-    private static function refreshCarAvailability(PDO $pdo, int $carId): void
-    {
-        $carStmt = $pdo->prepare('SELECT status FROM cars WHERE id = ? AND deleted_at IS NULL');
-        $carStmt->execute([$carId]);
-        $car = $carStmt->fetch();
-        if (!$car) {
-            return;
-        }
-        $current = (string) $car['status'];
-        if (in_array($current, ['maintenance', 'inactive'], true)) {
-            return;
-        }
-        $cntStmt = $pdo->prepare(
-            "SELECT COUNT(*) FROM reservations WHERE car_id = ? AND status = 'active'"
-        );
-        $cntStmt->execute([$carId]);
-        $active = (int) $cntStmt->fetchColumn();
-        $newStatus = $active > 0 ? 'rented' : 'available';
-        $upd = $pdo->prepare('UPDATE cars SET status = ? WHERE id = ?');
-        $upd->execute([$newStatus, $carId]);
-    }
-
-    public static function update(int $id, array $d): void
-    {
-        $stmt = Database::pdo()->prepare(
+        $stmt = $pdo->prepare(
             'UPDATE reservations SET customer_id=?, car_id=?, pickup_location_id=?, return_location_id=?,
              pickup_date=?, pickup_time=?, return_date=?, return_time=?, daily_rate=?, total_days=?, total_amount=?, discount=?, final_amount=?,
              status=?, payment_status=?, payment_method=?, notes=? WHERE id=?'
@@ -374,17 +315,136 @@ final class Reservation
             $d['daily_rate'], $d['total_days'], $d['total_amount'], $d['discount'], $d['final_amount'],
             $d['status'], $d['payment_status'], $d['payment_method'] ?? null, $d['notes'] ?? null, $id,
         ]);
+        self::reconcileCarStatus((int) $d['car_id']);
     }
 
-    /** @deprecated Use transition() */
     public static function setStatus(int $id, string $status): void
     {
-        if ($status === 'cancelled') {
-            self::transition($id, 'cancel');
+        $pdo = Database::pdo();
+        $stmt = $pdo->prepare('SELECT car_id, status FROM reservations WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        if (!$row) {
             return;
         }
-        $stmt = Database::pdo()->prepare('UPDATE reservations SET status = ? WHERE id = ?');
-        $stmt->execute([$status, $id]);
+        $carId = (int) $row['car_id'];
+        $oldStatus = (string) $row['status'];
+        $pdo->prepare('UPDATE reservations SET status = ? WHERE id = ?')->execute([$status, $id]);
+        self::syncCarStatus($pdo, $carId, $oldStatus, $status);
+    }
+
+    public static function checkIn(int $id, int $mileage, string $fuelLevel): void
+    {
+        $allowed = ['empty', 'quarter', 'half', 'three_quarter', 'full'];
+        if (!in_array($fuelLevel, $allowed, true)) {
+            throw new InvalidArgumentException('invalid fuel');
+        }
+        $pdo = Database::pdo();
+        $pdo->beginTransaction();
+        try {
+            $stmt = $pdo->prepare('SELECT car_id, status FROM reservations WHERE id = ? FOR UPDATE');
+            $stmt->execute([$id]);
+            $row = $stmt->fetch();
+            if (!$row || in_array($row['status'], ['cancelled', 'completed'], true)) {
+                throw new RuntimeException('invalid reservation');
+            }
+            $carId = (int) $row['car_id'];
+            $oldStatus = (string) $row['status'];
+            $pdo->prepare(
+                'UPDATE reservations SET status = ?, actual_pickup_at = NOW(), pickup_mileage = ?, fuel_level_pickup = ? WHERE id = ?'
+            )->execute(['active', $mileage, $fuelLevel, $id]);
+            $pdo->prepare('UPDATE cars SET status = ?, mileage = GREATEST(mileage, ?) WHERE id = ?')
+                ->execute(['rented', $mileage, $carId]);
+            self::syncCarStatus($pdo, $carId, $oldStatus, 'active');
+            $pdo->commit();
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    public static function checkOut(int $id, int $mileage, string $fuelLevel): void
+    {
+        $allowed = ['empty', 'quarter', 'half', 'three_quarter', 'full'];
+        if (!in_array($fuelLevel, $allowed, true)) {
+            throw new InvalidArgumentException('invalid fuel');
+        }
+        $pdo = Database::pdo();
+        $pdo->beginTransaction();
+        try {
+            $stmt = $pdo->prepare('SELECT car_id, status FROM reservations WHERE id = ? FOR UPDATE');
+            $stmt->execute([$id]);
+            $row = $stmt->fetch();
+            if (!$row || ($row['status'] ?? '') !== 'active') {
+                throw new RuntimeException('invalid reservation');
+            }
+            $carId = (int) $row['car_id'];
+            $oldStatus = (string) $row['status'];
+            $pdo->prepare(
+                'UPDATE reservations SET status = ?, actual_return_at = NOW(), return_mileage = ?, fuel_level_return = ? WHERE id = ?'
+            )->execute(['completed', $mileage, $fuelLevel, $id]);
+            $pdo->prepare('UPDATE cars SET mileage = GREATEST(mileage, ?) WHERE id = ?')->execute([$mileage, $carId]);
+            self::syncCarStatus($pdo, $carId, $oldStatus, 'completed');
+            $pdo->commit();
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    public static function reconcileCarStatus(int $carId): void
+    {
+        $pdo = Database::pdo();
+        $stmt = $pdo->prepare(
+            "SELECT COUNT(*) FROM reservations WHERE car_id = ? AND status IN ('pending','confirmed','active')"
+        );
+        $stmt->execute([$carId]);
+        $blocking = (int) $stmt->fetchColumn();
+        if ($blocking > 0) {
+            $pdo->prepare(
+                "UPDATE cars SET status = 'rented' WHERE id = ? AND status NOT IN ('maintenance','inactive')"
+            )->execute([$carId]);
+        } else {
+            $pdo->prepare(
+                "UPDATE cars SET status = 'available' WHERE id = ? AND status = 'rented'"
+            )->execute([$carId]);
+        }
+    }
+
+    private static function syncCarStatus(PDO $pdo, int $carId, string $oldStatus, string $newStatus): void
+    {
+        unset($oldStatus);
+        if (in_array($newStatus, ['active'], true)) {
+            $pdo->prepare("UPDATE cars SET status = 'rented' WHERE id = ? AND status <> 'maintenance' AND status <> 'inactive'")
+                ->execute([$carId]);
+            return;
+        }
+        if (in_array($newStatus, ['completed', 'cancelled'], true)) {
+            $stmt = $pdo->prepare(
+                "SELECT COUNT(*) FROM reservations WHERE car_id = ? AND status IN ('pending','confirmed','active')"
+            );
+            $stmt->execute([$carId]);
+            if ((int) $stmt->fetchColumn() === 0) {
+                $pdo->prepare("UPDATE cars SET status = 'available' WHERE id = ? AND status = 'rented'")
+                    ->execute([$carId]);
+            }
+        }
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    public static function forCustomer(int $customerId, int $limit = 50): array
+    {
+        $stmt = Database::pdo()->prepare(
+            'SELECT r.*, car.brand, car.model, car.license_plate FROM reservations r
+             JOIN cars car ON car.id = r.car_id
+             WHERE r.customer_id = ? ORDER BY r.pickup_date DESC LIMIT ' . (int) $limit
+        );
+        $stmt->execute([$customerId]);
+        return $stmt->fetchAll();
     }
 
     /** Calendar events in range */

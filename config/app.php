@@ -2,22 +2,17 @@
 
 declare(strict_types=1);
 
-$url = rtrim($_ENV['APP_URL'] ?? 'http://localhost', '/');
-// Em desenvolvimento, usa o host/porta do pedido atual (ex.: :8000 vs :8888).
-if (($_ENV['APP_ENV'] ?? 'production') === 'development' && !empty($_SERVER['HTTP_HOST'])) {
-    $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
-    $url = ($https ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
-}
-
 return [
     'name' => $_ENV['APP_NAME'] ?? 'Titanium Rental Car',
-    'url' => $url,
+    'url' => rtrim($_ENV['APP_URL'] ?? 'http://localhost', '/'),
     'base' => rtrim($_ENV['APP_BASE'] ?? '', '/'),
     'env' => $_ENV['APP_ENV'] ?? 'production',
     'debug' => filter_var($_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOLEAN),
     'default_lang' => $_ENV['APP_DEFAULT_LANG'] ?? 'pt-BR',
     'session_lifetime' => (int) ($_ENV['SESSION_LIFETIME'] ?? 480),
     'session_secure' => filter_var($_ENV['SESSION_SECURE'] ?? false, FILTER_VALIDATE_BOOLEAN),
+    'app_key' => trim((string) ($_ENV['APP_KEY'] ?? '')),
+    'health_token' => trim((string) ($_ENV['HEALTH_TOKEN'] ?? '')),
     'max_upload' => (int) ($_ENV['MAX_UPLOAD_SIZE'] ?? 5242880),
     'upload_path' => $_ENV['UPLOAD_PATH'] ?? 'public/assets/uploads',
     'per_page' => (int) ($_ENV['APP_PER_PAGE'] ?? 15),
