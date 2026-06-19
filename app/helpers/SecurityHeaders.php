@@ -16,6 +16,7 @@ final class SecurityHeaders
         header('X-Frame-Options: SAMEORIGIN');
         header('Referrer-Policy: strict-origin-when-cross-origin');
         header('Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()');
+        header('X-Request-Id: ' . RequestId::get());
 
         $app = Config::app();
         $isProd = ($app['env'] ?? 'production') === 'production' && !($app['debug'] ?? false);
@@ -32,7 +33,7 @@ final class SecurityHeaders
             "script-src 'self'",
             "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'",
             "font-src 'self' https://fonts.gstatic.com data:",
-            "img-src 'self' data: https://images.unsplash.com",
+            "img-src 'self' data:",
             "connect-src 'self'",
         ];
         if ($isProd) {

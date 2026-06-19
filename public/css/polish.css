@@ -1,0 +1,100 @@
+/* Melhorias UX — calendário mobile, consulta pública, empty states, motion */
+
+.lp-grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.lp-empty-state--icon { text-align: center; padding: 2rem 1rem; }
+.lp-empty-state--icon p { font-size: 1.05rem; margin-bottom: 1rem; }
+
+.lp-consult-page { padding-top: 5.5rem; }
+.lp-consult-result { margin-top: 1.5rem; padding: 1.25rem; background: var(--surface-card, #fff); border-radius: var(--radius-lg, 14px); }
+.lp-consult-code { margin: 0 0 1rem; font-size: 1.25rem; }
+.lp-consult-dl { display: grid; grid-template-columns: minmax(8rem, 30%) 1fr; gap: 0.35rem 1rem; margin: 0 0 1rem; }
+.lp-consult-dl dt { color: var(--text-secondary, #64748b); font-weight: 500; }
+.lp-consult-dl dd { margin: 0; }
+
+#calLoading { transition: opacity 0.2s; }
+#calLoading.is-idle { opacity: 0.55; }
+#calLoading.is-busy { opacity: 1; }
+.cal-error { padding: 1rem; color: var(--danger, #b91c1c); }
+.cal-error button { margin-top: 0.5rem; }
+
+@media (max-width: 768px) {
+  .cal-month { grid-template-columns: repeat(7, minmax(44px, 1fr)); overflow-x: auto; }
+  .cal-day { min-height: 64px; font-size: 0.75rem; }
+  .cal-event { font-size: 0.65rem; padding: 2px 4px; }
+  .week-grid-full { overflow-x: auto; }
+  .gantt-row { grid-template-columns: 100px 1fr; min-width: 320px; }
+  .calendar-toolbar .filters-row { flex-direction: column; align-items: stretch; }
+  .calendar-toolbar .filters-row .input,
+  .calendar-toolbar .filters-row select { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar, .toast, .btn, .cal-loading-spinner, .skeleton {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.search-loading { padding: 0.75rem; font-size: 0.875rem; }
+
+.btn.is-loading { opacity: 0.85; pointer-events: none; position: relative; }
+.btn.is-loading::after {
+  content: "";
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-left: 0.4em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: -0.1em;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.lp-field.has-error .lp-input { border-color: var(--danger, #b91c1c); }
+.lp-field-error { color: var(--danger, #b91c1c); font-size: 0.8125rem; margin-top: 0.25rem; }
+
+.bar-chart { position: relative; }
+
+.lp-notice-bar {
+  margin-top: 4.25rem;
+  padding: 0.55rem 1.25rem;
+  background: var(--chrome-deep, #0c1f3d);
+  color: rgba(255, 255, 255, 0.92);
+  text-align: center;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lp-notice-bar p { margin: 0; max-width: 56rem; margin-inline: auto; }
+
+.lp-footer-legal,
+.lp-footer-hours,
+.lp-footer-contact {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0.35rem 0 0;
+}
+
+.lp-footer-contact a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.lp-footer-brand strong {
+  font-size: 1.05rem;
+  color: var(--ink, #0a0f1a);
+}
+
+.lp-car-img img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  .lp-notice-bar { font-size: 0.75rem; padding-inline: 0.75rem; }
+}

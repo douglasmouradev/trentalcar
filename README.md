@@ -107,7 +107,7 @@ A marca usa `public/assets/img/logo.jpeg` (copiada da raiz do repositório do cl
 
 - CSP sem `'unsafe-inline'` em scripts; configuração via `data-*` e ficheiros em `/js/`.
 
-- Rate limiting atómico (login, API, leads) em `storage/logs/`.
+- Rate limiting em base de dados (login, API, leads, consulta, forgot password) — partilhado entre instâncias.
 
 - PDO com prepared statements; escaping com `htmlspecialchars` nas views.
 
@@ -126,7 +126,14 @@ A marca usa `public/assets/img/logo.jpeg` (copiada da raiz do repositório do cl
 - **Idioma autenticado** via `POST /locale` com CSRF (visitantes usam `?lang=` só na sessão).
 - **Health check** exige `HEALTH_TOKEN` em produção (`GET /health?token=…`).
 - **Lead honeypot** anti-bot no formulário público.
-- Scripts em `bin/` só executam via CLI.
+- **ProductionGuard** no arranque: bloqueia prod mal configurada (`APP_KEY`, `HEALTH_TOKEN`, `SESSION_SECURE`, e-mails LGPD/segurança).
+- **`/.well-known/security.txt`** para reporte de vulnerabilidades.
+- **Contas demo** bloqueadas em produção (`ALLOW_DEMO_LOGIN=false`).
+- **2FA** com códigos de recuperação de uso único.
+- **Exportação e anonimização LGPD** de clientes (perfil owner).
+- **E-mail multipart** (texto + HTML).
+- **Monitorização:** health expandido + webhook opcional (`MONITORING_WEBHOOK_URL`).
+- **Smoke tests HTTP** no CI (`HttpSmokeTest` com `SMOKE_BASE_URL`).
 
 
 
@@ -193,7 +200,9 @@ Testes unitários: `vendor/bin/phpunit` (ou `./vendor/bin/phpunit` no Linux/macO
 
 Análise estática: `vendor/bin/phpstan analyse`.
 
-Fila de e-mails: `php bin/process-mail.php` (cron recomendado a cada 5 min em produção).
+Fila de e-mails: `php bin/process-mail.php` (cron recomendado a cada 5 min — use `php bin/cron-tasks.php`).
+
+Backup MySQL: `php bin/backup.php` (automático às 03:00 via cron-tasks).
 
 **Windows (PowerShell 5.1)** — use `;` em vez de `&&`:
 
@@ -212,7 +221,7 @@ Se não tiver Composer global: `php -r "copy('https://getcomposer.org/download/l
 
 
 
-- Faça cópia regular do MySQL (`mysqldump`) e inclua `storage/leads/` e `storage/logs/` se usar leads e auditoria em ficheiro.
+- Faça cópia regular do MySQL (`php bin/backup.php` ou `mysqldump`) e inclua `storage/leads/` e `storage/logs/` se usar leads e auditoria em ficheiro.
 
 - Após atualizar o código, aplique migrações novas:
 
@@ -284,3 +293,5 @@ A app fica em `http://localhost:8888` e o MySQL em `localhost:3307`.
 
 - Na página **Relatórios** (perfil dono), use **Exportar CSV** (POST com CSRF) para descarregar o agregado mensal do intervalo de datas seleccionado.
 
+cd "C:\Users\Douglas\Desktop\Projetos\rental car\titanium-rental-car"
+php -S localhost:8888 -t public public/router.php

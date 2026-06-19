@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 final class InspectionUpload
 {
+    public static function storeDir(): string
+    {
+        return BASE_PATH . '/storage/inspections';
+    }
+
     public static function store(?array $file, int $reservationId, string $kind): ?string
     {
         if ($file === null || ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
@@ -24,7 +29,7 @@ final class InspectionUpload
             'image/webp' => 'webp',
             default => throw new InvalidArgumentException('invalid mime'),
         };
-        $dir = BASE_PATH . '/public/assets/uploads/inspections';
+        $dir = self::storeDir();
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
@@ -33,7 +38,26 @@ final class InspectionUpload
         if (!self::reencodeAndSave((string) $file['tmp_name'], $dest, $mime)) {
             throw new RuntimeException('save failed');
         }
-        return 'inspections/' . $name;
+        return $name;
+    }
+
+    public static function absolutePath(int $reservationId, string $stored): ?string
+    {
+        $base = basename($stored);
+        if (!preg_match('/^r' . $reservationId . '-/', $base)) {
+            return null;
+        }
+        $storage = self::storeDir() . '/' . $base;
+        if (is_file($storage)) {
+            return $storage;
+        }
+        $legacy = BASE_PATH . '/public/assets/uploads/' . ltrim($stored, '/');
+        return is_file($legacy) ? $legacy : null;
+    }
+
+    public static function url(int $reservationId, string $stored): string
+    {
+        return Router::url('/reservations/' . $reservationId . '/inspection-photo?f=' . rawurlencode(basename($stored)));
     }
 
     private static function reencodeAndSave(string $tmp, string $dest, string $mime): bool

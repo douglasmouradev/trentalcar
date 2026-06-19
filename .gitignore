@@ -6,5 +6,12 @@
 !/public/assets/uploads/.gitkeep
 /storage/logs/*
 !/storage/logs/.gitkeep
+/storage/backups/*
+!/storage/backups/.gitkeep
+/storage/mail/*
+/storage/customers/*
+!/storage/customers/.gitkeep
 /storage/leads/*
 !/storage/leads/.gitkeep
+/storage/inspections/*
+!/storage/inspections/.gitkeep

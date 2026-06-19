@@ -54,6 +54,12 @@ final class AuthController
 
         $email = trim((string) ($_POST['email'] ?? ''));
 
+        if (DemoGuard::loginBlocked($email)) {
+            Flash::error(Lang::get('auth.demo_blocked'));
+            header('Location: ' . Router::url('/login'));
+            exit;
+        }
+
         if (LoginRateLimiter::tooManyAttempts($email)) {
 
             Flash::error(Lang::get('auth.rate_limited'));
@@ -188,6 +194,8 @@ final class AuthController
 
         $code = (string) ($_POST['code'] ?? '');
 
+        $recovery = trim((string) ($_POST['recovery_code'] ?? ''));
+
         if (TotpRateLimiter::tooManyAttempts('login')) {
 
             Flash::error(Lang::get('auth.rate_limited'));
@@ -198,7 +206,19 @@ final class AuthController
 
         }
 
-        if (!Totp::verify($secret, $code)) {
+        $verified = false;
+
+        if ($recovery !== '') {
+
+            $verified = TotpRecovery::verifyAndConsume($uid, $recovery);
+
+        } elseif ($code !== '' && Totp::verify($secret, $code)) {
+
+            $verified = true;
+
+        }
+
+        if (!$verified) {
 
             TotpRateLimiter::hit('login');
 
@@ -314,12 +334,18 @@ final class AuthController
             header('Location: ' . Router::url('/forgot-password'));
             exit;
         }
+        if (PublicRateLimiter::forgotBlocked()) {
+            Flash::error(Lang::get('auth.forgot_rate_limit'));
+            header('Location: ' . Router::url('/forgot-password'));
+            exit;
+        }
+        PublicRateLimiter::hitForgot();
         $email = trim((string) ($_POST['email'] ?? ''));
         $user = User::findByEmail($email);
         if ($user && (int) $user['is_active']) {
             $token = PasswordReset::create((int) $user['id']);
             $link = Router::url('/reset-password?token=' . urlencode($token));
-            Mail::send($email, Lang::get('auth.reset_mail_subject'), Lang::get('auth.reset_mail_body', ['link' => $link]));
+            Mail::queue($email, Lang::get('auth.reset_mail_subject'), Lang::get('auth.reset_mail_body', ['link' => $link]));
         }
         Flash::success(Lang::get('auth.forgot_sent'));
         header('Location: ' . Router::url('/login'));

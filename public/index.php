@@ -6,7 +6,7 @@ define('BASE_PATH', dirname(__DIR__));
 define('APP_PATH', BASE_PATH . '/app');
 
 spl_autoload_register(static function (string $class): void {
-    foreach (['helpers', 'middleware', 'controllers', 'models'] as $dir) {
+    foreach (['helpers', 'middleware', 'controllers', 'models', 'services'] as $dir) {
         $file = APP_PATH . '/' . $dir . '/' . $class . '.php';
         if (is_file($file)) {
             require $file;
@@ -18,38 +18,10 @@ spl_autoload_register(static function (string $class): void {
 require BASE_PATH . '/app/helpers/Env.php';
 Env::load(BASE_PATH . '/.env');
 
+ProductionGuard::validateBootOrRespond();
+
 // Carrega configuração da app depois de Env::load e autoloader disponíveis
 $appCfg = Config::app();
-
-// Validação mínima de ambiente em produção
-if (($appCfg['env'] ?? 'production') === 'production') {
-    $required = ['APP_URL', 'DB_HOST', 'DB_DATABASE', 'DB_USERNAME', 'APP_KEY', 'HEALTH_TOKEN'];
-    $missing = [];
-    foreach ($required as $name) {
-        if (($_ENV[$name] ?? '') === '') {
-            $missing[] = $name;
-        }
-    }
-    $block = false;
-    if ($missing !== []) {
-        AppError::log(new RuntimeException('Env vars em falta: ' . implode(', ', $missing)));
-        $block = true;
-    }
-    if (!empty($appCfg['debug'])) {
-        AppError::log(new RuntimeException('APP_DEBUG=true em produção — bloqueando arranque'));
-        $block = true;
-    }
-    if (empty($appCfg['session_secure'])) {
-        AppError::log(new RuntimeException('SESSION_SECURE=false em produção — bloqueando arranque'));
-        $block = true;
-    }
-    if ($block) {
-        http_response_code(503);
-        header('Content-Type: text/html; charset=UTF-8');
-        echo '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Indisponível</title></head><body><p>Configuração inválida.</p></body></html>';
-        exit;
-    }
-}
 
 $lifetime = (int) ($appCfg['session_lifetime'] ?? 480) * 60;
 ini_set('session.gc_maxlifetime', (string) $lifetime);
@@ -62,6 +34,8 @@ session_set_cookie_params([
     'samesite' => 'Lax',
 ]);
 session_start();
+
+RequestId::get();
 
 SecurityHeaders::send();
 

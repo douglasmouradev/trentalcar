@@ -104,7 +104,7 @@
                     <td data-label="<?= Lang::e('reservation.fuel_level') ?>"><?= Lang::e('fuel.' . ($insp['fuel_level'] ?? 'full')) ?></td>
                     <td data-label="<?= Lang::e('reservation.extra_charges') ?>" class="mono"><?= Formatter::money((float) ($insp['extra_charges'] ?? 0)) ?></td>
                     <td data-label="<?= Lang::e('reservation.damage_notes') ?>"><?= htmlspecialchars((string) ($insp['damage_notes'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
-                    <td><?php if (!empty($insp['photo_path'])): ?><a href="<?= Router::url('/assets/uploads/' . rawurlencode((string) $insp['photo_path'])) ?>" target="_blank" rel="noopener"><?= Lang::e('actions.view') ?></a><?php endif; ?></td>
+                    <td><?php if (!empty($insp['photo_path'])): ?><a href="<?= htmlspecialchars(InspectionUpload::url((int) $r['id'], (string) $insp['photo_path']), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener"><?= Lang::e('actions.view') ?></a><?php endif; ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

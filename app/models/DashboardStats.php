@@ -112,6 +112,16 @@ final class DashboardStats
         ];
     }
 
+    public static function revenueBetween(string $from, string $to): float
+    {
+        $stmt = Database::pdo()->prepare(
+            "SELECT COALESCE(SUM(final_amount),0) FROM reservations
+             WHERE status IN ('confirmed','active','completed') AND pickup_date BETWEEN ? AND ?"
+        );
+        $stmt->execute([$from, $to]);
+        return (float) $stmt->fetchColumn();
+    }
+
     public static function partnerActiveReservations(array $carIds): int
     {
         if ($carIds === []) {

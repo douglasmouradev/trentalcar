@@ -40,6 +40,7 @@ final class ApiController
             return;
         }
         if ($carId <= 0 || $pickupDate === '' || $returnDate === '') {
+            http_response_code(400);
             echo json_encode(['ok' => false, 'conflict' => false, 'error' => 'invalid'], JSON_THROW_ON_ERROR);
             return;
         }
@@ -121,10 +122,12 @@ final class ApiController
             'created_by' => Auth::id(),
         ];
         if ($d['full_name'] === '' || $d['document'] === '' || $d['phone'] === '') {
+            http_response_code(422);
             echo json_encode(['ok' => false, 'error' => 'validation']);
             return;
         }
         if ($d['email'] !== '' && filter_var($d['email'], FILTER_VALIDATE_EMAIL) === false) {
+            http_response_code(422);
             echo json_encode(['ok' => false, 'error' => 'validation']);
             return;
         }
@@ -139,6 +142,8 @@ final class ApiController
                 ],
             ], JSON_THROW_ON_ERROR);
         } catch (Throwable $e) {
+            AppLog::error('api.customer_quick_create', ['error' => $e->getMessage()]);
+            http_response_code(500);
             echo json_encode(['ok' => false, 'error' => 'db']);
         }
     }

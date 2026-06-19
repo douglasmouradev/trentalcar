@@ -12,6 +12,7 @@ final class LeadNotify
             'pickup' => $pickup,
             'return' => $return,
             'car' => $carLabel ?? Lang::get('mail.lead_no_car'),
+            'phone' => Contact::phoneDisplay(),
         ]);
         Mail::queue($email, $subject, $body);
     }

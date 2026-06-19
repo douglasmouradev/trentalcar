@@ -12,6 +12,7 @@ final class AppLog
     public static function error(string $event, array $context = []): void
     {
         self::write('error', $event, $context);
+        MonitoringWebhook::notify($event, $context);
     }
 
     /** @param array<string, mixed> $context */
@@ -21,7 +22,11 @@ final class AppLog
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
-        $requestId = $_SERVER['HTTP_X_REQUEST_ID'] ?? ($_SESSION['request_id'] ?? bin2hex(random_bytes(8)));
+        $file = $dir . '/app.jsonl';
+        if (is_file($file) && filesize($file) > 5_000_000) {
+            @rename($file, $file . '.' . date('Ymd-His') . '.bak');
+        }
+        $requestId = RequestId::get();
         $line = json_encode([
             'time' => gmdate('c'),
             'level' => $level,

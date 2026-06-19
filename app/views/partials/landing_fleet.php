@@ -9,9 +9,7 @@ $asset = static fn (string $path): string => htmlspecialchars(Router::url($path)
     <?php foreach ($fleetCars as $car): ?>
         <?php
         $filterKey = Car::landingFilterKey((string) ($car['category'] ?? 'standard'));
-        $img = !empty($car['image_url'])
-            ? $asset('/assets/uploads/' . rawurlencode(basename((string) $car['image_url'])))
-            : 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=720&h=460&q=80';
+    $img = Car::publicImageUrl(!empty($car['image_url']) ? (string) $car['image_url'] : null);
         $title = htmlspecialchars((string) $car['brand'] . ' ' . (string) $car['model'], ENT_QUOTES, 'UTF-8');
         $rate = Formatter::money((float) ($car['daily_rate'] ?? 0));
         ?>

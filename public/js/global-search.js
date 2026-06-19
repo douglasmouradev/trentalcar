@@ -23,21 +23,29 @@
       hide();
       return;
     }
-    const res = await fetch(`${base}/api/search?q=${encodeURIComponent(q)}`);
-    const json = await res.json();
-    const rows = json.data || [];
-    if (rows.length === 0) {
-      box.innerHTML = `<div class="search-empty muted">${escapeHtml(window.__i18n?.searchNoResults || 'Sem resultados')}</div>`;
-      box.hidden = false;
-      return;
-    }
-    box.innerHTML = rows
-      .map(
-        (r) =>
-          `<a class="search-item" href="${escapeHtml(r.url)}"><span class="search-type">${escapeHtml(r.type)}</span>${escapeHtml(r.label)}</a>`,
-      )
-      .join('');
+    box.innerHTML = `<div class="search-loading muted">${escapeHtml(window.__i18n?.searchLoading || 'A pesquisar…')}</div>`;
     box.hidden = false;
+    try {
+      const res = await fetch(`${base}/api/search?q=${encodeURIComponent(q)}`);
+      if (!res.ok) throw new Error('network');
+      const json = await res.json();
+      const rows = json.data || [];
+      if (rows.length === 0) {
+        box.innerHTML = `<div class="search-empty muted">${escapeHtml(window.__i18n?.searchNoResults || 'Sem resultados')}</div>`;
+        box.hidden = false;
+        return;
+      }
+      box.innerHTML = rows
+        .map(
+          (r) =>
+            `<a class="search-item" href="${escapeHtml(r.url)}"><span class="search-type">${escapeHtml(r.type)}</span>${escapeHtml(r.label)}</a>`,
+        )
+        .join('');
+      box.hidden = false;
+    } catch {
+      box.innerHTML = `<div class="search-empty muted">${escapeHtml(window.__i18n?.searchError || 'Erro na pesquisa')}</div>`;
+      box.hidden = false;
+    }
   }
 
   input.addEventListener('input', () => {

@@ -1,5 +1,6 @@
 /* Titanium Rental Car — chrome azul-marinho (T Solutions) + área principal clara */
 @import url("tokens.css");
+@import url("polish.css");
 
 :root {
   /* Barra lateral / topbar — tom próximo ao dashboard Titanium */

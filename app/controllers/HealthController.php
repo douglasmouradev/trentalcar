@@ -48,8 +48,35 @@ final class HealthController
 
         $writable = is_writable(BASE_PATH . '/storage/logs')
             && is_writable(BASE_PATH . '/public/assets/uploads');
+        $customersDir = BASE_PATH . '/storage/customers';
+        if (is_dir($customersDir)) {
+            $writable = $writable && is_writable($customersDir);
+        }
         $checks['storage'] = $writable;
+
+        $freeMb = @disk_free_space(BASE_PATH);
+        if ($freeMb !== false) {
+            $metrics['disk_free_mb'] = round($freeMb / 1048576, 1);
+        }
+        $metrics['php'] = PHP_VERSION;
+
+        if (Schema::hasTable('mail_outbox')) {
+            try {
+                $metrics['mail_failed'] = (int) Database::pdo()
+                    ->query("SELECT COUNT(*) FROM mail_outbox WHERE status = 'failed'")
+                    ->fetchColumn();
+            } catch (Throwable) {
+                $metrics['mail_failed'] = -1;
+            }
+        }
+
         $ok = $checks['database'] && $checks['storage'];
+        if (isset($metrics['disk_free_mb']) && $metrics['disk_free_mb'] < 100) {
+            $ok = false;
+            $checks['disk_space'] = false;
+        } else {
+            $checks['disk_space'] = true;
+        }
         http_response_code($ok ? 200 : 503);
         echo json_encode(['ok' => $ok, 'checks' => $checks, 'metrics' => $metrics, 'time' => date('c')], JSON_THROW_ON_ERROR);
     }

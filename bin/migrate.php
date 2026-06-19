@@ -65,6 +65,7 @@ function migrate_is_benign(PDOException $e): bool
         1061, // duplicate key
         1091, // drop missing column/key
         1062, // duplicate entry (updates idempotentes)
+        1054, // unknown column (UPDATE legado → moderno em 017)
     ], true);
 }
 

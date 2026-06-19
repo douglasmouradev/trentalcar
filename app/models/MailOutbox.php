@@ -34,7 +34,11 @@ final class MailOutbox
     public static function markFailed(int $id, string $error): void
     {
         Database::pdo()->prepare(
-            "UPDATE mail_outbox SET status = 'failed', attempts = attempts + 1, last_error = ? WHERE id = ?"
+            "UPDATE mail_outbox SET
+                attempts = attempts + 1,
+                last_error = ?,
+                status = IF(attempts + 1 >= 5, 'failed', 'pending')
+             WHERE id = ?"
         )->execute([mb_substr($error, 0, 500), $id]);
     }
 

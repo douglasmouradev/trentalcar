@@ -18,7 +18,7 @@ final class SecurityTxtController
             $email = 'security@example.com';
         }
         echo "Contact: mailto:{$email}\n";
-        echo "Expires: 2027-12-31T23:59:59.000Z\n";
+        echo 'Expires: ' . gmdate('Y-m-d\TH:i:s\Z', strtotime('+1 year')) . "\n";
         echo "Preferred-Languages: pt, en\n";
     }
 }

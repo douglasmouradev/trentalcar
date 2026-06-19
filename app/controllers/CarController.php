@@ -153,8 +153,12 @@ final class CarController
         $old = Car::find((int) $id);
         if ($old) {
             Audit::log(Auth::id(), 'delete', 'car', (int) $id, $old, null);
-            Car::delete((int) $id);
-            Flash::success(Lang::get('flash.deleted'));
+            try {
+                Car::delete((int) $id);
+                Flash::success(Lang::get('flash.deleted'));
+            } catch (RuntimeException) {
+                Flash::error(Lang::get('car.delete_blocked_reservations'));
+            }
         }
         header('Location: ' . Router::url('/cars'));
         exit;

@@ -41,16 +41,24 @@
     btn.addEventListener('click', function () {
       var cat = btn.getAttribute('data-filter') || 'all';
       document.querySelectorAll('.lp-filter').forEach(function (b) {
-        b.classList.toggle('is-active', b === btn);
+        var active = b === btn;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-pressed', active ? 'true' : 'false');
       });
+      var visible = 0;
       document.querySelectorAll('.lp-car').forEach(function (card) {
         var c = card.getAttribute('data-category') || '';
         if (cat === 'all' || cat === c) {
           card.classList.remove('is-hidden');
+          visible += 1;
         } else {
           card.classList.add('is-hidden');
         }
       });
+      var emptyMsg = document.getElementById('lp-fleet-filter-empty');
+      if (emptyMsg) {
+        emptyMsg.hidden = visible > 0;
+      }
     });
   });
 

@@ -34,7 +34,7 @@
     ]); ?>
 <?php else: ?>
 <div class="table-wrap card mt">
-    <table class="table">
+    <table class="table table--responsive">
         <thead>
         <tr>
             <th class="th-thumb"><?= Lang::e('car.image') ?></th>
@@ -54,7 +54,7 @@
             $carLabel = htmlspecialchars($car['brand'] . ' ' . $car['model'], ENT_QUOTES, 'UTF-8');
             ?>
             <tr>
-                <td class="td-thumb">
+                <td class="td-thumb" data-label="<?= Lang::e('car.image') ?>">
                     <?php if ($imgUrl !== ''): ?>
                         <a href="<?= Router::url('/cars/' . (int) $car['id']) ?>" class="car-thumb-link" title="<?= $carLabel ?>">
                             <img class="car-thumb" src="<?= htmlspecialchars($imgUrl, ENT_QUOTES, 'UTF-8') ?>" alt="" width="72" height="54" loading="lazy">
@@ -65,13 +65,13 @@
                         </a>
                     <?php endif; ?>
                 </td>
-                <td class="td-swatch"><span class="swatch" style="background:<?= htmlspecialchars($car['color_hex'], ENT_QUOTES, 'UTF-8') ?>"></span></td>
-                <td class="mono"><?= htmlspecialchars($car['license_plate'], ENT_QUOTES, 'UTF-8') ?></td>
-                <td><?= htmlspecialchars($car['brand'] . ' ' . $car['model'], ENT_QUOTES, 'UTF-8') ?></td>
-                <td><?= Ui::categoryLabel((string) $car['category']) ?></td>
-                <td class="mono"><?= Formatter::money((float) $car['daily_rate']) ?></td>
-                <td><?= Ui::carStatusBadge((string) $car['status']) ?></td>
-                <td class="actions">
+                <td class="td-swatch" data-label="<?= Lang::e('car.color') ?>"><span class="swatch" style="background:<?= htmlspecialchars($car['color_hex'], ENT_QUOTES, 'UTF-8') ?>"></span></td>
+                <td class="mono" data-label="<?= Lang::e('car.plate') ?>"><?= htmlspecialchars($car['license_plate'], ENT_QUOTES, 'UTF-8') ?></td>
+                <td data-label="<?= Lang::e('car.model') ?>"><?= htmlspecialchars($car['brand'] . ' ' . $car['model'], ENT_QUOTES, 'UTF-8') ?></td>
+                <td data-label="<?= Lang::e('car.category') ?>"><?= Ui::categoryLabel((string) $car['category']) ?></td>
+                <td class="mono" data-label="<?= Lang::e('car.daily_rate') ?>"><?= Formatter::money((float) $car['daily_rate']) ?></td>
+                <td data-label="<?= Lang::e('car.status') ?>"><?= Ui::carStatusBadge((string) $car['status']) ?></td>
+                <td class="actions" data-label="<?= Lang::e('table.actions') ?>">
                     <a class="btn btn-sm btn-secondary" href="<?= Router::url('/cars/' . (int) $car['id']) ?>"><?= Lang::e('actions.view') ?></a>
                     <?php if ($canEdit): ?>
                         <a class="btn btn-sm btn-ghost" href="<?= Router::url('/cars/' . (int) $car['id'] . '/edit') ?>"><?= Lang::e('actions.edit') ?></a>

@@ -17,6 +17,23 @@ services:
       db:
         condition: service_healthy
 
+  worker:
+    build: .
+    command: sh -c "while true; do php bin/cron-tasks.php; sleep 300; done"
+    volumes:
+      - .:/var/www/html
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8888
+      DB_HOST: db
+      DB_DATABASE: titanium_rental_car
+      DB_USERNAME: titanium
+      DB_PASSWORD: titanium
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     image: mysql:8.0
     environment:

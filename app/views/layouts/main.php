@@ -25,6 +25,7 @@ if ($userName !== '') {
     <meta name="csrf-token" content="<?= htmlspecialchars(Csrf::token(), ENT_QUOTES, 'UTF-8') ?>">
     <meta name="app-base-url" content="<?= htmlspecialchars(rtrim(Router::url('/'), '/'), ENT_QUOTES, 'UTF-8') ?>">
     <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?> — <?= Lang::e('app.name') ?></title>
+    <?php View::partial('partials/favicon'); ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -140,7 +141,7 @@ if ($userName !== '') {
 <script src="<?= htmlspecialchars(Asset::url('/js/cookie-notice.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
 <script src="<?= htmlspecialchars(Asset::url('/js/app.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
 <?php if ($logged): ?>
-<script>window.__i18n={searchNoResults:<?= json_encode(Lang::get('search.no_results'), JSON_THROW_ON_ERROR) ?>};</script>
+<script>window.__i18n={searchNoResults:<?= json_encode(Lang::get('search.no_results'), JSON_THROW_ON_ERROR) ?>,searchLoading:<?= json_encode(Lang::get('search.loading'), JSON_THROW_ON_ERROR) ?>,searchError:<?= json_encode(Lang::get('search.error'), JSON_THROW_ON_ERROR) ?>};</script>
 <script src="<?= htmlspecialchars(Router::url('/js/global-search.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
 <script src="<?= htmlspecialchars(Router::url('/js/form-masks.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
 <?php endif; ?>

@@ -9,16 +9,19 @@
 /** @var array<int,string> $leadErrors */
 $asset = static fn (string $path): string => htmlspecialchars(Router::url($path), ENT_QUOTES, 'UTF-8');
 $appRoot = rtrim(Router::url('/'), '/');
+$locale = Lang::locale();
+$htmlLang = str_replace('_', '-', $locale);
 $today = date('Y-m-d');
 ?>
 <!DOCTYPE html>
-<html lang="<?= htmlspecialchars(str_replace('_', '-', Lang::locale()), ENT_QUOTES, 'UTF-8') ?>" data-app-origin="<?= htmlspecialchars($appRoot, ENT_QUOTES, 'UTF-8') ?>">
+<html lang="<?= htmlspecialchars($htmlLang, ENT_QUOTES, 'UTF-8') ?>" data-app-origin="<?= htmlspecialchars($appRoot, ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1a3a6c">
     <meta name="csrf-token" content="<?= htmlspecialchars(Csrf::token(), ENT_QUOTES, 'UTF-8') ?>">
     <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?> — <?= Lang::e('app.name') ?></title>
+    <?php View::partial('partials/favicon'); ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Serif:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -26,28 +29,13 @@ $today = date('Y-m-d');
 </head>
 <body class="lp-body lp-body--booking">
 <a class="skip-link" href="#conteudo"><?= Lang::e('a11y.skip_content') ?></a>
-
-<header class="site-header lp-header is-scrolled" id="lp-header">
-    <a class="brand" href="<?= $asset('/') ?>">
-        <img src="<?= $asset('/assets/img/logo.jpeg') ?>" width="40" height="40" alt="<?= Lang::e('app.name') ?>">
-        <span class="brand-text">
-            <strong>Titanium</strong>
-            <span><?= Lang::e('landing.brand_sub') ?></span>
-        </span>
-    </a>
-    <nav class="site-nav" data-site-nav aria-label="<?= Lang::e('landing.nav_main') ?>">
-        <a href="<?= $asset('/') ?>"><?= Lang::e('booking.back_home') ?></a>
-        <a href="#frota"><?= Lang::e('landing.nav_frota') ?></a>
-        <a href="#reserva"><?= Lang::e('landing.nav_reservar') ?></a>
-        <a data-href-app="/login"><?= Lang::e('landing.nav_conta') ?></a>
-    </nav>
-</header>
+<?php View::partial('partials/public_header', ['asset' => $asset, 'locale' => $locale, 'activeNav' => 'booking']); ?>
 
 <main id="conteudo" class="lp-booking-page">
     <?php if (($lead_banner ?? null) === 'ok'): ?>
-        <p class="lp-lead-banner lp-lead-banner--ok" role="status"><?= Lang::e('landing.lead_ok') ?></p>
+        <p class="lp-lead-banner lp-lead-banner--ok" role="status"><?= Lang::e('landing.lead_ok', ['response' => Contact::responseTime()]) ?></p>
     <?php elseif (($lead_banner ?? null) === 'limite'): ?>
-        <p class="lp-lead-banner lp-lead-banner--warn" role="alert"><?= Lang::e('landing.lead_limite') ?></p>
+        <p class="lp-lead-banner lp-lead-banner--warn" role="alert"><?= Lang::e('landing.lead_limite', ['phone' => Contact::phoneDisplay()]) ?></p>
     <?php elseif (($lead_banner ?? null) === 'erro'): ?>
         <p class="lp-lead-banner lp-lead-banner--warn" role="alert"><?= Lang::e('landing.lead_erro') ?></p>
     <?php endif; ?>
@@ -89,18 +77,18 @@ $today = date('Y-m-d');
         </header>
 
         <?php if ($cars === []): ?>
-            <div class="lp-empty-state">
+            <div class="lp-empty-state lp-empty-state--icon">
                 <p><?= Lang::e('booking.empty') ?></p>
                 <a class="btn btn-primary" href="<?= $asset('/reservar') ?>"><?= Lang::e('booking.clear_filters') ?></a>
             </div>
         <?php else: ?>
-            <div class="lp-grid">
+            <div class="lp-fleet">
                 <?php foreach ($cars as $car): ?>
                     <?php
                     $filterKey = Car::landingFilterKey((string) $car['category']);
                     $img = !empty($car['image_url'])
-                        ? Router::url('/assets/uploads/' . basename((string) $car['image_url']))
-                        : Router::url('/assets/img/logo.jpeg');
+                        ? Car::publicImageUrl((string) $car['image_url'])
+                        : Car::publicImageUrl(null);
                     $alt = htmlspecialchars((string) $car['brand'] . ' ' . (string) $car['model'], ENT_QUOTES, 'UTF-8');
                     $isSelected = (int) $car['id'] === $selectedCarId;
                     ?>
@@ -143,10 +131,9 @@ $today = date('Y-m-d');
     </section>
 </main>
 
-<footer class="lp-footer lp-footer--compact">
-    <p class="lp-footer-bottom"><a href="<?= $asset('/') ?>"><?= Lang::e('booking.back_home') ?></a> · © <?= date('Y') ?> Titanium Rental Car</p>
-</footer>
-
+<?php View::partial('partials/public_footer', ['asset' => $asset]); ?>
+<script src="<?= $asset('/js/lang-switcher.js') ?>" defer></script>
+<script src="<?= $asset('/js/cookie-notice.js') ?>" defer></script>
 <script src="<?= $asset('/landing/js/site.js') ?>" defer></script>
 <script src="<?= $asset('/landing/js/lead-form.js') ?>" defer></script>
 </body>

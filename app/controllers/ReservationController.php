@@ -331,6 +331,9 @@ final class ReservationController
     {
         try {
             $d = $this->normalize($post, $reservationId, $old);
+        } catch (InvalidArgumentException $e) {
+            Flash::error(Lang::get($e->getMessage()));
+            return null;
         } catch (Throwable) {
             Flash::error(Lang::get('reservation.invalid_dates'));
             return null;
@@ -390,72 +393,11 @@ final class ReservationController
     /** @param array<string, mixed> $post */
     private function normalize(array $post, ?int $excludeId = null, ?array $old = null): array
     {
-        $pickupDate = (string) ($post['pickup_date'] ?? '');
-        $returnDate = (string) ($post['return_date'] ?? '');
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $pickupDate) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $returnDate)) {
-            throw new InvalidArgumentException('invalid date');
+        $result = ReservationService::validateInput($post, Auth::isOwner(), $old);
+        if (!$result['ok'] || $result['data'] === null) {
+            throw new InvalidArgumentException($result['error'] ?? 'reservation.invalid_dates');
         }
-        $pickupTime = (string) ($post['pickup_time'] ?? '09:00');
-        $returnTime = (string) ($post['return_time'] ?? '18:00');
-        if (strlen($pickupTime) === 5) {
-            $pickupTime .= ':00';
-        }
-        if (strlen($returnTime) === 5) {
-            $returnTime .= ':00';
-        }
-        $d1 = new DateTimeImmutable($pickupDate);
-        $d2 = new DateTimeImmutable($returnDate);
-        $totalDays = max(1, (int) $d1->diff($d2)->format('%a') + 1);
-        $daily = (float) ($post['daily_rate'] ?? 0);
-        $discount = Auth::isOwner() ? max(0.0, (float) ($post['discount'] ?? 0)) : 0.0;
-        $totalAmount = round($daily * $totalDays, 2);
-        $final = max(0, round($totalAmount - $discount, 2));
-
-        $status = (string) ($post['status'] ?? 'pending');
-        $paymentStatus = (string) ($post['payment_status'] ?? 'unpaid');
-        $paymentMethod = ($post['payment_method'] ?? '') !== '' ? (string) $post['payment_method'] : null;
-
-        if (Auth::isOwner()) {
-            $allowedStatuses = ['pending', 'confirmed', 'active', 'completed', 'cancelled'];
-            if (!in_array($status, $allowedStatuses, true)) {
-                $status = 'pending';
-            }
-            $allowedPayments = ['unpaid', 'partial', 'paid'];
-            if (!in_array($paymentStatus, $allowedPayments, true)) {
-                $paymentStatus = 'unpaid';
-            }
-            $allowedMethods = ['cash', 'credit_card', 'debit_card', 'pix', 'transfer'];
-            if ($paymentMethod !== null && !in_array($paymentMethod, $allowedMethods, true)) {
-                $paymentMethod = null;
-            }
-        } else {
-            $allowedOperatorStatus = ['pending', 'confirmed', 'active'];
-            if (!in_array($status, $allowedOperatorStatus, true)) {
-                $status = is_array($old) ? (string) ($old['status'] ?? 'pending') : 'pending';
-            }
-            $paymentStatus = is_array($old) ? (string) ($old['payment_status'] ?? 'unpaid') : 'unpaid';
-            $paymentMethod = is_array($old) && !empty($old['payment_method']) ? (string) $old['payment_method'] : null;
-        }
-
-        return [
-            'customer_id' => (int) ($post['customer_id'] ?? 0),
-            'car_id' => (int) ($post['car_id'] ?? 0),
-            'pickup_location_id' => (int) ($post['pickup_location_id'] ?? 0),
-            'return_location_id' => (int) ($post['return_location_id'] ?? 0),
-            'pickup_date' => $pickupDate,
-            'pickup_time' => $pickupTime,
-            'return_date' => $returnDate,
-            'return_time' => $returnTime,
-            'daily_rate' => $daily,
-            'total_days' => $totalDays,
-            'total_amount' => $totalAmount,
-            'discount' => $discount,
-            'final_amount' => $final,
-            'status' => $status,
-            'payment_status' => $paymentStatus,
-            'payment_method' => $paymentMethod,
-            'notes' => trim((string) ($post['notes'] ?? '')) ?: null,
-        ];
+        return $result['data'];
     }
 
     /** @param array<string, mixed> $draft
@@ -475,5 +417,32 @@ final class ReservationController
             }
         }
         return $out;
+    }
+
+    public function inspectionPhoto(string $id): void
+    {
+        PartnerForbiddenMiddleware::handle();
+        $resId = (int) $id;
+        if (!AccessControl::canAccessReservationId($resId)) {
+            http_response_code(403);
+            exit;
+        }
+        $file = basename((string) ($_GET['f'] ?? ''));
+        if ($file === '') {
+            http_response_code(404);
+            exit;
+        }
+        $path = InspectionUpload::absolutePath($resId, $file);
+        if ($path === null) {
+            http_response_code(404);
+            exit;
+        }
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($path) ?: 'application/octet-stream';
+        header('Content-Type: ' . $mime);
+        header('Content-Length: ' . (string) filesize($path));
+        header('Cache-Control: private, max-age=3600');
+        readfile($path);
+        exit;
     }
 }

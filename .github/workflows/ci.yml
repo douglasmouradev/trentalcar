@@ -64,7 +64,22 @@ jobs:
           DB_PASSWORD: root
         run: php bin/migrate.php
 
+      - name: Prepare .env for smoke tests
+        run: cp .env.example .env
+
+      - name: Start PHP server for smoke tests
+        run: |
+          php -S 127.0.0.1:8889 -t public public/router.php > /dev/null 2>&1 &
+          sleep 2
+
       - name: Run PHPUnit
+        env:
+          SMOKE_BASE_URL: http://127.0.0.1:8889
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: titanium_rental_car
+          DB_USERNAME: root
+          DB_PASSWORD: root
         run: vendor/bin/phpunit
 
       - name: Run PHPStan

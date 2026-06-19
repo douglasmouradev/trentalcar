@@ -20,7 +20,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <?php
   $canonical = Router::url('/');
-  $ogImage = Router::url('/landing/assets/mark.svg');
+  $ogImage = Router::url('/assets/img/logo.jpeg');
   ?>
   <meta name="description" content="<?= htmlspecialchars($metaDesc, ENT_QUOTES, 'UTF-8') ?>">
   <meta name="theme-color" content="#1a3a6c">
@@ -38,7 +38,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
   <meta name="twitter:title" content="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>">
   <meta name="twitter:description" content="<?= htmlspecialchars($metaDesc, ENT_QUOTES, 'UTF-8') ?>">
   <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></title>
-  <link rel="icon" href="<?= $asset('/landing/assets/favicon.svg') ?>" type="image/svg+xml">
+  <?php View::partial('partials/favicon'); ?>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Serif:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -85,50 +85,23 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
     </div>
   </header>
 
-  <div class="lp-tabs" aria-hidden="false">
-    <div class="lp-tabs-inner">
-      <span class="lp-tab is-active"><?= Lang::e('landing.tab_daily') ?></span>
-      <a class="lp-tab" href="#frota"><?= Lang::e('landing.tab_weekly') ?></a>
-      <a class="lp-tab" href="#contato"><?= Lang::e('landing.tab_biz') ?></a>
-    </div>
+  <div class="lp-notice-bar" role="status">
+    <p><?= Lang::e('landing.notice_bar', [
+        'rate' => Contact::minDailyRate(),
+        'hours' => Contact::businessHours(),
+        'response' => Contact::responseTime(),
+    ]) ?></p>
   </div>
-
-  <section class="lp-scroll-zoom" aria-hidden="true">
-    <p class="visually-hidden"><?= Lang::e('landing.opener_ref') ?></p>
-    <div class="lp-scroll-zoom-track">
-      <div class="lp-stuck-grid">
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t1') ?></div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t2') ?></div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t3') ?></div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t4') ?></div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t5') ?></div>
-        <div class="lp-opener-cell lp-opener-cell--center">
-          <b><?= Lang::e('landing.opener_center') ?></b>
-          <span class="lp-opener-cell-sub"><?= Lang::e('landing.opener_center_sub') ?></span>
-        </div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t6') ?></div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t7') ?></div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t8') ?></div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t9') ?></div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t10') ?></div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t11') ?></div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t12') ?></div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t13') ?></div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t14') ?></div>
-        <div class="lp-opener-cell"><?= Lang::e('landing.opener_t15') ?></div>
-      </div>
-    </div>
-  </section>
 
   <main id="conteudo">
     <?php if (($lead_banner ?? null) === 'ok'): ?>
-      <p class="lp-lead-banner lp-lead-banner--ok" role="status"><?= Lang::e('landing.lead_ok') ?>
+      <p class="lp-lead-banner lp-lead-banner--ok" role="status"><?= Lang::e('landing.lead_ok', ['response' => Contact::responseTime()]) ?>
         <?php if (!empty($leadWhatsappUrl)): ?>
           <a class="btn btn-sm btn-secondary" href="<?= htmlspecialchars((string) $leadWhatsappUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener"><?= Lang::e('landing.lead_whatsapp') ?></a>
         <?php endif; ?>
       </p>
     <?php elseif (($lead_banner ?? null) === 'limite'): ?>
-      <p class="lp-lead-banner lp-lead-banner--warn" role="alert"><?= Lang::e('landing.lead_limite') ?></p>
+      <p class="lp-lead-banner lp-lead-banner--warn" role="alert"><?= Lang::e('landing.lead_limite', ['phone' => Contact::phoneDisplay()]) ?></p>
     <?php elseif (($lead_banner ?? null) === 'erro'): ?>
       <p class="lp-lead-banner lp-lead-banner--warn" role="alert"><?= Lang::e('landing.lead_erro') ?></p>
     <?php endif; ?>
@@ -212,18 +185,19 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
       <div class="lp-fleet-toolbar">
         <p class="lp-fleet-hint"><?= Lang::e('landing.fleet_filter_hint') ?></p>
         <div class="lp-filters" role="group" aria-label="<?= Lang::e('landing.fleet_filter_group') ?>">
-          <button type="button" class="lp-filter is-active" data-filter="all"><?= Lang::e('landing.filter_all') ?></button>
-          <button type="button" class="lp-filter" data-filter="economy"><?= Lang::e('landing.filter_economy') ?></button>
-          <button type="button" class="lp-filter" data-filter="compact"><?= Lang::e('landing.filter_compact') ?></button>
-          <button type="button" class="lp-filter" data-filter="sedan"><?= Lang::e('landing.filter_sedan') ?></button>
-          <button type="button" class="lp-filter" data-filter="suv"><?= Lang::e('landing.filter_suv') ?></button>
-          <button type="button" class="lp-filter" data-filter="exec"><?= Lang::e('landing.filter_exec') ?></button>
-          <button type="button" class="lp-filter" data-filter="util"><?= Lang::e('landing.filter_util') ?></button>
+          <button type="button" class="lp-filter is-active" data-filter="all" aria-pressed="true"><?= Lang::e('landing.filter_all') ?></button>
+          <button type="button" class="lp-filter" data-filter="economy" aria-pressed="false"><?= Lang::e('landing.filter_economy') ?></button>
+          <button type="button" class="lp-filter" data-filter="compact" aria-pressed="false"><?= Lang::e('landing.filter_compact') ?></button>
+          <button type="button" class="lp-filter" data-filter="sedan" aria-pressed="false"><?= Lang::e('landing.filter_sedan') ?></button>
+          <button type="button" class="lp-filter" data-filter="suv" aria-pressed="false"><?= Lang::e('landing.filter_suv') ?></button>
+          <button type="button" class="lp-filter" data-filter="exec" aria-pressed="false"><?= Lang::e('landing.filter_exec') ?></button>
+          <button type="button" class="lp-filter" data-filter="util" aria-pressed="false"><?= Lang::e('landing.filter_util') ?></button>
         </div>
       </div>
       <div class="lp-fleet" id="lp-fleet-grid">
         <?php include APP_PATH . '/views/partials/landing_fleet.php'; ?>
       </div>
+      <p class="lp-fleet-empty muted" id="lp-fleet-filter-empty" hidden><?= Lang::e('landing.fleet_filter_empty') ?></p>
     </section>
 
     <section class="lp-section lp-section--muted" id="vantagens" data-reveal>
@@ -298,7 +272,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
       <div class="lp-cta-inner">
         <div>
           <h2><?= Lang::e('landing.cta_title') ?></h2>
-          <p><?= Lang::e('landing.cta_lead') ?></p>
+          <p><?= Lang::e('landing.cta_lead', ['hours' => Contact::businessHours()]) ?></p>
         </div>
         <div class="lp-cta-actions">
           <a class="btn btn-primary btn-lg" href="<?= htmlspecialchars(Contact::whatsappUrl(), ENT_QUOTES, 'UTF-8') ?>" rel="noopener noreferrer" target="_blank"><?= Lang::e('landing.cta_wa') ?></a>
@@ -309,42 +283,9 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
     </section>
   </main>
 
-  <footer class="site-footer lp-footer">
-    <div class="lp-footer-grid">
-      <div>
-        <strong>Titanium Rental Car</strong>
-        <p><?= Lang::e('landing.footer_about_body') ?></p>
-      </div>
-      <div>
-        <strong><?= Lang::e('landing.footer_col_book') ?></strong>
-        <ul class="lp-footer-links">
-          <li><a href="#reserva"><?= Lang::e('landing.footer_book_1') ?></a></li>
-          <li><a href="#frota"><?= Lang::e('landing.footer_book_2') ?></a></li>
-          <li><a data-href-app="/login"><?= Lang::e('landing.footer_book_3') ?></a></li>
-        </ul>
-      </div>
-      <div>
-        <strong><?= Lang::e('landing.footer_col_info') ?></strong>
-        <ul class="lp-footer-links">
-          <li><a href="#vantagens"><?= Lang::e('landing.footer_info_1') ?></a></li>
-          <li><a href="#faq"><?= Lang::e('landing.footer_info_2') ?></a></li>
-          <li><a href="#contato"><?= Lang::e('landing.footer_info_3') ?></a></li>
-        </ul>
-      </div>
-      <div>
-        <strong><?= Lang::e('landing.footer_col_legal') ?></strong>
-        <ul class="lp-footer-links">
-          <li><a href="<?= $asset('/privacidade') ?>"><?= Lang::e('landing.footer_legal_privacy') ?></a></li>
-          <li><a href="<?= $asset('/termos') ?>"><?= Lang::e('landing.footer_legal_terms') ?></a></li>
-          <li><a href="<?= $asset('/privacidade') ?>#cookies"><?= Lang::e('landing.footer_legal_cookies') ?></a></li>
-          <li><span class="lp-footer-note"><?= Lang::e('landing.footer_legal_note') ?></span></li>
-        </ul>
-      </div>
-    </div>
-    <p class="lp-footer-bottom">© <span id="lp-year"></span> Titanium Rental Car. <?= Lang::e('landing.footer_rights') ?></p>
-  </footer>
+  <?php View::partial('partials/landing_footer', ['asset' => $asset, 'compact' => false]); ?>
 
-  <?php include APP_PATH . '/views/partials/cookie_notice.php'; ?>
+  <?php View::partial('partials/cookie_notice'); ?>
   <script src="<?= $asset('/js/lang-switcher.js') ?>" defer></script>
   <script src="<?= $asset('/js/cookie-notice.js') ?>" defer></script>
   <script src="<?= $asset('/landing/js/site.js') ?>" defer></script>

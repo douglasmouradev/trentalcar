@@ -43,7 +43,15 @@ final class Car
                 }
             }
         }
+        if (self::supportsSoftDelete()) {
+            $sql .= ' AND c.deleted_at IS NULL';
+        }
         return [$sql, $params];
+    }
+
+    private static function supportsSoftDelete(): bool
+    {
+        return Schema::hasColumn('cars', 'deleted_at');
     }
 
     /** @param array<string, scalar|null|array<int, int>> $filters */
@@ -84,12 +92,20 @@ final class Car
 
     public static function find(int $id): ?array
     {
-        $stmt = Database::pdo()->prepare(
-            'SELECT c.*, l.name AS location_name FROM cars c LEFT JOIN locations l ON l.id = c.location_id WHERE c.id = ?'
-        );
+        $sql = 'SELECT c.*, l.name AS location_name FROM cars c LEFT JOIN locations l ON l.id = c.location_id WHERE c.id = ?';
+        $stmt = Database::pdo()->prepare($sql);
         $stmt->execute([$id]);
         $row = $stmt->fetch();
         return $row ?: null;
+    }
+
+    public static function activeReservationCount(int $carId): int
+    {
+        $stmt = Database::pdo()->prepare(
+            "SELECT COUNT(*) FROM reservations WHERE car_id = ? AND status IN ('pending','confirmed','active')"
+        );
+        $stmt->execute([$carId]);
+        return (int) $stmt->fetchColumn();
     }
 
     /** Soma dos gastos mensais estimados (R$). */
@@ -138,6 +154,14 @@ final class Car
 
     public static function delete(int $id): void
     {
+        if (self::activeReservationCount($id) > 0) {
+            throw new RuntimeException('car_has_active_reservations');
+        }
+        if (self::supportsSoftDelete()) {
+            $stmt = Database::pdo()->prepare('UPDATE cars SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL');
+            $stmt->execute([$id]);
+            return;
+        }
         $stmt = Database::pdo()->prepare('DELETE FROM cars WHERE id = ?');
         $stmt->execute([$id]);
     }
@@ -145,9 +169,10 @@ final class Car
     /** @return array<int, array<string, mixed>> */
     public static function forPublicLanding(int $limit = 12): array
     {
+        $deleted = self::supportsSoftDelete() ? ' AND c.deleted_at IS NULL' : '';
         $sql = "SELECT c.*, l.name AS location_name FROM cars c
                 LEFT JOIN locations l ON l.id = c.location_id
-                WHERE c.status IN ('available','rented')
+                WHERE c.status IN ('available','rented'){$deleted}
                 ORDER BY c.daily_rate ASC, c.brand, c.model
                 LIMIT " . (int) $limit;
         return Database::pdo()->query($sql)->fetchAll();
@@ -162,6 +187,16 @@ final class Car
             'van', 'truck' => 'util',
             default => 'sedan',
         };
+    }
+
+    /** URL pública da foto do veículo ou logo da marca. */
+    public static function publicImageUrl(?string $imageUrl): string
+    {
+        $path = trim((string) $imageUrl);
+        if ($path !== '') {
+            return Router::url('/assets/uploads/' . rawurlencode(basename($path)));
+        }
+        return Router::url('/assets/img/logo.jpeg');
     }
 
     public static function isAvailableForDates(int $carId, string $start, string $end): bool

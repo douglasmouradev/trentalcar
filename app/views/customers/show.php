@@ -1,14 +1,33 @@
 <?php declare(strict_types=1);
 /** @var array<string,mixed> $customer */
 /** @var array<int,array<string,mixed>> $reservations */
+/** @var bool $isAnonymized */
+$isAnonymized = $isAnonymized ?? false;
 ?>
 <div class="page-head">
     <h1 class="page-title"><?= htmlspecialchars((string) $customer['full_name'], ENT_QUOTES, 'UTF-8') ?></h1>
     <div class="page-actions">
         <a class="btn btn-secondary" href="<?= Router::url('/customers') ?>"><?= Lang::e('actions.back') ?></a>
+        <?php if (Auth::isOwner()): ?>
+        <form method="post" action="<?= Router::url('/customers/' . (int) $customer['id'] . '/export-data') ?>" class="inline-form">
+            <?= Csrf::field() ?>
+            <button type="submit" class="btn btn-secondary"><?= Lang::e('customer.export_data') ?></button>
+        </form>
+        <?php if (!$isAnonymized): ?>
+        <form method="post" action="<?= Router::url('/customers/' . (int) $customer['id'] . '/anonymize') ?>" class="inline-form" onsubmit="return confirm('<?= htmlspecialchars(Lang::get('customer.anonymize_confirm'), ENT_QUOTES, 'UTF-8') ?>')">
+            <?= Csrf::field() ?>
+            <button type="submit" class="btn btn-danger"><?= Lang::e('customer.anonymize_data') ?></button>
+        </form>
+        <?php endif; ?>
+        <?php endif; ?>
+        <?php if (!$isAnonymized): ?>
         <a class="btn btn-primary" href="<?= Router::url('/customers/' . (int) $customer['id'] . '/edit') ?>"><?= Lang::e('actions.edit') ?></a>
+        <?php endif; ?>
     </div>
 </div>
+<?php if ($isAnonymized): ?>
+<p class="flash flash-success" role="status"><?= Lang::e('customer.anonymized_banner') ?></p>
+<?php endif; ?>
 <div class="card mt">
     <dl class="dl">
         <dt><?= Lang::e('customer.document') ?></dt><dd class="mono"><?= htmlspecialchars(Formatter::document((string) $customer['document']), ENT_QUOTES, 'UTF-8') ?></dd>

@@ -25,12 +25,12 @@ final class Mail
             return self::sendSmtp($to, $subject, $bodyText, $from, $fromName);
         }
 
+        $mime = self::buildMime($bodyText);
         $headers = [
-            'MIME-Version: 1.0',
-            'Content-type: text/plain; charset=UTF-8',
+            $mime['headers'],
             'From: ' . self::formatAddress($from, $fromName),
         ];
-        $ok = @mail($to, '=?UTF-8?B?' . base64_encode($subject) . '?=', $bodyText, implode("\r\n", $headers));
+        $ok = @mail($to, '=?UTF-8?B?' . base64_encode($subject) . '?=', $mime['body'], implode("\r\n", $headers));
         if (!$ok) {
             AppLog::error('mail.send_failed', ['to' => $to, 'subject' => $subject]);
         }
@@ -142,14 +142,13 @@ final class Mail
             return false;
         }
         $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+        $mime = self::buildMime($body);
         $payload = 'From: ' . self::formatAddress($from, $fromName) . "\r\n"
             . "To: {$to}\r\n"
             . "Subject: {$encodedSubject}\r\n"
-            . "MIME-Version: 1.0\r\n"
-            . "Content-Type: text/plain; charset=UTF-8\r\n"
-            . "Content-Transfer-Encoding: 8bit\r\n"
+            . $mime['headers'] . "\r\n"
             . "\r\n"
-            . str_replace("\n.", "\n..", $body) . "\r\n.\r\n";
+            . str_replace("\n.", "\n..", $mime['body']) . "\r\n.\r\n";
         fwrite($fp, $payload);
         if (!self::smtpExpect($fp, [250])) {
             fclose($fp);
@@ -172,6 +171,37 @@ final class Mail
         }
         $code = (int) substr(trim($line), 0, 3);
         return in_array($code, $codes, true);
+    }
+
+    /** @return array{headers: string, body: string} */
+    private static function buildMime(string $bodyText): array
+    {
+        $boundary = 'trc_' . bin2hex(random_bytes(8));
+        $plain = str_replace(["\r\n", "\r"], "\n", $bodyText);
+        $html = self::textToHtml($plain);
+        $body = "--{$boundary}\r\n"
+            . "Content-Type: text/plain; charset=UTF-8\r\n"
+            . "Content-Transfer-Encoding: 8bit\r\n\r\n"
+            . $plain . "\r\n"
+            . "--{$boundary}\r\n"
+            . "Content-Type: text/html; charset=UTF-8\r\n"
+            . "Content-Transfer-Encoding: 8bit\r\n\r\n"
+            . $html . "\r\n"
+            . "--{$boundary}--\r\n";
+        return [
+            'headers' => "MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"{$boundary}\"",
+            'body' => $body,
+        ];
+    }
+
+    private static function textToHtml(string $text): string
+    {
+        $escaped = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $escaped = nl2br($escaped, false);
+        $appName = htmlspecialchars((string) (Config::app()['name'] ?? 'Titanium Rental Car'), ENT_QUOTES, 'UTF-8');
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="font-family:system-ui,sans-serif;line-height:1.5;color:#0f172a">'
+            . '<p style="margin:0 0 1rem">' . $escaped . '</p>'
+            . '<p style="margin:0;font-size:12px;color:#64748b">' . $appName . '</p></body></html>';
     }
 
     private static function formatAddress(string $email, string $name): string

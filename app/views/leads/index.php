@@ -18,7 +18,12 @@
     </div>
 </form>
 <?php if ($leads === []): ?>
-    <p class="muted card mt"><?= Lang::e('leads.empty') ?></p>
+    <?php View::partial('partials/empty_state', [
+        'titleKey' => 'empty.leads.title',
+        'leadKey' => 'empty.leads.lead',
+        'ctaUrl' => Router::url('/'),
+        'ctaKey' => 'empty.leads.cta',
+    ]); ?>
 <?php else: ?>
 <div class="table-wrap card mt table--responsive">
     <table class="table">

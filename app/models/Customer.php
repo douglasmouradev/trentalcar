@@ -107,4 +107,35 @@ final class Customer
             $d['notes'] ?? null, $d['attachment_path'] ?? null, $id,
         ]);
     }
+
+    /** @param array<string, mixed> $row */
+    public static function isAnonymized(array $row): bool
+    {
+        if (!Schema::hasColumn('customers', 'anonymized_at')) {
+            return false;
+        }
+        return !empty($row['anonymized_at']);
+    }
+
+    public static function hasActiveReservations(int $customerId): bool
+    {
+        $stmt = Database::pdo()->prepare(
+            "SELECT COUNT(*) FROM reservations WHERE customer_id = ? AND status IN ('pending','confirmed','active')"
+        );
+        $stmt->execute([$customerId]);
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    public static function anonymize(int $id): void
+    {
+        $doc = 'ANON-' . $id . '-' . strtoupper(bin2hex(random_bytes(4)));
+        $name = 'Titular anonimizado #' . $id;
+        $sql = 'UPDATE customers SET type=?, full_name=?, document=?, email=NULL, phone=?, address=NULL, city=NULL, state=NULL, zip_code=NULL, notes=NULL, attachment_path=NULL';
+        if (Schema::hasColumn('customers', 'anonymized_at')) {
+            $sql .= ', anonymized_at=NOW()';
+        }
+        $sql .= ' WHERE id=?';
+        $stmt = Database::pdo()->prepare($sql);
+        $stmt->execute(['individual', $name, $doc, '00000000000', $id]);
+    }
 }

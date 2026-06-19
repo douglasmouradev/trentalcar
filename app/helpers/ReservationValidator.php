@@ -9,9 +9,11 @@ final class ReservationValidator
     private const METHODS = ['cash', 'credit_card', 'debit_card', 'pix', 'transfer'];
 
     /**
+     * @param array<string, mixed> $post
+     * @param array<string, mixed>|null $old
      * @return array{ok: bool, error: string|null, data: array<string, mixed>|null}
      */
-    public static function validate(array $post, bool $isOwner): array
+    public static function validate(array $post, bool $isOwner, ?array $old = null): array
     {
         $pickupDate = trim((string) ($post['pickup_date'] ?? ''));
         $returnDate = trim((string) ($post['return_date'] ?? ''));
@@ -44,7 +46,7 @@ final class ReservationValidator
         if ($car === null) {
             return self::fail('reservation.invalid_car');
         }
-        if (!Location::findActive($pickupLoc) || !Location::findActive($returnLoc)) {
+        if (!Location::isActive($pickupLoc) || !Location::isActive($returnLoc)) {
             return self::fail('reservation.invalid_location');
         }
 
@@ -52,8 +54,10 @@ final class ReservationValidator
         if (!in_array($status, self::STATUSES, true) || $status === 'cancelled') {
             $status = 'pending';
         }
-        if (!$isOwner && !in_array($status, ['pending', 'confirmed'], true)) {
-            $status = 'pending';
+        if (!$isOwner) {
+            if (!in_array($status, ['pending', 'confirmed', 'active'], true)) {
+                $status = is_array($old) ? (string) ($old['status'] ?? 'pending') : 'pending';
+            }
         }
 
         $paymentStatus = (string) ($post['payment_status'] ?? 'unpaid');
@@ -64,6 +68,13 @@ final class ReservationValidator
         $paymentMethod = ($post['payment_method'] ?? '') !== '' ? (string) $post['payment_method'] : null;
         if ($paymentMethod !== null && !in_array($paymentMethod, self::METHODS, true)) {
             $paymentMethod = null;
+        }
+
+        if (!$isOwner) {
+            $paymentStatus = is_array($old) ? (string) ($old['payment_status'] ?? 'unpaid') : 'unpaid';
+            $paymentMethod = is_array($old) && !empty($old['payment_method']) ? (string) $old['payment_method'] : null;
+        } elseif (!in_array($paymentStatus, self::PAYMENTS, true)) {
+            $paymentStatus = 'unpaid';
         }
 
         $d1 = new DateTimeImmutable($pickupDate);

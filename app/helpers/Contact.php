@@ -11,12 +11,12 @@ final class Contact
 
     public static function phoneDisplay(): string
     {
-        return trim((string) ($_ENV['CONTACT_PHONE'] ?? '(11) 4002-8822'));
+        return trim((string) ($_ENV['CONTACT_PHONE'] ?? '(11) 3000-1000'));
     }
 
     public static function phoneTel(): string
     {
-        $raw = preg_replace('/\D/', '', self::phoneDisplay()) ?: '551140028822';
+        $raw = preg_replace('/\D/', '', self::phoneDisplay()) ?: '551130001000';
         return str_starts_with($raw, '55') ? '+' . $raw : '+55' . $raw;
     }
 
@@ -25,9 +25,59 @@ final class Contact
         return trim((string) ($_ENV['CONTACT_EMAIL'] ?? 'reservas@titaniumrental.com.br'));
     }
 
+    public static function legalName(): string
+    {
+        $name = trim((string) ($_ENV['BUSINESS_LEGAL_NAME'] ?? ''));
+        if ($name !== '') {
+            return $name;
+        }
+        return trim((string) ($_ENV['PRIVACY_CONTROLLER_NAME'] ?? 'Titanium Rental Car Ltda'));
+    }
+
+    public static function cnpj(): string
+    {
+        return trim((string) ($_ENV['BUSINESS_CNPJ'] ?? $_ENV['PRIVACY_CONTROLLER_CNPJ'] ?? ''));
+    }
+
+    public static function address(): string
+    {
+        $addr = trim((string) ($_ENV['CONTACT_ADDRESS'] ?? ''));
+        if ($addr !== '') {
+            return $addr;
+        }
+        return trim((string) ($_ENV['PRIVACY_ADDRESS'] ?? 'Av. Paulista, 1000 — Bela Vista, São Paulo — SP'));
+    }
+
+    public static function businessHours(): string
+    {
+        return trim((string) ($_ENV['BUSINESS_HOURS'] ?? 'Segunda a sábado, 8h às 18h'));
+    }
+
+    public static function minDailyRate(): string
+    {
+        return trim((string) ($_ENV['BUSINESS_MIN_RATE'] ?? 'R$ 99,90'));
+    }
+
+    public static function responseTime(): string
+    {
+        return trim((string) ($_ENV['BUSINESS_RESPONSE_TIME'] ?? '2 horas úteis'));
+    }
+
     public static function whatsappUrl(string $message = ''): string
     {
-        $msg = $message !== '' ? $message : 'Olá, gostaria de alugar um carro (Titanium).';
+        $msg = $message !== '' ? $message : Lang::get('contact.whatsapp_default');
         return 'https://wa.me/' . preg_replace('/\D/', '', self::whatsapp()) . '?text=' . rawurlencode($msg);
+    }
+
+    /** Linha única para rodapé / aviso legal. */
+    public static function footerLegalLine(): string
+    {
+        $parts = [self::legalName()];
+        $cnpj = self::cnpj();
+        if ($cnpj !== '') {
+            $parts[] = 'CNPJ ' . $cnpj;
+        }
+        $parts[] = self::address();
+        return implode(' · ', $parts);
     }
 }

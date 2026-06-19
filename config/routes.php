@@ -8,8 +8,10 @@ return [
     'GET:/privacidade' => ['LegalController', 'privacy'],
     'GET:/termos' => ['LegalController', 'terms'],
 
+    'GET:/favicon.ico' => ['FaviconController', 'index'],
     'GET:/robots.txt' => ['RobotsController', 'index'],
     'GET:/sitemap.xml' => ['SitemapController', 'index'],
+    'GET:/.well-known/security.txt' => ['SecurityTxtController', 'index'],
     'POST:/lead' => ['LeadController', 'submit'],
     'GET:/reservar' => ['BookingController', 'index'],
     'GET:/consultar' => ['ConsultController', 'form'],
@@ -32,6 +34,7 @@ return [
     'GET:/account/security' => ['AccountController', 'securityForm', 'auth' => true],
     'POST:/account/security/enable' => ['AccountController', 'enableTotp', 'auth' => true],
     'POST:/account/security/begin' => ['AccountController', 'beginTotpSetup', 'auth' => true],
+    'GET:/account/security/recovery' => ['AccountController', 'recoveryCodes', 'auth' => true],
     'POST:/account/security/disable' => ['AccountController', 'disableTotp', 'auth' => true],
 
     'GET:/health' => ['HealthController', 'index'],
@@ -52,6 +55,8 @@ return [
     'GET:/customers/{id}/edit' => ['CustomerController', 'editForm', 'auth' => true],
     'GET:/customers/{id}/attachment' => ['CustomerController', 'downloadAttachment', 'auth' => true],
     'POST:/customers/{id}/update' => ['CustomerController', 'update', 'auth' => true],
+    'POST:/customers/{id}/export-data' => ['CustomerController', 'exportData', 'auth' => true, 'role' => 'owner'],
+    'POST:/customers/{id}/anonymize' => ['CustomerController', 'anonymizeData', 'auth' => true, 'role' => 'owner'],
     'GET:/customers/{id}' => ['CustomerController', 'show', 'auth' => true],
 
     'GET:/locations' => ['LocationController', 'index', 'auth' => true, 'role' => 'owner'],
@@ -66,6 +71,7 @@ return [
     'POST:/reservations' => ['ReservationController', 'create', 'auth' => true],
     'GET:/reservations/{id}' => ['ReservationController', 'show', 'auth' => true],
     'GET:/reservations/{id}/voucher' => ['VoucherController', 'show', 'auth' => true],
+    'GET:/reservations/{id}/inspection-photo' => ['ReservationController', 'inspectionPhoto', 'auth' => true],
     'GET:/reservations/{id}/edit' => ['ReservationController', 'editForm', 'auth' => true],
     'POST:/reservations/{id}/update' => ['ReservationController', 'update', 'auth' => true],
     'POST:/reservations/{id}/cancel' => ['ReservationController', 'cancel', 'auth' => true],

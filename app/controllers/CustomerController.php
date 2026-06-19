@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 final class CustomerController
 {
-    private const ATTACHMENT_PATTERN = '/^cust_[a-f0-9]{16}\.(pdf|jpg|png|webp|doc|docx)$/';
-
     public function index(): void
     {
         PartnerForbiddenMiddleware::handle();
@@ -40,6 +38,7 @@ final class CustomerController
             'title' => (string) $c['full_name'],
             'customer' => $c,
             'reservations' => Reservation::forCustomer((int) $id),
+            'isAnonymized' => Customer::isAnonymized($c),
         ], 'main');
     }
 
@@ -64,7 +63,7 @@ final class CustomerController
             exit;
         }
         $d['created_by'] = Auth::id();
-        $attachment = $this->handleAttachmentUpload($_FILES['attachment'] ?? null, null);
+        $attachment = CustomerAttachment::store($_FILES['attachment'] ?? null, null);
         if ($attachment === false) {
             header('Location: ' . Router::url('/customers/create'));
             exit;
@@ -92,6 +91,11 @@ final class CustomerController
             View::render('errors/404', ['title' => Lang::get('error.404_title')], 'main');
             return;
         }
+        if (Customer::isAnonymized($c)) {
+            Flash::error(Lang::get('customer.anonymized_locked'));
+            header('Location: ' . Router::url('/customers/' . $id));
+            exit;
+        }
         View::render('customers/edit', ['title' => Lang::get('customer.edit'), 'customer' => $c], 'main');
     }
 
@@ -108,13 +112,18 @@ final class CustomerController
             http_response_code(404);
             return;
         }
+        if (Customer::isAnonymized($old)) {
+            Flash::error(Lang::get('customer.anonymized_locked'));
+            header('Location: ' . Router::url('/customers/' . $id));
+            exit;
+        }
         $d = $this->sanitize($_POST);
         if (!$this->isValidCustomerData($d)) {
             Flash::error(Lang::get('flash.validation_error'));
             header('Location: ' . Router::url('/customers/' . $id . '/edit'));
             exit;
         }
-        $attachment = $this->handleAttachmentUpload($_FILES['attachment'] ?? null, $old);
+        $attachment = CustomerAttachment::store($_FILES['attachment'] ?? null, isset($old['attachment_path']) ? (string) $old['attachment_path'] : null);
         if ($attachment === false) {
             header('Location: ' . Router::url('/customers/' . $id . '/edit'));
             exit;
@@ -135,7 +144,7 @@ final class CustomerController
             http_response_code(404);
             return;
         }
-        $path = self::resolveAttachmentPath((string) $c['attachment_path']);
+        $path = CustomerAttachment::resolvePath((string) $c['attachment_path']);
         if ($path === null) {
             http_response_code(404);
             return;
@@ -181,74 +190,45 @@ final class CustomerController
         return $email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
     }
 
-    /**
-     * @param array<string,mixed>|null $file
-     * @param array<string,mixed>|null $existing
-     * @return string|null false em falha de validação/upload
-     */
-    private function handleAttachmentUpload(?array $file, ?array $existing): string|null|false
+    public function exportData(string $id): void
     {
-        if (empty($file) || empty($file['tmp_name']) || !is_uploaded_file((string) $file['tmp_name'])) {
-            return $existing['attachment_path'] ?? null;
+        if (!Csrf::validate($_POST['_csrf'] ?? null)) {
+            Flash::error(Lang::get('error.csrf'));
+            header('Location: ' . Router::url('/customers/' . $id));
+            exit;
         }
-
-        $app = Config::app();
-        $max = (int) ($app['max_upload'] ?? 5242880);
-        if (($file['size'] ?? 0) > $max) {
-            Flash::error(Lang::get('upload.too_large'));
-            return false;
+        $payload = CustomerService::exportPayload((int) $id);
+        if ($payload === null) {
+            http_response_code(404);
+            return;
         }
-
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->file((string) $file['tmp_name']);
-        $allowed = [
-            'application/pdf' => 'pdf',
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/webp' => 'webp',
-            'application/msword' => 'doc',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
-        ];
-        if (!isset($allowed[$mime])) {
-            Flash::error(Lang::get('upload.invalid_type'));
-            return false;
-        }
-
-        $dir = BASE_PATH . '/storage/customers';
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
-        $name = 'cust_' . bin2hex(random_bytes(8)) . '.' . $allowed[$mime];
-        $dest = $dir . '/' . $name;
-        if (!move_uploaded_file((string) $file['tmp_name'], $dest)) {
-            Flash::error(Lang::get('upload.failed'));
-            return false;
-        }
-
-        if (!empty($existing['attachment_path'])) {
-            $oldFs = self::resolveAttachmentPath((string) $existing['attachment_path']);
-            if ($oldFs !== null && is_file($oldFs)) {
-                @unlink($oldFs);
-            }
-        }
-
-        return $name;
+        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Disposition: attachment; filename="customer-' . (int) $id . '-export.json"');
+        echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR);
+        Audit::log(Auth::id(), 'export', 'customer', (int) $id, null, ['lgpd' => true]);
     }
 
-    private static function resolveAttachmentPath(string $stored): ?string
+    public function anonymizeData(string $id): void
     {
-        $name = basename(parse_url($stored, PHP_URL_PATH) ?: $stored);
-        if (!preg_match(self::ATTACHMENT_PATTERN, $name)) {
-            return null;
+        if (!Csrf::validate($_POST['_csrf'] ?? null)) {
+            Flash::error(Lang::get('error.csrf'));
+            header('Location: ' . Router::url('/customers/' . $id));
+            exit;
         }
-        $base = realpath(BASE_PATH . '/storage/customers');
-        if ($base === false) {
-            return null;
+        $result = CustomerService::anonymize((int) $id);
+        if (!$result['ok']) {
+            $key = match ($result['error']) {
+                'active_reservations' => 'customer.anonymize_active',
+                'already_anonymized' => 'customer.anonymize_done',
+                default => 'error.404_title',
+            };
+            Flash::error(Lang::get($key));
+            header('Location: ' . Router::url('/customers/' . $id));
+            exit;
         }
-        $full = realpath($base . DIRECTORY_SEPARATOR . $name);
-        if ($full === false || !str_starts_with($full, $base . DIRECTORY_SEPARATOR)) {
-            return null;
-        }
-        return $full;
+        Audit::log(Auth::id(), 'anonymize', 'customer', (int) $id, null, ['lgpd' => true]);
+        Flash::success(Lang::get('customer.anonymize_ok'));
+        header('Location: ' . Router::url('/customers/' . $id));
+        exit;
     }
 }

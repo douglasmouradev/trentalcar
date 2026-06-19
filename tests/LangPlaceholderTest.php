@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
-define('BASE_PATH', dirname(__DIR__));
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', dirname(__DIR__));
+}
 require BASE_PATH . '/app/helpers/Lang.php';
 
 final class LangPlaceholderTest extends TestCase

@@ -12,6 +12,7 @@ $locale = Lang::locale();
     <meta name="theme-color" content="#1a3a6c">
     <meta name="app-base-url" content="<?= htmlspecialchars(rtrim(Router::url('/'), '/'), ENT_QUOTES, 'UTF-8') ?>">
     <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?> — <?= Lang::e('app.name') ?></title>
+    <?php View::partial('partials/favicon'); ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -39,7 +40,7 @@ $locale = Lang::locale();
         <div class="auth-card" id="auth-main" tabindex="-1">
             <?php foreach (Flash::pull() as $type => $messages): ?>
                 <?php foreach ($messages as $msg): ?>
-                    <div class="toast toast-<?= htmlspecialchars($type, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($msg, ENT_QUOTES, 'UTF-8') ?></div>
+                    <div class="toast toast-<?= htmlspecialchars($type, ENT_QUOTES, 'UTF-8') ?>" role="<?= $type === 'error' ? 'alert' : 'status' ?>" aria-live="polite"><?= htmlspecialchars($msg, ENT_QUOTES, 'UTF-8') ?></div>
                 <?php endforeach; ?>
             <?php endforeach; ?>
             <div class="auth-brand">

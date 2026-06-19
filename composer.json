@@ -9,6 +9,15 @@
     "phpunit/phpunit": "^11.3",
     "phpstan/phpstan": "^2.0"
   },
+  "autoload": {
+    "classmap": [
+      "app/helpers",
+      "app/middleware",
+      "app/controllers",
+      "app/models",
+      "app/services"
+    ]
+  },
   "scripts": {
     "test": "phpunit",
     "phpstan": "phpstan analyse --memory-limit=512M"

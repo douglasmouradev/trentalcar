@@ -1,5 +1,6 @@
 /* Titanium Rental Car — landing page (locação de veículos) */
 @import url("../../css/tokens.css");
+@import url("../../css/polish.css");
 
 :root {
   --ink: #0a0f1a;
@@ -1797,11 +1798,12 @@ a:hover {
   to { transform: rotate(360deg); }
 }
 
-@media (max-width: 768px) {
-  .lp-scroll-zoom {
-    display: none;
-  }
+/* Bloco scroll-zoom: efeito não activo — oculto para não quebrar o layout */
+.lp-scroll-zoom {
+  display: none;
+}
 
+@media (max-width: 768px) {
   .lp-scroll-zoom-track {
     min-height: 0;
   }

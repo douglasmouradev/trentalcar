@@ -26,24 +26,24 @@ $fmt = static fn (float $v) => 'R$ ' . number_format($v, 2, ',', '.');
 <?php if (!$isOwner): ?>
     <div class="grid kpis">
         <div class="card kpi"><div class="kpi-label"><?= Lang::e('dashboard.operator_today') ?></div><div class="kpi-value"><?= (int) $myTodayCount ?></div></div>
-        <div class="card kpi"><div class="kpi-label"><?= Lang::e('dashboard.operator_upcoming') ?></div><div class="kpi-value"><?= count($myToday) ?></div></div>
+        <div class="card kpi"><div class="kpi-label"><?= Lang::e('dashboard.operator_queue') ?></div><div class="kpi-value"><?= count($myToday) ?></div></div>
     </div>
     <div class="card mt">
         <h2 class="card-title"><?= Lang::e('dashboard.operator_upcoming') ?></h2>
         <div class="table-wrap">
-            <table class="table">
+            <table class="table table--responsive">
                 <thead><tr><th><?= Lang::e('reservation.code') ?></th><th><?= Lang::e('reservation.customer') ?></th><th><?= Lang::e('reservation.car') ?></th><th><?= Lang::e('reservation.pickup') ?></th><th></th></tr></thead>
                 <tbody>
                 <?php foreach ($myToday as $row): ?>
                     <tr>
-                        <td class="mono"><?= htmlspecialchars($row['code'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($row['customer_name'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($row['brand'] . ' ' . $row['model'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($row['pickup_date'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><a class="btn btn-sm btn-secondary" href="<?= Router::url('/reservations/' . (int) $row['id']) ?>"><?= Lang::e('actions.view') ?></a></td>
+                        <td class="mono" data-label="<?= Lang::e('reservation.code') ?>"><?= htmlspecialchars($row['code'], ENT_QUOTES, 'UTF-8') ?></td>
+                        <td data-label="<?= Lang::e('reservation.customer') ?>"><?= htmlspecialchars($row['customer_name'], ENT_QUOTES, 'UTF-8') ?></td>
+                        <td data-label="<?= Lang::e('reservation.car') ?>"><?= htmlspecialchars($row['brand'] . ' ' . $row['model'], ENT_QUOTES, 'UTF-8') ?></td>
+                        <td data-label="<?= Lang::e('reservation.pickup') ?>"><?= htmlspecialchars($row['pickup_date'], ENT_QUOTES, 'UTF-8') ?></td>
+                        <td data-label=""><a class="btn btn-sm btn-secondary" href="<?= Router::url('/reservations/' . (int) $row['id']) ?>"><?= Lang::e('actions.view') ?></a></td>
                     </tr>
                 <?php endforeach; ?>
-                <?php if ($myToday === []): ?><tr><td colspan="5" class="muted"><?= Lang::e('table.empty') ?></td></tr><?php endif; ?>
+                <?php if ($myToday === []): ?><tr><td colspan="5" class="muted"><?= Lang::e('dashboard.operator_empty') ?></td></tr><?php endif; ?>
                 </tbody>
             </table>
         </div>
@@ -73,7 +73,7 @@ $fmt = static fn (float $v) => 'R$ ' . number_format($v, 2, ',', '.');
     <div class="grid two mt">
         <div class="card">
             <h2 class="card-title"><?= Lang::e('dashboard.chart_reservations') ?></h2>
-            <div class="bar-chart">
+            <div class="bar-chart" role="img" aria-label="<?= Lang::e('dashboard.chart_reservations') ?>">
                 <?php
                 $max = max(1, ...array_values($chartDays));
                 foreach ($chartDays as $day => $c):
@@ -105,18 +105,19 @@ $fmt = static fn (float $v) => 'R$ ' . number_format($v, 2, ',', '.');
         <div class="card">
             <h2 class="card-title"><?= Lang::e('dashboard.returns') ?></h2>
             <div class="table-wrap">
-                <table class="table">
-                    <thead><tr><th><?= Lang::e('reservation.code') ?></th><th><?= Lang::e('reservation.customer') ?></th><th><?= Lang::e('car.plate') ?></th><th><?= Lang::e('reservation.return') ?></th></tr></thead>
+                <table class="table table--responsive">
+                    <thead><tr><th><?= Lang::e('reservation.code') ?></th><th><?= Lang::e('reservation.customer') ?></th><th><?= Lang::e('car.plate') ?></th><th><?= Lang::e('reservation.return') ?></th><th></th></tr></thead>
                     <tbody>
                     <?php foreach ($returns as $row): ?>
                         <tr>
-                            <td class="mono"><?= htmlspecialchars($row['code'], ENT_QUOTES, 'UTF-8') ?></td>
-                            <td><?= htmlspecialchars($row['customer_name'], ENT_QUOTES, 'UTF-8') ?></td>
-                            <td class="mono"><?= htmlspecialchars($row['license_plate'], ENT_QUOTES, 'UTF-8') ?></td>
-                            <td><?= htmlspecialchars($row['return_date'] . ' ' . substr((string) $row['return_time'], 0, 5), ENT_QUOTES, 'UTF-8') ?></td>
+                            <td class="mono" data-label="<?= Lang::e('reservation.code') ?>"><?= htmlspecialchars($row['code'], ENT_QUOTES, 'UTF-8') ?></td>
+                            <td data-label="<?= Lang::e('reservation.customer') ?>"><?= htmlspecialchars($row['customer_name'], ENT_QUOTES, 'UTF-8') ?></td>
+                            <td class="mono" data-label="<?= Lang::e('car.plate') ?>"><?= htmlspecialchars($row['license_plate'], ENT_QUOTES, 'UTF-8') ?></td>
+                            <td data-label="<?= Lang::e('reservation.return') ?>"><?= htmlspecialchars($row['return_date'] . ' ' . substr((string) $row['return_time'], 0, 5), ENT_QUOTES, 'UTF-8') ?></td>
+                            <td data-label=""><a class="btn btn-sm btn-secondary" href="<?= Router::url('/reservations/' . (int) $row['id']) ?>"><?= Lang::e('actions.view') ?></a></td>
                         </tr>
                     <?php endforeach; ?>
-                    <?php if ($returns === []): ?><tr><td colspan="4" class="muted"><?= Lang::e('table.empty') ?></td></tr><?php endif; ?>
+                    <?php if ($returns === []): ?><tr><td colspan="5" class="muted"><?= Lang::e('dashboard.returns_empty') ?></td></tr><?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -124,17 +125,18 @@ $fmt = static fn (float $v) => 'R$ ' . number_format($v, 2, ',', '.');
         <div class="card">
             <h2 class="card-title"><?= Lang::e('dashboard.maintenance') ?></h2>
             <div class="table-wrap">
-                <table class="table">
-                    <thead><tr><th><?= Lang::e('car.model') ?></th><th><?= Lang::e('car.plate') ?></th><th><?= Lang::e('car.color') ?></th></tr></thead>
+                <table class="table table--responsive">
+                    <thead><tr><th><?= Lang::e('car.model') ?></th><th><?= Lang::e('car.plate') ?></th><th><?= Lang::e('car.color') ?></th><th></th></tr></thead>
                     <tbody>
                     <?php foreach ($maintenance as $car): ?>
                         <tr>
-                            <td><?= htmlspecialchars($car['brand'] . ' ' . $car['model'], ENT_QUOTES, 'UTF-8') ?></td>
-                            <td class="mono"><?= htmlspecialchars($car['license_plate'], ENT_QUOTES, 'UTF-8') ?></td>
-                            <td><span class="swatch" style="background:<?= htmlspecialchars($car['color_hex'], ENT_QUOTES, 'UTF-8') ?>"></span> <?= htmlspecialchars($car['color'], ENT_QUOTES, 'UTF-8') ?></td>
+                            <td data-label="<?= Lang::e('car.model') ?>"><?= htmlspecialchars($car['brand'] . ' ' . $car['model'], ENT_QUOTES, 'UTF-8') ?></td>
+                            <td class="mono" data-label="<?= Lang::e('car.plate') ?>"><?= htmlspecialchars($car['license_plate'], ENT_QUOTES, 'UTF-8') ?></td>
+                            <td data-label="<?= Lang::e('car.color') ?>"><span class="swatch" style="background:<?= htmlspecialchars($car['color_hex'], ENT_QUOTES, 'UTF-8') ?>"></span> <?= htmlspecialchars($car['color'], ENT_QUOTES, 'UTF-8') ?></td>
+                            <td data-label=""><a class="btn btn-sm btn-secondary" href="<?= Router::url('/cars/' . (int) $car['id']) ?>"><?= Lang::e('actions.view') ?></a></td>
                         </tr>
                     <?php endforeach; ?>
-                    <?php if ($maintenance === []): ?><tr><td colspan="3" class="muted"><?= Lang::e('table.empty') ?></td></tr><?php endif; ?>
+                    <?php if ($maintenance === []): ?><tr><td colspan="4" class="muted"><?= Lang::e('dashboard.maintenance_empty') ?></td></tr><?php endif; ?>
                     </tbody>
                 </table>
             </div>

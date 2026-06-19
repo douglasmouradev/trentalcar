@@ -1,4 +1,7 @@
-# Site estático (legado)
+# Site estático (legado) — **DEPRECATED**
+
+> **Não use em produção.** Esta pasta existe só como referência offline.  
+> O site oficial é a app PHP em `public/` (`/`, `/reservar`, `/consultar`, etc.).
 
 Esta pasta contém uma versão **offline/estática** da landing, mantida apenas como referência.
 

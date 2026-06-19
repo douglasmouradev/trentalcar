@@ -43,7 +43,7 @@ $defaultRate = $rv['daily_rate'] ?? ($cars[0]['daily_rate'] ?? 0);
 
             <label class="label" for="custSearch"><?= Lang::e('customer.search') ?></label>
 
-            <input class="input" type="search" id="custSearch" placeholder="…" autocomplete="off">
+            <input class="input" type="search" id="custSearch" placeholder="<?= Lang::e('customer.search_placeholder') ?>" autocomplete="off" aria-autocomplete="list" aria-controls="custSuggest">
 
             <div id="custSuggest" class="suggest"></div>
 
