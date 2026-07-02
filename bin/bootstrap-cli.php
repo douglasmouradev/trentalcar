@@ -15,3 +15,10 @@ if (is_file($autoload)) {
 
 require BASE_PATH . '/app/helpers/Env.php';
 Env::load(BASE_PATH . '/.env');
+
+foreach (['DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD', 'APP_ENV', 'APP_KEY'] as $var) {
+    $fromEnv = getenv($var);
+    if ($fromEnv !== false && (!isset($_ENV[$var]) || $_ENV[$var] === '')) {
+        $_ENV[$var] = $fromEnv;
+    }
+}
