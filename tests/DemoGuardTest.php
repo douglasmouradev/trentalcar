@@ -6,9 +6,25 @@ use PHPUnit\Framework\TestCase;
 
 final class DemoGuardTest extends TestCase
 {
+    /** @var array<string, string|null> */
+    private array $envBackup = [];
+
+    protected function setUp(): void
+    {
+        foreach (['APP_ENV', 'ALLOW_DEMO_LOGIN'] as $key) {
+            $this->envBackup[$key] = $_ENV[$key] ?? null;
+        }
+    }
+
     protected function tearDown(): void
     {
-        unset($_ENV['APP_ENV'], $_ENV['ALLOW_DEMO_LOGIN']);
+        foreach ($this->envBackup as $key => $value) {
+            if ($value === null) {
+                unset($_ENV[$key]);
+            } else {
+                $_ENV[$key] = $value;
+            }
+        }
         parent::tearDown();
     }
 

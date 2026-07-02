@@ -6,18 +6,32 @@ use PHPUnit\Framework\TestCase;
 
 final class ProductionGuardTest extends TestCase
 {
+    /** @var array<string, string|null> */
+    private array $envBackup = [];
+
+    protected function setUp(): void
+    {
+        foreach ([
+            'APP_ENV', 'APP_DEBUG', 'DB_PASSWORD', 'APP_KEY', 'HEALTH_TOKEN',
+            'SESSION_SECURE', 'PRIVACY_DPO_EMAIL', 'SECURITY_CONTACT_EMAIL',
+            'APP_URL', 'DB_HOST', 'DB_DATABASE', 'DB_USERNAME',
+        ] as $key) {
+            $this->envBackup[$key] = $_ENV[$key] ?? null;
+        }
+    }
+
     protected function tearDown(): void
     {
-        unset(
-            $_ENV['APP_ENV'],
-            $_ENV['APP_DEBUG'],
-            $_ENV['DB_PASSWORD'],
-            $_ENV['APP_KEY'],
-            $_ENV['HEALTH_TOKEN'],
-            $_ENV['SESSION_SECURE'],
-            $_ENV['PRIVACY_DPO_EMAIL'],
-            $_ENV['SECURITY_CONTACT_EMAIL']
-        );
+        foreach ($this->envBackup as $key => $value) {
+            if ($value === null) {
+                unset($_ENV[$key]);
+            } else {
+                $_ENV[$key] = $value;
+            }
+        }
+        Config::clearCache();
+        $pdo = new ReflectionProperty(Database::class, 'pdo');
+        $pdo->setValue(null, null);
         parent::tearDown();
     }
 
