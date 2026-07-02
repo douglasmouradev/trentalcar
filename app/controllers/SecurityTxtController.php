@@ -6,7 +6,7 @@ final class SecurityTxtController
 {
     public function index(): void
     {
-        if (!headers_sent()) {
+        if (PHP_SAPI !== 'cli' && !headers_sent()) {
             header('Content-Type: text/plain; charset=UTF-8');
         }
         $email = trim((string) ($_ENV['SECURITY_CONTACT_EMAIL'] ?? ''));

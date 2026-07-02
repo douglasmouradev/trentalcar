@@ -88,6 +88,16 @@ jobs:
           sleep 2
           curl -sf -o /dev/null -w "%{http_code}" http://127.0.0.1:8889/login | grep -q 200
 
+      - name: CI preflight (seed + smoke HTTP)
+        env:
+          SMOKE_BASE_URL: http://127.0.0.1:8889
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: titanium_rental_car
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php bin/ci-preflight.php
+
       - name: Run PHPUnit
         env:
           SMOKE_BASE_URL: http://127.0.0.1:8889
@@ -96,7 +106,7 @@ jobs:
           DB_DATABASE: titanium_rental_car
           DB_USERNAME: root
           DB_PASSWORD: root
-        run: vendor/bin/phpunit
+        run: vendor/bin/phpunit --display-errors --display-deprecations
 
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --memory-limit=512M
