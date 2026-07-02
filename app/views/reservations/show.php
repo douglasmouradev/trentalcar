@@ -1,4 +1,4 @@
-<?php declare(strict_types=1); /** @var array<string,mixed> $r */ /** @var array<int,array<string,mixed>> $inspections */
+<?php declare(strict_types=1); /** @var array<string,mixed> $r */ /** @var array<int,array<string,mixed>> $inspections */ ?>
 
 <div class="page-head">
 
