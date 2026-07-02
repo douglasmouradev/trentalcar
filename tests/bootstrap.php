@@ -13,4 +13,11 @@ if (is_file(BASE_PATH . '/.env')) {
     Env::load(BASE_PATH . '/.env');
 }
 
+foreach (['DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD', 'APP_ENV', 'APP_KEY', 'SMOKE_BASE_URL'] as $var) {
+    $fromEnv = getenv($var);
+    if ($fromEnv !== false && (!isset($_ENV[$var]) || $_ENV[$var] === '')) {
+        $_ENV[$var] = $fromEnv;
+    }
+}
+
 require_once BASE_PATH . '/tests/HttpTestClient.php';

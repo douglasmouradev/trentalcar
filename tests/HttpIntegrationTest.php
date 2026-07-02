@@ -149,7 +149,11 @@ final class HttpIntegrationTest extends TestCase
         $dash = $this->client->get('/dashboard');
         $this->assertContains($dash['code'], [200, 302, 303]);
         if ($dash['code'] === 200) {
-            $this->assertStringContainsString('dashboard', strtolower($dash['body']));
+            $body = strtolower($dash['body']);
+            $this->assertTrue(
+                str_contains($body, '/dashboard') || str_contains($dash['body'], 'Painel'),
+                'Dashboard page expected nav or title'
+            );
         }
     }
 
@@ -159,7 +163,7 @@ final class HttpIntegrationTest extends TestCase
         $r = $this->client->get('/reservations');
         $this->assertContains($r['code'], [200, 302, 303]);
         if ($r['code'] === 200) {
-            $this->assertStringContainsString('reservations', strtolower($r['body']));
+            $this->assertStringContainsString('/reservations', $r['body']);
         }
     }
 
