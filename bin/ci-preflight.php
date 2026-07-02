@@ -36,17 +36,26 @@ if (!password_verify('password123', (string) $user['password_hash'])) {
 
 $smokeBase = getenv('SMOKE_BASE_URL');
 if ($smokeBase !== false && trim($smokeBase) !== '') {
+    if (!extension_loaded('curl')) {
+        fwrite(STDERR, "ext-curl required for HTTP preflight\n");
+        exit(1);
+    }
     $base = rtrim(trim($smokeBase), '/');
     foreach (['/login', '/'] as $path) {
-        $ctx = stream_context_create(['http' => ['timeout' => 10, 'ignore_errors' => true]]);
-        $body = @file_get_contents($base . $path, false, $ctx);
-        $code = 0;
-        if (function_exists('http_get_last_response_headers')) {
-            $headers = http_get_last_response_headers();
-            if ($headers !== false && isset($headers[0]) && preg_match('/\s(\d{3})\s/', $headers[0], $m)) {
-                $code = (int) $m[1];
-            }
+        $url = $base . $path;
+        $ch = curl_init($url);
+        if ($ch === false) {
+            fwrite(STDERR, "curl_init failed for {$path}\n");
+            exit(1);
         }
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_FOLLOWLOCATION => false,
+        ]);
+        $body = curl_exec($ch);
+        $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
         if ($code !== 200) {
             fwrite(STDERR, "HTTP {$path} returned {$code}\n");
             exit(1);

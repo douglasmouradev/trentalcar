@@ -30,6 +30,7 @@ jobs:
         with:
           php-version: "8.3"
           extensions: pdo_mysql, json, fileinfo, gd, curl, sodium
+          ini-values: allow_url_fopen=On
           coverage: none
 
       - name: Install dependencies
@@ -88,15 +89,28 @@ jobs:
           sleep 2
           curl -sf -o /dev/null -w "%{http_code}" http://127.0.0.1:8889/login | grep -q 200
 
-      - name: CI preflight (seed + smoke HTTP)
+      - name: Verify seed password
         env:
-          SMOKE_BASE_URL: http://127.0.0.1:8889
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
           DB_DATABASE: titanium_rental_car
           DB_USERNAME: root
           DB_PASSWORD: root
-        run: php bin/ci-preflight.php
+        run: |
+          php -r '
+          require "bin/bootstrap-cli.php";
+          $u = User::findByEmail("owner@titaniumrental.com");
+          if ($u === null || !password_verify("password123", (string) $u["password_hash"])) {
+            fwrite(STDERR, "invalid demo password hash\n");
+            exit(1);
+          }
+          echo "seed password ok\n";
+          '
+
+      - name: Verify public HTTP routes
+        run: |
+          curl -sf -o /dev/null -w "login:%{http_code}\n" http://127.0.0.1:8889/login | grep -q "login:200"
+          curl -sf -o /dev/null -w "home:%{http_code}\n" http://127.0.0.1:8889/ | grep -q "home:200"
 
       - name: Run PHPUnit
         env:
