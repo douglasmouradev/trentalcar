@@ -159,7 +159,10 @@ final class CustomerController
         readfile($path);
     }
 
-    /** @param array<string, mixed> $post */
+    /**
+     * @param array<string, mixed> $post
+     * @return array<string, mixed>
+     */
     private function sanitize(array $post): array
     {
         return [

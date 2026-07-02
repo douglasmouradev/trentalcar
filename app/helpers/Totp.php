@@ -9,7 +9,7 @@ final class Totp
 
     public static function generateSecret(int $bytes = 20): string
     {
-        return self::base32Encode(random_bytes($bytes));
+        return self::base32Encode(random_bytes(max(1, $bytes)));
     }
 
     public static function verify(string $secret, string $code, int $window = 1): bool
@@ -61,7 +61,7 @@ final class Totp
             if (strlen($chunk) < 5) {
                 $chunk = str_pad($chunk, 5, '0', STR_PAD_RIGHT);
             }
-            $out .= $alphabet[bindec($chunk)];
+            $out .= $alphabet[(int) bindec($chunk) & 31];
         }
         return $out;
     }
@@ -81,7 +81,7 @@ final class Totp
         $out = '';
         foreach (str_split($bits, 8) as $chunk) {
             if (strlen($chunk) === 8) {
-                $out .= chr(bindec($chunk));
+                $out .= chr((int) bindec($chunk) & 0xff);
             }
         }
         return $out;

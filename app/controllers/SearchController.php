@@ -25,7 +25,7 @@ final class SearchController
                 $params[] = Auth::id();
             }
             $customerSql .= ' ORDER BY full_name LIMIT 5';
-            $stmt = $pdo->prepare($customerSql);
+            $stmt = Database::prepare($customerSql);
             $stmt->execute($params);
             foreach ($stmt->fetchAll() as $row) {
                 $results[] = [
@@ -49,7 +49,7 @@ final class SearchController
             }
         }
         $carSql .= ' ORDER BY brand LIMIT 5';
-        $stmt = $pdo->prepare($carSql);
+        $stmt = Database::prepare($carSql);
         $stmt->execute($carParams);
         foreach ($stmt->fetchAll() as $row) {
             $results[] = [
@@ -60,7 +60,7 @@ final class SearchController
         }
 
         if (Auth::isStaff()) {
-            $leadStmt = $pdo->prepare(
+            $leadStmt = Database::prepare(
                 'SELECT id, full_name, email FROM leads
                  WHERE full_name LIKE ? OR email LIKE ? OR phone LIKE ? OR local LIKE ?
                  ORDER BY created_at DESC LIMIT 5'
@@ -83,7 +83,7 @@ final class SearchController
                 $resParams[] = Auth::id();
             }
             $resSql .= ' ORDER BY r.id DESC LIMIT 5';
-            $stmt = $pdo->prepare($resSql);
+            $stmt = Database::prepare($resSql);
             $stmt->execute($resParams);
             foreach ($stmt->fetchAll() as $row) {
                 $results[] = [

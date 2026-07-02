@@ -13,7 +13,7 @@ final class ReportController
             $from = date('Y-m-01');
             $to = date('Y-m-t');
         }
-        $stmt = $pdo->prepare(
+        $stmt = Database::prepare(
             "SELECT DATE_FORMAT(r.pickup_date, '%Y-%m') AS ym, SUM(r.final_amount) AS total, COUNT(*) AS cnt
              FROM reservations r
              WHERE r.status IN ('confirmed','active','completed') AND r.pickup_date BETWEEN ? AND ?
@@ -22,7 +22,7 @@ final class ReportController
         $stmt->execute([$from, $to]);
         $monthly = $stmt->fetchAll();
 
-        $fleet = $pdo->query(
+        $fleet = Database::query(
             "SELECT status, COUNT(*) AS c FROM cars GROUP BY status"
         )->fetchAll();
 
@@ -54,7 +54,7 @@ final class ReportController
             echo 'Invalid range';
             return;
         }
-        $stmt = $pdo->prepare(
+        $stmt = Database::prepare(
             "SELECT DATE_FORMAT(r.pickup_date, '%Y-%m') AS ym, SUM(r.final_amount) AS total, COUNT(*) AS cnt
              FROM reservations r
              WHERE r.status IN ('confirmed','active','completed') AND r.pickup_date BETWEEN ? AND ?

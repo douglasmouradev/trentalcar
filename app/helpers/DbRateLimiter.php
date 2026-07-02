@@ -10,7 +10,7 @@ final class DbRateLimiter
     public static function tooMany(string $bucket, int $max, int $windowSeconds): bool
     {
         try {
-            $stmt = Database::pdo()->prepare('SELECT hits, window_start FROM rate_limits WHERE bucket_key = ?');
+            $stmt = Database::prepare('SELECT hits, window_start FROM rate_limits WHERE bucket_key = ?');
             $stmt->execute([$bucket]);
             $row = $stmt->fetch();
             if (!$row) {
@@ -35,11 +35,11 @@ final class DbRateLimiter
             $pdo = Database::pdo();
             $now = time();
             $pdo->beginTransaction();
-            $stmt = $pdo->prepare('SELECT hits, window_start FROM rate_limits WHERE bucket_key = ? FOR UPDATE');
+            $stmt = Database::prepare('SELECT hits, window_start FROM rate_limits WHERE bucket_key = ? FOR UPDATE');
             $stmt->execute([$bucket]);
             $row = $stmt->fetch();
             if (!$row || $now - (int) $row['window_start'] > $windowSeconds) {
-                $upsert = $pdo->prepare(
+                $upsert = Database::prepare(
                     'INSERT INTO rate_limits (bucket_key, hits, window_start) VALUES (?, 1, ?)
                      ON DUPLICATE KEY UPDATE hits = 1, window_start = VALUES(window_start)'
                 );
@@ -48,7 +48,7 @@ final class DbRateLimiter
                 return 1;
             }
             $hits = (int) $row['hits'] + 1;
-            $upd = $pdo->prepare('UPDATE rate_limits SET hits = ? WHERE bucket_key = ?');
+            $upd = Database::prepare('UPDATE rate_limits SET hits = ? WHERE bucket_key = ?');
             $upd->execute([$hits, $bucket]);
             $pdo->commit();
             return $hits;
@@ -67,7 +67,7 @@ final class DbRateLimiter
     public static function clear(string $bucket): void
     {
         try {
-            $stmt = Database::pdo()->prepare('DELETE FROM rate_limits WHERE bucket_key = ?');
+            $stmt = Database::prepare('DELETE FROM rate_limits WHERE bucket_key = ?');
             $stmt->execute([$bucket]);
         } catch (Throwable) {
             FileRateLimiter::clear($bucket);

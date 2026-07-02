@@ -1,0 +1,5 @@
+deprecated=true
+since=2026-06
+replacement=public/ (rotas PHP: /, /reservar, /consultar, /privacidade, /termos)
+docs=site/README.md
+note=HTML estatico removido; pasta mantida como marcador historico.

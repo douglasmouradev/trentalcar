@@ -43,4 +43,24 @@ final class Database
         }
         return self::$pdo;
     }
+
+    public static function prepare(string $sql): PDOStatement
+    {
+        $stmt = self::pdo()->prepare($sql);
+        if ($stmt === false) {
+            throw new RuntimeException('Failed to prepare SQL statement');
+        }
+
+        return $stmt;
+    }
+
+    public static function query(string $sql): PDOStatement
+    {
+        $stmt = self::pdo()->query($sql);
+        if ($stmt === false) {
+            throw new RuntimeException('Failed to execute SQL query');
+        }
+
+        return $stmt;
+    }
 }

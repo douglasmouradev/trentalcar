@@ -33,7 +33,7 @@ final class HealthController
 
         $dbStart = microtime(true);
         try {
-            Database::pdo()->query('SELECT 1');
+            Database::query('SELECT 1');
             $checks['database'] = true;
             $metrics['db_ms'] = round((microtime(true) - $dbStart) * 1000, 2);
             if (Schema::hasTable('mail_outbox')) {
@@ -62,9 +62,9 @@ final class HealthController
 
         if (Schema::hasTable('mail_outbox')) {
             try {
-                $metrics['mail_failed'] = (int) Database::pdo()
-                    ->query("SELECT COUNT(*) FROM mail_outbox WHERE status = 'failed'")
-                    ->fetchColumn();
+                $metrics['mail_failed'] = (int) Database::query(
+                    "SELECT COUNT(*) FROM mail_outbox WHERE status = 'failed'"
+                )->fetchColumn();
             } catch (Throwable) {
                 $metrics['mail_failed'] = -1;
             }

@@ -29,4 +29,15 @@ final class SecretCipherTest extends TestCase
         $plain = 'JBSWY3DPEHPK3PXP';
         self::assertSame($plain, SecretCipher::decrypt($plain));
     }
+
+    public function testEncryptThrowsWithoutAppKey(): void
+    {
+        unset($_ENV['APP_KEY']);
+        if (!function_exists('sodium_crypto_secretbox')) {
+            self::markTestSkipped('sodium extension not available');
+        }
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('APP_KEY');
+        SecretCipher::encrypt('JBSWY3DPEHPK3PXP');
+    }
 }

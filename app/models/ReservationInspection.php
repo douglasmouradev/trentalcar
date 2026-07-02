@@ -7,7 +7,7 @@ final class ReservationInspection
     /** @return array<int, array<string, mixed>> */
     public static function forReservation(int $reservationId): array
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             'SELECT i.*, u.name AS created_by_name
              FROM reservation_inspections i
              LEFT JOIN users u ON u.id = i.created_by
@@ -18,9 +18,10 @@ final class ReservationInspection
         return $stmt->fetchAll();
     }
 
+    /** @param array<string, mixed> $d */
     public static function create(array $d): int
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             'INSERT INTO reservation_inspections
              (reservation_id, kind, mileage, fuel_level, damage_notes, extra_charges, photo_path, created_by)
              VALUES (?,?,?,?,?,?,?,?)'

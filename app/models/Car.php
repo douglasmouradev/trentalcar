@@ -20,11 +20,11 @@ final class Car
             $sql .= ' AND c.category = ?';
             $params[] = $filters['category'];
         }
-        if (!empty($filters['brand'])) {
+        if (!empty($filters['brand']) && is_string($filters['brand'])) {
             $sql .= ' AND c.brand LIKE ?';
             $params[] = '%' . $filters['brand'] . '%';
         }
-        if (!empty($filters['q'])) {
+        if (!empty($filters['q']) && is_string($filters['q'])) {
             $sql .= ' AND (c.model LIKE ? OR c.license_plate LIKE ? OR c.brand LIKE ?)';
             $q = '%' . $filters['q'] . '%';
             $params[] = $q;
@@ -54,13 +54,16 @@ final class Car
         return Schema::hasColumn('cars', 'deleted_at');
     }
 
-    /** @param array<string, scalar|null|array<int, int>> $filters */
+    /**
+     * @param array<string, scalar|null|array<int, int>> $filters
+     * @return array<int, array<string, mixed>>
+     */
     public static function search(array $filters = []): array
     {
         [$frag, $params] = self::filterSql($filters);
         $sql = 'SELECT c.*, l.name AS location_name FROM cars c LEFT JOIN locations l ON l.id = c.location_id WHERE 1=1'
             . $frag . ' ORDER BY c.brand, c.model';
-        $stmt = Database::pdo()->prepare($sql);
+        $stmt = Database::prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
     }
@@ -73,13 +76,13 @@ final class Car
     {
         [$frag, $params] = self::filterSql($filters);
         $countSql = 'SELECT COUNT(*) FROM cars c WHERE 1=1' . $frag;
-        $stmt = Database::pdo()->prepare($countSql);
+        $stmt = Database::prepare($countSql);
         $stmt->execute($params);
         $total = (int) $stmt->fetchColumn();
         $meta = Pagination::meta($total, $page, $perPage);
         $sql = 'SELECT c.*, l.name AS location_name FROM cars c LEFT JOIN locations l ON l.id = c.location_id WHERE 1=1'
             . $frag . ' ORDER BY c.brand, c.model LIMIT ' . (int) $meta['perPage'] . ' OFFSET ' . (int) $meta['offset'];
-        $stmt = Database::pdo()->prepare($sql);
+        $stmt = Database::prepare($sql);
         $stmt->execute($params);
         return [
             'rows' => $stmt->fetchAll(),
@@ -90,10 +93,11 @@ final class Car
         ];
     }
 
+    /** @return array<string, mixed>|null */
     public static function find(int $id): ?array
     {
         $sql = 'SELECT c.*, l.name AS location_name FROM cars c LEFT JOIN locations l ON l.id = c.location_id WHERE c.id = ?';
-        $stmt = Database::pdo()->prepare($sql);
+        $stmt = Database::prepare($sql);
         $stmt->execute([$id]);
         $row = $stmt->fetch();
         return $row ?: null;
@@ -101,14 +105,17 @@ final class Car
 
     public static function activeReservationCount(int $carId): int
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             "SELECT COUNT(*) FROM reservations WHERE car_id = ? AND status IN ('pending','confirmed','active')"
         );
         $stmt->execute([$carId]);
         return (int) $stmt->fetchColumn();
     }
 
-    /** Soma dos gastos mensais estimados (R$). */
+    /**
+     * Soma dos gastos mensais estimados (R$).
+     * @param array<string, mixed> $c
+     */
     public static function monthlyExpensesTotal(array $c): float
     {
         return max(0.0, (float) ($c['monthly_fuel'] ?? 0))
@@ -118,9 +125,10 @@ final class Car
             + max(0.0, (float) ($c['monthly_extra'] ?? 0));
     }
 
+    /** @param array<string, mixed> $d */
     public static function create(array $d): int
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             'INSERT INTO cars (license_plate, brand, model, year, color, color_hex, category, seats, transmission, fuel, daily_rate, status, location_id, mileage,
              monthly_fuel, monthly_toll, monthly_wash, monthly_maintenance, monthly_extra, image_url, notes)
              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
@@ -136,9 +144,10 @@ final class Car
         return (int) Database::pdo()->lastInsertId();
     }
 
+    /** @param array<string, mixed> $d */
     public static function update(int $id, array $d): void
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             'UPDATE cars SET license_plate=?, brand=?, model=?, year=?, color=?, color_hex=?, category=?, seats=?, transmission=?, fuel=?, daily_rate=?, status=?, location_id=?, mileage=?,
              monthly_fuel=?, monthly_toll=?, monthly_wash=?, monthly_maintenance=?, monthly_extra=?, image_url=?, notes=? WHERE id=?'
         );
@@ -158,11 +167,11 @@ final class Car
             throw new RuntimeException('car_has_active_reservations');
         }
         if (self::supportsSoftDelete()) {
-            $stmt = Database::pdo()->prepare('UPDATE cars SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL');
+            $stmt = Database::prepare('UPDATE cars SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL');
             $stmt->execute([$id]);
             return;
         }
-        $stmt = Database::pdo()->prepare('DELETE FROM cars WHERE id = ?');
+        $stmt = Database::prepare('DELETE FROM cars WHERE id = ?');
         $stmt->execute([$id]);
     }
 
@@ -175,7 +184,7 @@ final class Car
                 WHERE c.status IN ('available','rented'){$deleted}
                 ORDER BY c.daily_rate ASC, c.brand, c.model
                 LIMIT " . (int) $limit;
-        return Database::pdo()->query($sql)->fetchAll();
+        return Database::query($sql)->fetchAll();
     }
 
     public static function landingFilterKey(string $category): string

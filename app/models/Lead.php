@@ -6,9 +6,10 @@ final class Lead
 {
     public const STATUSES = ['new', 'contacted', 'converted', 'discarded'];
 
+    /** @param array<string, mixed> $d */
     public static function create(array $d): int
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             'INSERT INTO leads (full_name, email, phone, local, inicio, fim, mesmo_local, local_devolucao, car_id, ip_hash)
              VALUES (?,?,?,?,?,?,?,?,?,?)'
         );
@@ -27,13 +28,14 @@ final class Lead
         return (int) Database::pdo()->lastInsertId();
     }
 
+    /** @return array<string, mixed>|null */
     public static function find(int $id): ?array
     {
         $sql = 'SELECT l.*, c.brand AS car_brand, c.model AS car_model, c.license_plate AS car_plate
                 FROM leads l
                 LEFT JOIN cars c ON c.id = l.car_id
                 WHERE l.id = ?';
-        $stmt = Database::pdo()->prepare($sql);
+        $stmt = Database::prepare($sql);
         $stmt->execute([$id]);
         $row = $stmt->fetch();
         return $row ?: null;
@@ -56,14 +58,14 @@ final class Lead
             array_push($params, $like, $like, $like, $like);
         }
         $base = ' FROM leads l LEFT JOIN cars c ON c.id = l.car_id';
-        $stmt = Database::pdo()->prepare('SELECT COUNT(*)' . $base . $where);
+        $stmt = Database::prepare('SELECT COUNT(*)' . $base . $where);
         $stmt->execute($params);
         $total = (int) $stmt->fetchColumn();
         $meta = Pagination::meta($total, $page, $perPage);
         $sql = 'SELECT l.*, c.brand AS car_brand, c.model AS car_model, c.license_plate AS car_plate'
             . $base . $where . ' ORDER BY l.created_at DESC LIMIT '
             . (int) $meta['perPage'] . ' OFFSET ' . (int) $meta['offset'];
-        $stmt = Database::pdo()->prepare($sql);
+        $stmt = Database::prepare($sql);
         $stmt->execute($params);
         return [
             'rows' => $stmt->fetchAll(),
@@ -79,19 +81,19 @@ final class Lead
         if (!in_array($status, self::STATUSES, true)) {
             return;
         }
-        $stmt = Database::pdo()->prepare('UPDATE leads SET status = ?, notes = COALESCE(?, notes) WHERE id = ?');
+        $stmt = Database::prepare('UPDATE leads SET status = ?, notes = COALESCE(?, notes) WHERE id = ?');
         $stmt->execute([$status, $notes, $id]);
     }
 
     public static function countNew(): int
     {
-        return (int) Database::pdo()->query("SELECT COUNT(*) FROM leads WHERE status = 'new'")->fetchColumn();
+        return (int) Database::query("SELECT COUNT(*) FROM leads WHERE status = 'new'")->fetchColumn();
     }
 
     public static function countStale(int $hours = 24): int
     {
         $hours = max(1, $hours);
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             "SELECT COUNT(*) FROM leads WHERE status = 'new' AND created_at < DATE_SUB(NOW(), INTERVAL ? HOUR)"
         );
         $stmt->execute([$hours]);
@@ -101,7 +103,7 @@ final class Lead
     /** @return array<int, array<string, mixed>> */
     public static function recentNew(int $limit = 5): array
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             "SELECT id, full_name, email, inicio, fim, created_at FROM leads WHERE status = 'new' ORDER BY created_at DESC LIMIT ?"
         );
         $stmt->bindValue(1, max(1, $limit), PDO::PARAM_INT);

@@ -9,6 +9,7 @@ final class InspectionUpload
         return BASE_PATH . '/storage/inspections';
     }
 
+    /** @param array<string, mixed>|null $file */
     public static function store(?array $file, int $reservationId, string $kind): ?string
     {
         if ($file === null || ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
@@ -39,6 +40,17 @@ final class InspectionUpload
             throw new RuntimeException('save failed');
         }
         return $name;
+    }
+
+    public static function deleteStored(?string $stored): void
+    {
+        if ($stored === null || $stored === '') {
+            return;
+        }
+        $path = self::storeDir() . '/' . basename($stored);
+        if (is_file($path)) {
+            unlink($path);
+        }
     }
 
     public static function absolutePath(int $reservationId, string $stored): ?string

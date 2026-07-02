@@ -20,7 +20,7 @@ final class LocaleController
         if (Auth::check()) {
             $uid = Auth::id();
             if ($uid !== null) {
-                $stmt = Database::pdo()->prepare('UPDATE users SET lang_pref = ? WHERE id = ?');
+                $stmt = Database::prepare('UPDATE users SET lang_pref = ? WHERE id = ?');
                 $stmt->execute([$lang, $uid]);
                 Auth::refreshUserFromDb();
             }

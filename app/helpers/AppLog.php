@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 final class AppLog
 {
+    /** @param array<string, mixed> $context */
     public static function info(string $event, array $context = []): void
     {
         self::write('info', $event, $context);
     }
 
+    /** @param array<string, mixed> $context */
     public static function error(string $event, array $context = []): void
     {
         self::write('error', $event, $context);

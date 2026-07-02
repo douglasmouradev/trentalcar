@@ -1,3 +1,5 @@
+-- HISTÓRICO: prefixo 008 partilhado (ver 008_leads_contact.sql).
+-- Não renomear se já aplicada. Documentação: database/migrations/README.md
 ALTER TABLE user_cars
   ADD COLUMN quota_percent DECIMAL(5,2) NOT NULL DEFAULT 100.00 AFTER car_id;
 

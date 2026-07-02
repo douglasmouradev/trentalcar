@@ -4,30 +4,35 @@ declare(strict_types=1);
 
 final class User
 {
+    /** @return array<string, mixed>|null */
     public static function findByEmail(string $email): ?array
     {
-        $stmt = Database::pdo()->prepare('SELECT * FROM users WHERE email = ? LIMIT 1');
+        $stmt = Database::prepare('SELECT * FROM users WHERE email = ? LIMIT 1');
         $stmt->execute([$email]);
         $row = $stmt->fetch();
         return $row ?: null;
     }
 
+    /** @return array<string, mixed>|null */
     public static function find(int $id): ?array
     {
-        $stmt = Database::pdo()->prepare('SELECT * FROM users WHERE id = ? LIMIT 1');
+        $stmt = Database::prepare('SELECT * FROM users WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
         $row = $stmt->fetch();
         return $row ?: null;
     }
 
-    /** Utilizador activo para revalidação de sessão. */
+    /**
+     * Utilizador activo para revalidação de sessão.
+     * @return array<string, mixed>|null
+     */
     public static function findForSession(int $id): ?array
     {
         $cols = 'id, name, email, role, lang_pref';
         if (Schema::hasColumn('users', 'must_change_password')) {
             $cols .= ', must_change_password';
         }
-        $stmt = Database::pdo()->prepare("SELECT {$cols} FROM users WHERE id = ? AND is_active = 1 LIMIT 1");
+        $stmt = Database::prepare("SELECT {$cols} FROM users WHERE id = ? AND is_active = 1 LIMIT 1");
         $stmt->execute([$id]);
         $row = $stmt->fetch();
         return $row ?: null;
@@ -35,7 +40,7 @@ final class User
 
     public static function countActiveOwners(): int
     {
-        $stmt = Database::pdo()->query("SELECT COUNT(*) FROM users WHERE role = 'owner' AND is_active = 1");
+        $stmt = Database::query("SELECT COUNT(*) FROM users WHERE role = 'owner' AND is_active = 1");
         return (int) $stmt->fetchColumn();
     }
 
@@ -53,7 +58,7 @@ final class User
             }
         }
         if ($emails === []) {
-            $rows = Database::pdo()->query(
+            $rows = Database::query(
                 "SELECT email FROM users WHERE role IN ('owner','operator') AND is_active = 1"
             )->fetchAll();
             foreach ($rows as $row) {
@@ -70,7 +75,7 @@ final class User
     public static function all(): array
     {
         $cols = self::listColumns();
-        return Database::pdo()->query("SELECT {$cols} FROM users ORDER BY name")->fetchAll();
+        return Database::query("SELECT {$cols} FROM users ORDER BY name")->fetchAll();
     }
 
     /**
@@ -79,10 +84,10 @@ final class User
     public static function paginated(int $page, int $perPage, bool $staffOnly = false): array
     {
         $where = $staffOnly ? "WHERE role IN ('owner','operator')" : '';
-        $total = (int) Database::pdo()->query('SELECT COUNT(*) FROM users ' . $where)->fetchColumn();
+        $total = (int) Database::query('SELECT COUNT(*) FROM users ' . $where)->fetchColumn();
         $meta = Pagination::meta($total, $page, $perPage);
         $cols = self::listColumns();
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             "SELECT {$cols} FROM users {$where} ORDER BY name LIMIT " . (int) $meta['perPage'] . ' OFFSET ' . (int) $meta['offset']
         );
         $stmt->execute();
@@ -95,11 +100,12 @@ final class User
         ];
     }
 
+    /** @param array<string, mixed> $data */
     public static function create(array $data): int
     {
         $hash = password_hash($data['password'], PASSWORD_BCRYPT, ['cost' => 12]);
         if (Schema::hasColumn('users', 'must_change_password')) {
-            $stmt = Database::pdo()->prepare(
+            $stmt = Database::prepare(
                 'INSERT INTO users (name, email, password_hash, role, phone, is_active, must_change_password, lang_pref) VALUES (?,?,?,?,?,?,?,?)'
             );
             $stmt->execute([
@@ -113,7 +119,7 @@ final class User
                 $data['lang_pref'] ?? 'pt-BR',
             ]);
         } else {
-            $stmt = Database::pdo()->prepare(
+            $stmt = Database::prepare(
                 'INSERT INTO users (name, email, password_hash, role, phone, is_active, lang_pref) VALUES (?,?,?,?,?,?,?)'
             );
             $stmt->execute([
@@ -131,7 +137,7 @@ final class User
 
     public static function emailTakenByOther(string $email, int $excludeUserId): bool
     {
-        $stmt = Database::pdo()->prepare('SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1');
+        $stmt = Database::prepare('SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1');
         $stmt->execute([$email, $excludeUserId]);
         return (bool) $stmt->fetch();
     }
@@ -158,26 +164,26 @@ final class User
             }
         }
         $params[] = $id;
-        Database::pdo()->prepare('UPDATE users SET ' . $fields . ' WHERE id = ?')->execute($params);
+        Database::prepare('UPDATE users SET ' . $fields . ' WHERE id = ?')->execute($params);
     }
 
     public static function updatePassword(int $id, string $password): void
     {
         $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
         if (Schema::hasColumn('users', 'must_change_password')) {
-            $stmt = Database::pdo()->prepare(
+            $stmt = Database::prepare(
                 'UPDATE users SET password_hash = ?, must_change_password = 0 WHERE id = ?'
             );
             $stmt->execute([$hash, $id]);
             return;
         }
-        $stmt = Database::pdo()->prepare('UPDATE users SET password_hash = ? WHERE id = ?');
+        $stmt = Database::prepare('UPDATE users SET password_hash = ? WHERE id = ?');
         $stmt->execute([$hash, $id]);
     }
 
     public static function verifyPassword(int $id, string $password): bool
     {
-        $stmt = Database::pdo()->prepare('SELECT password_hash FROM users WHERE id = ? LIMIT 1');
+        $stmt = Database::prepare('SELECT password_hash FROM users WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
         $hash = $stmt->fetchColumn();
         return is_string($hash) && password_verify($password, $hash);
@@ -188,7 +194,7 @@ final class User
         if (!Schema::hasColumn('users', 'totp_secret')) {
             return;
         }
-        $stmt = Database::pdo()->prepare('UPDATE users SET totp_secret = ? WHERE id = ?');
+        $stmt = Database::prepare('UPDATE users SET totp_secret = ? WHERE id = ?');
         $stmt->execute([SecretCipher::encrypt($secret), $id]);
     }
 
@@ -197,7 +203,7 @@ final class User
         if (!Schema::hasColumn('users', 'totp_secret')) {
             return;
         }
-        $stmt = Database::pdo()->prepare('UPDATE users SET totp_secret = NULL WHERE id = ?');
+        $stmt = Database::prepare('UPDATE users SET totp_secret = NULL WHERE id = ?');
         $stmt->execute([$id]);
     }
 
@@ -206,7 +212,7 @@ final class User
         if (!Schema::hasColumn('users', 'totp_secret')) {
             return false;
         }
-        $stmt = Database::pdo()->prepare('SELECT totp_secret FROM users WHERE id = ? LIMIT 1');
+        $stmt = Database::prepare('SELECT totp_secret FROM users WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
         $v = $stmt->fetchColumn();
         return is_string($v) && $v !== '';
@@ -217,7 +223,7 @@ final class User
         if (!Schema::hasColumn('users', 'totp_secret')) {
             return null;
         }
-        $stmt = Database::pdo()->prepare('SELECT totp_secret FROM users WHERE id = ? LIMIT 1');
+        $stmt = Database::prepare('SELECT totp_secret FROM users WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
         $v = $stmt->fetchColumn();
         if (!is_string($v) || $v === '') {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 final class View
 {
+    /** @param array<string, mixed> $data */
     public static function render(string $view, array $data = [], string $layout = 'main'): void
     {
         $data['__lang'] = Lang::load();
@@ -27,6 +28,7 @@ final class View
         include $layoutPath;
     }
 
+    /** @param array<string, mixed> $data */
     public static function partial(string $view, array $data = []): void
     {
         extract($data, EXTR_SKIP);

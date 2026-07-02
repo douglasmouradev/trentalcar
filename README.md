@@ -54,7 +54,7 @@ SaaS de locação de veículos em **PHP 8.3+** com **MySQL 8.0+**, MVC sem frame
 
 
 
-   Acesse `http://localhost:8888` (ajuste conforme `APP_URL`). Use **`public/router.php`** para que rotas como `/login` e `/dashboard` funcionem (o servidor embutido não lê `.htaccess`). A landing integrada e as páginas **LGPD** (`/privacidade`, `/termos`) só funcionam com este servidor (ou Apache) a apontar para **`public`**. Se pré-visualizar a pasta `site/` fora do PHP, edite o atributo **`data-dev-login-base`** no `site/index.html` para o mesmo URL do passo 5 (por defeito `http://localhost:8888`) — assim **Minha conta** abre o login correcto. Em `file://` sem esse URL, abre-se `site/login.html` com instruções. Para LGPD offline use `privacidade.html` e `termos.html` na pasta `site/`.
+   Acesse `http://localhost:8888` (ajuste conforme `APP_URL`). Use **`public/router.php`** para que rotas como `/login` e `/dashboard` funcionem (o servidor embutido não lê `.htaccess`). A landing e as páginas **LGPD** (`/privacidade`, `/termos`) estão integradas em `public/` — não use a pasta legada `site/` (ver `site/README.md`).
 
 
 
@@ -168,7 +168,7 @@ Use o seletor no topo da app autenticada (`POST /locale` com CSRF). Visitantes n
 - O formulário na página inicial (`POST /lead`) grava pedidos na tabela **`leads`** (MySQL). Fallback JSONL em `storage/leads/` se a BD falhar.
 - E-mail ao visitante + notificação à equipa (fila `mail_outbox` — `php bin/process-mail.php`).
 - Páginas públicas: `/`, `/reservar`, `/consultar`.
-- A pasta `site/` é legado estático — ver `site/README.md`.
+- A pasta `site/` está **deprecated** (só `README.md` + marcador) — ver `site/README.md`.
 - SEO: `GET /sitemap.xml`, `GET /robots.txt`, dados estruturados na landing.
 
 

@@ -112,7 +112,6 @@ final class LeadsController
                 'return' => (string) ($lead['local_devolucao'] ?? $lead['local']),
             ]),
         ];
-        Lead::updateStatus((int) $id, 'contacted', null);
         header('Location: ' . Router::url('/reservations/create'));
         exit;
     }

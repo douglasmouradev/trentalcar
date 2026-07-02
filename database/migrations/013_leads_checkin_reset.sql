@@ -1,3 +1,6 @@
+-- HISTÓRICO: schema moderno de leads; sobrepõe 006/008 se já existirem (IF NOT EXISTS).
+-- Ponte de dados legado→moderno: 017_leads_modern_schema.sql. Não renomear se já aplicada.
+-- Documentação: database/migrations/README.md
 CREATE TABLE IF NOT EXISTS leads (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   full_name VARCHAR(150) NOT NULL,

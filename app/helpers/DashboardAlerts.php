@@ -29,7 +29,7 @@ final class DashboardAlerts
             JOIN cars car ON car.id = r.car_id
             WHERE r.status = 'active' AND r.return_date < CURDATE(){$opFilter}
             ORDER BY r.return_date ASC LIMIT 10";
-        $stmt = $pdo->prepare($overdueSql);
+        $stmt = Database::prepare($overdueSql);
         $stmt->execute($params);
         $overdue = $stmt->fetchAll();
 
@@ -39,7 +39,7 @@ final class DashboardAlerts
             JOIN cars car ON car.id = r.car_id
             WHERE r.status IN ('pending','confirmed') AND r.pickup_date = CURDATE(){$opFilter}
             ORDER BY r.pickup_time ASC LIMIT 10";
-        $stmt = $pdo->prepare($checkinSql);
+        $stmt = Database::prepare($checkinSql);
         $stmt->execute($params);
         $checkins = $stmt->fetchAll();
 
@@ -48,7 +48,7 @@ final class DashboardAlerts
             JOIN customers c ON c.id = r.customer_id
             WHERE r.payment_status IN ('unpaid','partial') AND r.status NOT IN ('cancelled','completed'){$opFilter}
             ORDER BY r.pickup_date ASC LIMIT 10";
-        $stmt = $pdo->prepare($unpaidSql);
+        $stmt = Database::prepare($unpaidSql);
         $stmt->execute($params);
         $unpaid = $stmt->fetchAll();
 

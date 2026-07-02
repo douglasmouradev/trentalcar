@@ -7,7 +7,7 @@ final class AuditLog
     /** @return array<int, array<string, mixed>> */
     public static function recent(int $limit = 100): array
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             'SELECT a.*, u.name AS user_name FROM audit_logs a
              LEFT JOIN users u ON u.id = a.user_id
              ORDER BY a.created_at DESC LIMIT ' . (int) $limit
@@ -21,9 +21,9 @@ final class AuditLog
      */
     public static function paginated(int $page, int $perPage): array
     {
-        $total = (int) Database::pdo()->query('SELECT COUNT(*) FROM audit_logs')->fetchColumn();
+        $total = (int) Database::query('SELECT COUNT(*) FROM audit_logs')->fetchColumn();
         $meta = Pagination::meta($total, $page, $perPage);
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             'SELECT a.*, u.name AS user_name FROM audit_logs a
              LEFT JOIN users u ON u.id = a.user_id
              ORDER BY a.created_at DESC LIMIT ' . (int) $meta['perPage'] . ' OFFSET ' . (int) $meta['offset']

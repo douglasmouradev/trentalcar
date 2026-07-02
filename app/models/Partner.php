@@ -7,7 +7,7 @@ final class Partner
     /** @return array<int, array<string, mixed>> */
     public static function all(): array
     {
-        $stmt = Database::pdo()->query(
+        $stmt = Database::query(
             "SELECT id, name, email, phone, is_active, lang_pref, created_at
              FROM users WHERE role = 'partner' ORDER BY name"
         );
@@ -19,9 +19,9 @@ final class Partner
      */
     public static function paginated(int $page, int $perPage): array
     {
-        $total = (int) Database::pdo()->query("SELECT COUNT(*) FROM users WHERE role = 'partner'")->fetchColumn();
+        $total = (int) Database::query("SELECT COUNT(*) FROM users WHERE role = 'partner'")->fetchColumn();
         $meta = Pagination::meta($total, $page, $perPage);
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             "SELECT id, name, email, phone, is_active, lang_pref, created_at
              FROM users WHERE role = 'partner'
              ORDER BY name
@@ -46,9 +46,10 @@ final class Partner
         ];
     }
 
+    /** @return array<string, mixed>|null */
     public static function find(int $id): ?array
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             "SELECT * FROM users WHERE id = ? AND role = 'partner' LIMIT 1"
         );
         $stmt->execute([$id]);

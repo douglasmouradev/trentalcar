@@ -14,7 +14,7 @@ final class Schema
             return self::$columns[$key];
         }
         try {
-            $stmt = Database::pdo()->prepare(
+            $stmt = Database::prepare(
                 'SELECT COUNT(*) FROM information_schema.COLUMNS
                  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?'
             );
@@ -33,7 +33,7 @@ final class Schema
             return self::$columns[$key];
         }
         try {
-            $stmt = Database::pdo()->prepare(
+            $stmt = Database::prepare(
                 'SELECT COUNT(*) FROM information_schema.TABLES
                  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?'
             );

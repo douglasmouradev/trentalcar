@@ -85,8 +85,13 @@ final class LeadController
                 'ip_hash' => hash('sha256', (string) ($_SERVER['REMOTE_ADDR'] ?? '')),
             ]);
         } catch (Throwable $e) {
-            self::appendJsonlFallback($name, $email, $phone, $local, $inicio, $fim, $mesmo, $localDevolucao);
             AppLog::error('lead.create_failed', ['error' => $e->getMessage()]);
+            try {
+                self::appendJsonlFallback($name, $email, $phone, $local, $inicio, $fim, $mesmo, $localDevolucao);
+            } catch (Throwable $fallbackError) {
+                AppLog::error('lead.fallback_failed', ['error' => $fallbackError->getMessage()]);
+            }
+            self::fail($returnUrl, $old, [Lang::get('landing.lead_erro')]);
         }
 
         $carLabel = null;
@@ -130,8 +135,10 @@ final class LeadController
         ];
     }
 
-    /** @param array<string, mixed> $old */
-    /** @param array<int, string> $errors */
+    /**
+     * @param array<string, mixed> $old
+     * @param array<int, string> $errors
+     */
     private static function fail(string $returnUrl, array $old, array $errors): never
     {
         $_SESSION['lead_form_old'] = $old;

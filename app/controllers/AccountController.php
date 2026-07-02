@@ -92,6 +92,11 @@ final class AccountController
             header('Location: ' . Router::url('/account/security'));
             exit;
         }
+        if (!SecretCipher::encryptionAvailable()) {
+            Flash::error(Lang::get('account.2fa_key_required'));
+            header('Location: ' . Router::url('/account/security'));
+            exit;
+        }
         $uid = Auth::id();
         if ($uid === null) {
             header('Location: ' . Router::url('/login'));
@@ -124,7 +129,13 @@ final class AccountController
         }
         TotpRateLimiter::clear('enable');
         PasswordRateLimiter::clear($uid, 'totp_enable');
-        User::setTotpSecret($uid, $secret);
+        try {
+            User::setTotpSecret($uid, $secret);
+        } catch (RuntimeException) {
+            Flash::error(Lang::get('account.2fa_key_required'));
+            header('Location: ' . Router::url('/account/security'));
+            exit;
+        }
         unset($_SESSION['totp_setup_secret']);
         $codes = TotpRecovery::regenerate($uid);
         $_SESSION['totp_recovery_codes'] = $codes;
@@ -175,6 +186,11 @@ final class AccountController
         }
         if (!Schema::hasColumn('users', 'totp_secret')) {
             Flash::error(Lang::get('account.2fa_unavailable'));
+            header('Location: ' . Router::url('/account/security'));
+            exit;
+        }
+        if (!SecretCipher::encryptionAvailable()) {
+            Flash::error(Lang::get('account.2fa_key_required'));
             header('Location: ' . Router::url('/account/security'));
             exit;
         }

@@ -14,7 +14,10 @@ final class Flash
         self::set('success', $message);
     }
 
-    /** Flash de sucesso com chave i18n e placeholders. */
+    /**
+     * Flash de sucesso com chave i18n e placeholders.
+     * @param array<string, string|int|float> $replace
+     */
     public static function successKey(string $key, array $replace = []): void
     {
         self::success(Lang::get($key, $replace));

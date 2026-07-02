@@ -34,7 +34,7 @@ final class ReservationController
         $cars = Auth::isOwner()
             ? Car::search([])
             : Car::search(['status' => 'available']);
-        $operators = Database::pdo()->query("SELECT id, name FROM users WHERE role = 'operator' AND is_active = 1 ORDER BY name")->fetchAll();
+        $operators = Database::query("SELECT id, name FROM users WHERE role = 'operator' AND is_active = 1 ORDER BY name")->fetchAll();
         View::render('reservations/calendar', [
             'title' => Lang::get('nav.calendar'),
             'cars' => $cars,
@@ -243,22 +243,24 @@ final class ReservationController
         $mileage = max(0, (int) ($_POST['pickup_mileage'] ?? 0));
         $fuel = (string) ($_POST['fuel_level_pickup'] ?? 'full');
         $damageNotes = trim((string) ($_POST['damage_notes_pickup'] ?? '')) ?: null;
+        $photo = null;
+        $inspection = null;
+        if (Schema::hasTable('reservation_inspections')) {
+            $inspection = [
+                'damage_notes' => $damageNotes,
+                'extra_charges' => 0,
+                'photo_path' => null,
+                'created_by' => Auth::id(),
+            ];
+        }
         try {
-            Reservation::checkIn((int) $id, $mileage, $fuel);
-            if (Schema::hasTable('reservation_inspections')) {
+            if ($inspection !== null) {
                 $photo = InspectionUpload::store($_FILES['photo_pickup'] ?? null, (int) $id, 'pickup');
-                ReservationInspection::create([
-                    'reservation_id' => (int) $id,
-                    'kind' => 'pickup',
-                    'mileage' => $mileage,
-                    'fuel_level' => $fuel,
-                    'damage_notes' => $damageNotes,
-                    'extra_charges' => 0,
-                    'photo_path' => $photo,
-                    'created_by' => Auth::id(),
-                ]);
+                $inspection['photo_path'] = $photo;
             }
+            Reservation::checkIn((int) $id, $mileage, $fuel, $inspection);
         } catch (Throwable $e) {
+            InspectionUpload::deleteStored($photo);
             AppLog::error('reservation.checkin_failed', ['id' => $id, 'error' => $e->getMessage()]);
             Flash::error(Lang::get('flash.error'));
             header('Location: ' . Router::url('/reservations/' . $id));
@@ -292,25 +294,24 @@ final class ReservationController
             header('Location: ' . Router::url('/reservations/' . $id));
             exit;
         }
+        $photo = null;
+        $inspection = null;
+        if (Schema::hasTable('reservation_inspections')) {
+            $inspection = [
+                'damage_notes' => $damageNotes,
+                'extra_charges' => $extraCharges,
+                'photo_path' => null,
+                'created_by' => Auth::id(),
+            ];
+        }
         try {
-            Reservation::checkOut((int) $id, $mileage, $fuel);
-            if (Schema::hasTable('reservation_inspections')) {
+            if ($inspection !== null) {
                 $photo = InspectionUpload::store($_FILES['photo_return'] ?? null, (int) $id, 'return');
-                ReservationInspection::create([
-                    'reservation_id' => (int) $id,
-                    'kind' => 'return',
-                    'mileage' => $mileage,
-                    'fuel_level' => $fuel,
-                    'damage_notes' => $damageNotes,
-                    'extra_charges' => $extraCharges,
-                    'photo_path' => $photo,
-                    'created_by' => Auth::id(),
-                ]);
-                if ($extraCharges > 0) {
-                    Reservation::addExtraCharges((int) $id, $extraCharges);
-                }
+                $inspection['photo_path'] = $photo;
             }
+            Reservation::checkOut((int) $id, $mileage, $fuel, $inspection);
         } catch (Throwable $e) {
+            InspectionUpload::deleteStored($photo);
             AppLog::error('reservation.checkout_failed', ['id' => $id, 'error' => $e->getMessage()]);
             Flash::error(Lang::get('flash.error'));
             header('Location: ' . Router::url('/reservations/' . $id));
@@ -390,7 +391,11 @@ final class ReservationController
         return $d;
     }
 
-    /** @param array<string, mixed> $post */
+    /**
+     * @param array<string, mixed> $post
+     * @param array<string, mixed>|null $old
+     * @return array<string, mixed>
+     */
     private function normalize(array $post, ?int $excludeId = null, ?array $old = null): array
     {
         $result = ReservationService::validateInput($post, Auth::isOwner(), $old);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 final class Lang
 {
+    /** @var array<string, string>|null */
     private static ?array $strings = null;
 
     public static function locale(): string
@@ -25,6 +26,7 @@ final class Lang
         }
     }
 
+    /** @return array<string, string> */
     public static function load(): array
     {
         if (self::$strings !== null) {
@@ -35,6 +37,7 @@ final class Lang
         return self::$strings;
     }
 
+    /** @param array<string, string|int|float> $replace */
     public static function get(string $key, array $replace = []): string
     {
         $all = self::load();
@@ -47,6 +50,7 @@ final class Lang
         return $text;
     }
 
+    /** @param array<string, string|int|float> $replace */
     public static function e(string $key, array $replace = []): string
     {
         return htmlspecialchars(self::get($key, $replace), ENT_QUOTES, 'UTF-8');

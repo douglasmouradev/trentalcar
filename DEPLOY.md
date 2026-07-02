@@ -79,7 +79,7 @@ Configure monitorização (Uptime Kuma, Pingdom, etc.) para alertar se `status !
 ## 8. Rollback
 
 1. Restaurar código anterior (git tag)
-2. `php bin/migrate.php` (migrations são forward-only; evite downgrades de schema)
+2. `php bin/migrate.php` (migrations são forward-only; evite downgrades de schema). Prefixos duplicados e ordem: `database/migrations/README.md`.
 3. Restaurar BD se necessário: `mysql ... < storage/backups/db-YYYYMMDD.sql`
 
 ## 8. Docker

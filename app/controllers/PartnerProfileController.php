@@ -53,6 +53,9 @@ final class PartnerProfileController
         header('Content-Disposition: attachment; filename="partner-reservations-' . date('Y-m-d') . '.csv"');
         echo "\xEF\xBB\xBF";
         $out = fopen('php://output', 'w');
+        if ($out === false) {
+            throw new RuntimeException('Failed to open CSV output stream');
+        }
         fputcsv($out, [
             Lang::get('reservation.code'),
             Lang::get('reservation.customer'),

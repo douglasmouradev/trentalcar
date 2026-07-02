@@ -1,3 +1,5 @@
+-- HISTÓRICO: prefixo 006 partilhado (ver 006_must_change_password.sql).
+-- Não renomear se já aplicada. Documentação: database/migrations/README.md
 -- Leads, rate limits distribuídos, soft delete de veículos, índices
 
 CREATE TABLE IF NOT EXISTS leads (

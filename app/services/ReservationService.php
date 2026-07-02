@@ -7,6 +7,7 @@ final class ReservationService
 {
     /**
      * @param array<string, mixed> $post
+     * @param array<string, mixed>|null $old
      * @return array{ok: bool, error: string|null, data: array<string, mixed>|null}
      */
     public static function validateInput(array $post, bool $isOwner, ?array $old = null): array
@@ -14,6 +15,7 @@ final class ReservationService
         return ReservationValidator::validate($post, $isOwner, $old);
     }
 
+    /** @param array<string, mixed> $data */
     public static function create(array $data): int
     {
         return Reservation::createSafely($data);

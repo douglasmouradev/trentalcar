@@ -1,3 +1,6 @@
+-- HISTÓRICO: prefixo 009 partilhado (ver 009_fix_demo_password_hash.sql).
+-- Sobreposição com 013_leads_checkin_reset.sql (CREATE IF NOT EXISTS). Não renomear se já aplicada.
+-- Documentação: database/migrations/README.md
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNSIGNED NOT NULL,

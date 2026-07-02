@@ -18,6 +18,10 @@ final class Audit
         'totp_secret',
     ];
 
+    /**
+     * @param array<string, mixed>|null $oldData
+     * @param array<string, mixed>|null $newData
+     */
     public static function log(
         ?int $userId,
         string $action,
@@ -28,7 +32,7 @@ final class Audit
     ): void {
         $ip = $_SERVER['REMOTE_ADDR'] ?? null;
         $ipStored = is_string($ip) && $ip !== '' ? hash('sha256', $ip) : null;
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             'INSERT INTO audit_logs (user_id, action, entity, entity_id, old_data, new_data, ip_address)
              VALUES (?, ?, ?, ?, ?, ?, ?)'
         );
@@ -43,7 +47,10 @@ final class Audit
         ]);
     }
 
-    /** @param array<string, mixed> $data */
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private static function redact(array $data): array
     {
         $out = $data;

@@ -13,10 +13,10 @@ final class TotpRecovery
             return [];
         }
         $pdo = Database::pdo();
-        $pdo->prepare('DELETE FROM totp_recovery_codes WHERE user_id = ?')->execute([$userId]);
+        Database::prepare('DELETE FROM totp_recovery_codes WHERE user_id = ?')->execute([$userId]);
 
         $plain = [];
-        $stmt = $pdo->prepare('INSERT INTO totp_recovery_codes (user_id, code_hash) VALUES (?, ?)');
+        $stmt = Database::prepare('INSERT INTO totp_recovery_codes (user_id, code_hash) VALUES (?, ?)');
         for ($i = 0; $i < self::CODE_COUNT; $i++) {
             $code = self::generatePlainCode();
             $plain[] = $code;
@@ -37,7 +37,7 @@ final class TotpRecovery
         $hash = hash('sha256', $norm);
         $pdo = Database::pdo();
         $pdo->beginTransaction();
-        $stmt = $pdo->prepare(
+        $stmt = Database::prepare(
             'SELECT id FROM totp_recovery_codes WHERE user_id = ? AND code_hash = ? AND used_at IS NULL LIMIT 1 FOR UPDATE'
         );
         $stmt->execute([$userId, $hash]);
@@ -46,7 +46,7 @@ final class TotpRecovery
             $pdo->rollBack();
             return false;
         }
-        $pdo->prepare('UPDATE totp_recovery_codes SET used_at = NOW() WHERE id = ?')->execute([(int) $row['id']]);
+        Database::prepare('UPDATE totp_recovery_codes SET used_at = NOW() WHERE id = ?')->execute([(int) $row['id']]);
         $pdo->commit();
         return true;
     }
@@ -56,7 +56,7 @@ final class TotpRecovery
         if (!Schema::hasTable('totp_recovery_codes')) {
             return;
         }
-        Database::pdo()->prepare('DELETE FROM totp_recovery_codes WHERE user_id = ?')->execute([$userId]);
+        Database::prepare('DELETE FROM totp_recovery_codes WHERE user_id = ?')->execute([$userId]);
     }
 
     public static function remainingCount(int $userId): int
@@ -64,7 +64,7 @@ final class TotpRecovery
         if (!Schema::hasTable('totp_recovery_codes')) {
             return 0;
         }
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             'SELECT COUNT(*) FROM totp_recovery_codes WHERE user_id = ? AND used_at IS NULL'
         );
         $stmt->execute([$userId]);

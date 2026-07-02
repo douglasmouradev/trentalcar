@@ -46,6 +46,7 @@ final class Mail
         return self::send($to, $subject, $bodyText);
     }
 
+    /** @return array{processed: int, sent: int, failed: int} */
     public static function processOutbox(int $limit = 20): array
     {
         if (!Schema::hasTable('mail_outbox')) {
@@ -159,7 +160,10 @@ final class Mail
         return true;
     }
 
-    /** @param resource $fp @param array<int,int> $codes */
+    /**
+     * @param resource $fp
+     * @param list<int> $codes
+     */
     private static function smtpExpect($fp, array $codes): bool
     {
         $line = '';

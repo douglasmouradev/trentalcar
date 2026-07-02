@@ -30,7 +30,7 @@ final class ReportRepository
      */
     public static function monthlyRevenue(string $from, string $to): array
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             "SELECT DATE_FORMAT(r.pickup_date, '%Y-%m') AS ym, SUM(r.final_amount) AS total, COUNT(*) AS cnt
              FROM reservations r
              WHERE r.status IN ('confirmed','active','completed') AND r.pickup_date BETWEEN ? AND ?
@@ -45,7 +45,7 @@ final class ReportRepository
      */
     public static function fleetByStatus(): array
     {
-        return Database::pdo()->query(
+        return Database::query(
             'SELECT status, COUNT(*) AS c FROM cars WHERE deleted_at IS NULL GROUP BY status'
         )->fetchAll();
     }

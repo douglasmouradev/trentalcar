@@ -25,18 +25,18 @@ final class DashboardStats
         $monthStart = date('Y-m-01');
         $monthEnd = date('Y-m-t');
 
-        $revenueStmt = $pdo->prepare(
+        $revenueStmt = Database::prepare(
             "SELECT COALESCE(SUM(final_amount),0) FROM reservations
              WHERE status IN ('confirmed','active','completed') AND pickup_date BETWEEN ? AND ?"
         );
         $revenueStmt->execute([$monthStart, $monthEnd]);
         $revenueMonth = (float) $revenueStmt->fetchColumn();
 
-        $fleet = (int) $pdo->query('SELECT COUNT(*) FROM cars WHERE deleted_at IS NULL')->fetchColumn();
-        $activeRes = (int) $pdo->query("SELECT COUNT(*) FROM reservations WHERE status = 'active'")->fetchColumn();
+        $fleet = (int) Database::query('SELECT COUNT(*) FROM cars WHERE deleted_at IS NULL')->fetchColumn();
+        $activeRes = (int) Database::query("SELECT COUNT(*) FROM reservations WHERE status = 'active'")->fetchColumn();
         $occupancy = $fleet > 0 ? (int) round(($activeRes / $fleet) * 100) : 0;
 
-        $unpaid = (int) $pdo->query(
+        $unpaid = (int) Database::query(
             "SELECT COUNT(*) FROM reservations WHERE payment_status = 'unpaid' AND status NOT IN ('cancelled','completed')"
         )->fetchColumn();
 
@@ -45,7 +45,7 @@ final class DashboardStats
             $d = date('Y-m-d', strtotime("-{$i} days"));
             $chartDays[$d] = 0;
         }
-        $stmt = $pdo->query(
+        $stmt = Database::query(
             "SELECT DATE(created_at) AS d, COUNT(*) AS c FROM reservations
              WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) GROUP BY DATE(created_at)"
         );
@@ -55,7 +55,7 @@ final class DashboardStats
             }
         }
 
-        $catQ = $pdo->prepare(
+        $catQ = Database::prepare(
             "SELECT car.category, COALESCE(SUM(r.final_amount),0) AS total
              FROM reservations r JOIN cars car ON car.id = r.car_id AND car.deleted_at IS NULL
              WHERE r.status IN ('confirmed','active','completed') AND r.pickup_date BETWEEN ? AND ?
@@ -64,7 +64,7 @@ final class DashboardStats
         $catQ->execute([$monthStart, $monthEnd]);
         $revenueByCategory = $catQ->fetchAll();
 
-        $returns = $pdo->query(
+        $returns = Database::query(
             "SELECT r.*, c.full_name AS customer_name, car.brand, car.model, car.license_plate
              FROM reservations r
              JOIN customers c ON c.id = r.customer_id
@@ -73,19 +73,19 @@ final class DashboardStats
              ORDER BY r.return_date, r.return_time LIMIT 15"
         )->fetchAll();
 
-        $maintenance = $pdo->query(
+        $maintenance = Database::query(
             "SELECT * FROM cars WHERE status = 'maintenance' AND deleted_at IS NULL ORDER BY updated_at DESC LIMIT 10"
         )->fetchAll();
 
         $myToday = [];
         $myTodayCount = 0;
         if (!$isOwner && $operatorId > 0) {
-            $t = $pdo->prepare(
+            $t = Database::prepare(
                 "SELECT COUNT(*) FROM reservations WHERE operator_id = ? AND pickup_date = CURDATE() AND status NOT IN ('cancelled','completed')"
             );
             $t->execute([$operatorId]);
             $myTodayCount = (int) $t->fetchColumn();
-            $list = $pdo->prepare(
+            $list = Database::prepare(
                 "SELECT r.*, c.full_name AS customer_name, car.brand, car.model
                  FROM reservations r
                  JOIN customers c ON c.id = r.customer_id
@@ -114,7 +114,7 @@ final class DashboardStats
 
     public static function revenueBetween(string $from, string $to): float
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             "SELECT COALESCE(SUM(final_amount),0) FROM reservations
              WHERE status IN ('confirmed','active','completed') AND pickup_date BETWEEN ? AND ?"
         );
@@ -122,13 +122,14 @@ final class DashboardStats
         return (float) $stmt->fetchColumn();
     }
 
+    /** @param list<int> $carIds */
     public static function partnerActiveReservations(array $carIds): int
     {
         if ($carIds === []) {
             return 0;
         }
         $ph = implode(',', array_fill(0, count($carIds), '?'));
-        $st = Database::pdo()->prepare("SELECT COUNT(*) FROM reservations WHERE status = 'active' AND car_id IN ($ph)");
+        $st = Database::prepare("SELECT COUNT(*) FROM reservations WHERE status = 'active' AND car_id IN ($ph)");
         $st->execute($carIds);
         return (int) $st->fetchColumn();
     }

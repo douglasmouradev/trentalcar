@@ -20,14 +20,15 @@ final class Customer
             $params[] = $createdBy;
         }
         $sql .= ' ORDER BY full_name LIMIT ' . (int) $limit;
-        $stmt = Database::pdo()->prepare($sql);
+        $stmt = Database::prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
+    /** @return array<string, mixed>|null */
     public static function find(int $id): ?array
     {
-        $stmt = Database::pdo()->prepare('SELECT * FROM customers WHERE id = ?');
+        $stmt = Database::prepare('SELECT * FROM customers WHERE id = ?');
         $stmt->execute([$id]);
         $row = $stmt->fetch();
         return $row ?: null;
@@ -37,14 +38,15 @@ final class Customer
     public static function all(?int $createdBy = null): array
     {
         if ($createdBy === null) {
-            return Database::pdo()->query('SELECT * FROM customers ORDER BY full_name')->fetchAll();
+            return Database::query('SELECT * FROM customers ORDER BY full_name')->fetchAll();
         }
-        $stmt = Database::pdo()->prepare('SELECT * FROM customers WHERE created_by = ? ORDER BY full_name');
+        $stmt = Database::prepare('SELECT * FROM customers WHERE created_by = ? ORDER BY full_name');
         $stmt->execute([$createdBy]);
         return $stmt->fetchAll();
     }
 
     /**
+     * @param array<string, mixed> $filters
      * @return array{rows: array<int, array<string, mixed>>, total: int, page: int, perPage: int, totalPages: int}
      */
     public static function paginated(int $page, int $perPage, ?int $createdBy = null, array $filters = []): array
@@ -64,11 +66,11 @@ final class Customer
             $where .= ' AND (full_name LIKE ? OR document LIKE ? OR email LIKE ? OR phone LIKE ?)';
             array_push($params, $like, $like, $like, $like);
         }
-        $stmt = Database::pdo()->prepare('SELECT COUNT(*) FROM customers' . $where);
+        $stmt = Database::prepare('SELECT COUNT(*) FROM customers' . $where);
         $stmt->execute($params);
         $total = (int) $stmt->fetchColumn();
         $meta = Pagination::meta($total, $page, $perPage);
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             'SELECT * FROM customers' . $where . ' ORDER BY full_name LIMIT '
             . (int) $meta['perPage'] . ' OFFSET ' . (int) $meta['offset']
         );
@@ -82,9 +84,10 @@ final class Customer
         ];
     }
 
+    /** @param array<string, mixed> $d */
     public static function create(array $d): int
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             'INSERT INTO customers (type, full_name, document, email, phone, address, city, state, zip_code, notes, attachment_path, created_by)
              VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
         );
@@ -96,9 +99,10 @@ final class Customer
         return (int) Database::pdo()->lastInsertId();
     }
 
+    /** @param array<string, mixed> $d */
     public static function update(int $id, array $d): void
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             'UPDATE customers SET type=?, full_name=?, document=?, email=?, phone=?, address=?, city=?, state=?, zip_code=?, notes=?, attachment_path=? WHERE id=?'
         );
         $stmt->execute([
@@ -119,7 +123,7 @@ final class Customer
 
     public static function hasActiveReservations(int $customerId): bool
     {
-        $stmt = Database::pdo()->prepare(
+        $stmt = Database::prepare(
             "SELECT COUNT(*) FROM reservations WHERE customer_id = ? AND status IN ('pending','confirmed','active')"
         );
         $stmt->execute([$customerId]);
@@ -135,7 +139,7 @@ final class Customer
             $sql .= ', anonymized_at=NOW()';
         }
         $sql .= ' WHERE id=?';
-        $stmt = Database::pdo()->prepare($sql);
+        $stmt = Database::prepare($sql);
         $stmt->execute(['individual', $name, $doc, '00000000000', $id]);
     }
 }

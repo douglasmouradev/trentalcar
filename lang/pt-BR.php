@@ -487,6 +487,7 @@ return [
     'account.2fa_enabled_lead' => 'Sua conta exige código do autenticador no login.',
     'account.2fa_disable_btn' => 'Desativar 2FA',
     'account.2fa_unavailable' => 'Execute a migration 007 para habilitar 2FA.',
+    'account.2fa_key_required' => 'Configure APP_KEY no .env antes de ativar o 2FA (veja o README).',
     'account.recovery_title' => 'Códigos de recuperação',
     'account.recovery_lead' => 'Guarde estes códigos num local seguro. Cada um só pode ser usado uma vez se perder o telefone.',
     'account.recovery_hint' => ':count códigos disponíveis após esta activação.',

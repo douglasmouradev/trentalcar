@@ -1,3 +1,4 @@
+-- Ponte legado (006/008) → schema moderno usado por Lead.php. Ver database/migrations/README.md
 -- Garante colunas usadas por Lead.php (schema 013) quando leads veio do schema 006.
 
 ALTER TABLE leads ADD COLUMN full_name VARCHAR(150) NULL;

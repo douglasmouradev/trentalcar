@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 final class Config
 {
-    /** @var array<string, mixed>|null */
+    /** @var array{name:string,url:string,base:string,env:string,debug:bool,default_lang:string,session_lifetime:int,session_secure:bool,max_upload:int,upload_path:string,per_page:int,privacy:array<string,string>}|null */
     private static ?array $app = null;
 
-    /** @var array<string, mixed>|null */
+    /** @var array{host:string,port:int,database:string,username:string,password:string,charset:string}|null */
     private static ?array $database = null;
 
     /** @return array{name:string,url:string,base:string,env:string,debug:bool,default_lang:string,session_lifetime:int,session_secure:bool,max_upload:int,upload_path:string,per_page:int,privacy:array<string,string>} */

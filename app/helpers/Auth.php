@@ -14,6 +14,7 @@ final class Auth
         return isset($_SESSION['user']['id']) ? (int) $_SESSION['user']['id'] : null;
     }
 
+    /** @return array<string, mixed>|null */
     public static function user(): ?array
     {
         return $_SESSION['user'] ?? null;
@@ -59,6 +60,7 @@ final class Auth
         return array_values(array_map('intval', $ids));
     }
 
+    /** @param array<string, mixed> $user */
     public static function login(array $user): void
     {
         session_regenerate_id(true);
@@ -99,7 +101,10 @@ final class Auth
         return true;
     }
 
-    /** Atualiza dados do utilizador na sessão sem rotacionar sessão/CSRF. */
+    /**
+     * Atualiza dados do utilizador na sessão sem rotacionar sessão/CSRF.
+     * @param array<string, mixed> $user
+     */
     public static function setSessionUser(array $user): void
     {
         $carIds = [];
@@ -125,7 +130,10 @@ final class Auth
         $_SESSION = [];
         if (ini_get('session.use_cookies')) {
             $p = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+            $name = session_name();
+            if (is_string($name)) {
+                setcookie($name, '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+            }
         }
         session_destroy();
     }

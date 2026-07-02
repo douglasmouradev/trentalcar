@@ -108,7 +108,7 @@ final class PartnerController
         exit;
     }
 
-    /** @return array<string, mixed>|null */
+    /** @return array{name: string, email: string, role: string, phone: string, is_active: int, lang_pref: string, password?: string}|null */
     private function baseDataFromPost(bool $requirePassword = true): ?array
     {
         $name = trim((string) ($_POST['name'] ?? ''));
