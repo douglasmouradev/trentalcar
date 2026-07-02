@@ -8,8 +8,14 @@ final class MailTest extends TestCase
 {
     private string $mailDir;
 
+    /** @var array<string, string|null> */
+    private array $envBackup = [];
+
     protected function setUp(): void
     {
+        foreach (['APP_ENV', 'MAIL_SMTP_HOST'] as $key) {
+            $this->envBackup[$key] = $_ENV[$key] ?? null;
+        }
         $this->mailDir = BASE_PATH . '/storage/mail';
         if (is_dir($this->mailDir)) {
             foreach (glob($this->mailDir . '/*.eml') ?: [] as $file) {
@@ -19,6 +25,19 @@ final class MailTest extends TestCase
         $_ENV['APP_ENV'] = 'testing';
         $_ENV['MAIL_SMTP_HOST'] = '';
         Config::clearCache();
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->envBackup as $key => $value) {
+            if ($value === null) {
+                unset($_ENV[$key]);
+            } else {
+                $_ENV[$key] = $value;
+            }
+        }
+        Config::clearCache();
+        parent::tearDown();
     }
 
     public function testDevDriverStoresEmlFile(): void

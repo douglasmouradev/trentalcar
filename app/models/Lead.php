@@ -9,22 +9,47 @@ final class Lead
     /** @param array<string, mixed> $d */
     public static function create(array $d): int
     {
-        $stmt = Database::prepare(
-            'INSERT INTO leads (full_name, email, phone, local, inicio, fim, mesmo_local, local_devolucao, car_id, ip_hash)
-             VALUES (?,?,?,?,?,?,?,?,?,?)'
-        );
-        $stmt->execute([
+        $local = (string) $d['local'];
+        $inicio = (string) $d['inicio'];
+        $fim = (string) $d['fim'];
+        $mesmo = (int) ($d['mesmo_local'] ?? 1);
+        $localDevolucao = $d['local_devolucao'] ?? null;
+        $ipHash = $d['ip_hash'] ?? hash('sha256', (string) ($_SERVER['REMOTE_ADDR'] ?? 'cli'));
+
+        $columns = [
+            'full_name', 'email', 'phone', 'local', 'inicio', 'fim',
+            'mesmo_local', 'local_devolucao', 'car_id', 'ip_hash',
+        ];
+        $values = [
             $d['full_name'],
             $d['email'],
             $d['phone'],
-            $d['local'],
-            $d['inicio'],
-            $d['fim'],
-            (int) ($d['mesmo_local'] ?? 1),
-            $d['local_devolucao'] ?? null,
+            $local,
+            $inicio,
+            $fim,
+            $mesmo,
+            $localDevolucao,
             $d['car_id'] ?? null,
-            $d['ip_hash'] ?? null,
-        ]);
+            $ipHash,
+        ];
+
+        if (Schema::hasColumn('leads', 'location_text')) {
+            $columns[] = 'location_text';
+            $columns[] = 'start_date';
+            $columns[] = 'end_date';
+            $columns[] = 'same_location';
+            array_push($values, $local, $inicio, $fim, $mesmo);
+        }
+        if (Schema::hasColumn('leads', 'return_location_text') && $localDevolucao !== null && $localDevolucao !== '') {
+            $columns[] = 'return_location_text';
+            $values[] = $localDevolucao;
+        }
+
+        $placeholders = implode(', ', array_fill(0, count($columns), '?'));
+        $columnList = implode(', ', $columns);
+        $stmt = Database::prepare("INSERT INTO leads ({$columnList}) VALUES ({$placeholders})");
+        $stmt->execute($values);
+
         return (int) Database::pdo()->lastInsertId();
     }
 
