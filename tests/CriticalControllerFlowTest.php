@@ -145,4 +145,96 @@ final class CriticalControllerFlowTest extends TestCase
         $pdo->prepare('DELETE FROM reservations WHERE id = ?')->execute([$reservationId]);
         $pdo->prepare("UPDATE cars SET status = 'available' WHERE id = ?")->execute([$carId]);
     }
+
+    public function testCheckOutCompletesReservationAndFreesCar(): void
+    {
+        $user = User::findByEmail('owner@titaniumrental.com');
+        if ($user === null) {
+            self::markTestSkipped('Seed insuficiente');
+        }
+        if (!Schema::hasTable('reservation_inspections')) {
+            self::markTestSkipped('Tabela reservation_inspections ausente');
+        }
+
+        $pdo = Database::pdo();
+        $customerId = (int) $pdo->query('SELECT id FROM customers LIMIT 1')->fetchColumn();
+        $locationId = (int) $pdo->query('SELECT id FROM locations LIMIT 1')->fetchColumn();
+        if ($customerId < 1 || $locationId < 1) {
+            self::markTestSkipped('Dados de cliente/local em falta');
+        }
+
+        $carId = Car::create([
+            'license_plate' => 'TST' . strtoupper(bin2hex(random_bytes(2))),
+            'brand' => 'Test',
+            'model' => 'PHPUnit',
+            'year' => 2024,
+            'color' => 'Branco',
+            'category' => 'economy',
+            'transmission' => 'automatic',
+            'fuel' => 'flex',
+            'daily_rate' => 100.0,
+            'status' => 'available',
+            'location_id' => $locationId,
+            'mileage' => 50000,
+            'monthly_fuel' => 0,
+            'monthly_toll' => 0,
+            'monthly_wash' => 0,
+            'monthly_maintenance' => 0,
+            'monthly_extra' => 0,
+        ]);
+        $this->assertGreaterThan(0, $carId);
+
+        $code = 'OUT-' . bin2hex(random_bytes(3));
+        $reservationId = Reservation::create([
+            'code' => $code,
+            'customer_id' => $customerId,
+            'car_id' => $carId,
+            'operator_id' => (int) $user['id'],
+            'pickup_location_id' => $locationId,
+            'return_location_id' => $locationId,
+            'pickup_date' => '2099-10-01',
+            'pickup_time' => '10:00:00',
+            'return_date' => '2099-10-05',
+            'return_time' => '10:00:00',
+            'daily_rate' => 120.0,
+            'total_days' => 4,
+            'total_amount' => 480.0,
+            'discount' => 0.0,
+            'final_amount' => 480.0,
+            'status' => 'confirmed',
+            'payment_status' => 'unpaid',
+            'payment_method' => null,
+            'notes' => 'PHPUnit check-out',
+        ]);
+
+        Reservation::checkIn($reservationId, 50000, 'full', [
+            'damage_notes' => 'Pickup ok',
+            'extra_charges' => 0,
+            'photo_path' => null,
+            'created_by' => (int) $user['id'],
+        ]);
+
+        Reservation::checkOut($reservationId, 50200, 'three_quarter', [
+            'damage_notes' => 'Return ok',
+            'extra_charges' => 50.0,
+            'photo_path' => null,
+            'created_by' => (int) $user['id'],
+        ]);
+
+        $row = Reservation::find($reservationId);
+        $this->assertNotNull($row);
+        $this->assertSame('completed', $row['status']);
+        $this->assertSame(50200, (int) $row['return_mileage']);
+
+        $inspections = ReservationInspection::forReservation($reservationId);
+        $this->assertCount(2, $inspections);
+
+        $car = Car::find($carId);
+        $this->assertNotNull($car);
+        $this->assertSame('available', $car['status']);
+
+        $pdo->prepare('DELETE FROM reservation_inspections WHERE reservation_id = ?')->execute([$reservationId]);
+        $pdo->prepare('DELETE FROM reservations WHERE id = ?')->execute([$reservationId]);
+        $pdo->prepare('DELETE FROM cars WHERE id = ?')->execute([$carId]);
+    }
 }

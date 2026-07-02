@@ -28,14 +28,14 @@ if ($userName !== '') {
     <?php View::partial('partials/favicon'); ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 <body class="theme-titanium">
 <a class="skip-link" href="#main-content"><?= Lang::e('a11y.skip_content') ?></a>
-<div class="app-shell" id="appShell">
+<div class="app-shell<?= $logged ? ' app-shell--nav-drawer' : '' ?>" id="appShell">
     <?php if ($logged): ?>
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar" aria-hidden="true">
         <div class="brand">
             <img src="<?= htmlspecialchars(Router::url('/assets/img/logo.jpeg'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= Lang::e('app.name') ?>" class="brand-logo" width="40" height="40">
             <div>
@@ -54,7 +54,7 @@ if ($userName !== '') {
             <a class="nav-link" href="<?= Router::url('/reservations/calendar') ?>"><?= Lang::e('nav.calendar') ?></a>
             <a class="nav-link" href="<?= Router::url('/customers') ?>"><?= Lang::e('nav.customers') ?></a>
             <?php if (Auth::isStaff()): ?>
-                <a class="nav-link" href="<?= Router::url('/leads') ?>"><?= Lang::e('nav.leads') ?><?php $leadCount = Lead::countNew(); if ($leadCount > 0): ?><span class="nav-badge" aria-label="<?= htmlspecialchars(Lang::get('leads.new_count', ['count' => $leadCount]), ENT_QUOTES, 'UTF-8') ?>"><?= $leadCount > 99 ? '99+' : $leadCount ?></span><?php endif; ?></a>
+                <a class="nav-link" href="<?= Router::url('/leads') ?>"><?= Lang::e('nav.leads') ?><?php $leadCount = Lead::countNewCached(); if ($leadCount > 0): ?><span class="nav-badge" aria-label="<?= htmlspecialchars(Lang::get('leads.new_count', ['count' => $leadCount]), ENT_QUOTES, 'UTF-8') ?>"><?= $leadCount > 99 ? '99+' : $leadCount ?></span><?php endif; ?></a>
             <?php endif; ?>
             <?php if ($isOwner): ?>
                 <a class="nav-link" href="<?= Router::url('/locations') ?>"><?= Lang::e('nav.locations') ?></a>
@@ -80,8 +80,16 @@ if ($userName !== '') {
                     title="<?= Lang::e('a11y.open_menu') ?>"
                     data-label-open="<?= htmlspecialchars(Lang::get('a11y.open_menu'), ENT_QUOTES, 'UTF-8') ?>"
                     data-label-close="<?= htmlspecialchars(Lang::get('a11y.close_menu'), ENT_QUOTES, 'UTF-8') ?>">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <span class="hamburger" aria-hidden="true">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </span>
             </button>
+            <div class="topbar-brand">
+                <img src="<?= htmlspecialchars(Router::url('/assets/img/logo.jpeg'), ENT_QUOTES, 'UTF-8') ?>" alt="" class="topbar-brand-logo" width="28" height="28">
+                <span class="topbar-brand-name"><?= Lang::e('app.name') ?></span>
+            </div>
             <?php endif; ?>
             <div class="topbar-spacer"></div>
             <?php if ($logged && !$isPartner): ?>

@@ -23,7 +23,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
   $ogImage = Router::url('/assets/img/logo.jpeg');
   ?>
   <meta name="description" content="<?= htmlspecialchars($metaDesc, ENT_QUOTES, 'UTF-8') ?>">
-  <meta name="theme-color" content="#1a3a6c">
+  <meta name="theme-color" content="#152238">
   <link rel="canonical" href="<?= htmlspecialchars($canonical, ENT_QUOTES, 'UTF-8') ?>">
   <link rel="alternate" hreflang="pt-BR" href="<?= htmlspecialchars(Router::url('/?lang=pt-BR'), ENT_QUOTES, 'UTF-8') ?>">
   <link rel="alternate" hreflang="en-US" href="<?= htmlspecialchars(Router::url('/?lang=en-US'), ENT_QUOTES, 'UTF-8') ?>">
@@ -41,7 +41,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
   <?php View::partial('partials/favicon'); ?>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Serif:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/landing/css/site.css'), ENT_QUOTES, 'UTF-8') ?>">
   <script type="application/ld+json"><?= json_encode([
       '@context' => 'https://schema.org',

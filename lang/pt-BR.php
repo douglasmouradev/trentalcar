@@ -221,6 +221,8 @@ return [
     'reservation.section_locations' => 'Locais',
     'reservation.section_payment' => 'Valores e pagamento',
     'dashboard.quick_actions' => 'Ações rápidas',
+    'dashboard.welcome' => 'Olá, :name',
+    'dashboard.subtitle' => 'Visão geral · :date',
     'dashboard.quick_reservation' => 'Nova reserva',
     'dashboard.quick_customer' => 'Novo cliente',
     'dashboard.quick_calendar' => 'Calendário',

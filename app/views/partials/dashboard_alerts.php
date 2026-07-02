@@ -12,53 +12,55 @@ if (!$hasAny) {
     return;
 }
 ?>
-<section class="dashboard-alerts mt" aria-label="<?= Lang::e('dashboard.alerts_title') ?>">
+<section class="dashboard-alerts" aria-label="<?= Lang::e('dashboard.alerts_title') ?>">
     <?php if ((int) ($alerts['new_leads_count'] ?? 0) > 0): ?>
         <div class="alert-banner alert-banner--info">
-            <?= Lang::e('dashboard.new_leads_count', ['count' => (int) $alerts['new_leads_count']]) ?>
-            <?php if ((int) ($alerts['stale_leads_count'] ?? 0) > 0): ?>
-                · <?= Lang::e('dashboard.stale_leads_count', ['count' => (int) $alerts['stale_leads_count']]) ?>
-            <?php endif; ?>
-            <a class="btn btn-sm btn-secondary" href="<?= Router::url('/leads') ?>"><?= Lang::e('dashboard.view_leads') ?></a>
+            <div class="alert-banner-body">
+                <strong><?= Lang::e('dashboard.new_leads_count', ['count' => (int) $alerts['new_leads_count']]) ?></strong>
+                <?php if ((int) ($alerts['stale_leads_count'] ?? 0) > 0): ?>
+                    <span class="alert-banner-meta"><?= Lang::e('dashboard.stale_leads_count', ['count' => (int) $alerts['stale_leads_count']]) ?></span>
+                <?php endif; ?>
+            </div>
+            <a class="btn btn-sm btn-secondary alert-banner-cta" href="<?= Router::url('/leads') ?>"><?= Lang::e('dashboard.view_leads') ?></a>
         </div>
     <?php endif; ?>
-    <div class="grid two">
+    <div class="grid two alert-cards">
         <?php if (($alerts['checkins_today'] ?? []) !== []): ?>
-        <div class="card">
+        <div class="card alert-card">
             <h2 class="card-title"><?= Lang::e('dashboard.alert_checkins') ?></h2>
             <ul class="alert-list">
                 <?php foreach ($alerts['checkins_today'] as $row): ?>
-                    <li><a href="<?= Router::url('/reservations/' . (int) $row['id']) ?>"><span class="mono"><?= htmlspecialchars((string) $row['code'], ENT_QUOTES, 'UTF-8') ?></span> — <?= htmlspecialchars((string) $row['customer_name'], ENT_QUOTES, 'UTF-8') ?></a></li>
+                    <li><a href="<?= Router::url('/reservations/' . (int) $row['id']) ?>"><span class="mono"><?= htmlspecialchars((string) $row['code'], ENT_QUOTES, 'UTF-8') ?></span><span class="alert-list-meta"><?= htmlspecialchars((string) $row['customer_name'], ENT_QUOTES, 'UTF-8') ?></span></a></li>
                 <?php endforeach; ?>
             </ul>
         </div>
         <?php endif; ?>
         <?php if (($alerts['overdue'] ?? []) !== []): ?>
-        <div class="card alert-card--warn">
+        <div class="card alert-card alert-card--warn">
             <h2 class="card-title"><?= Lang::e('dashboard.alert_overdue') ?></h2>
             <ul class="alert-list">
                 <?php foreach ($alerts['overdue'] as $row): ?>
-                    <li><a href="<?= Router::url('/reservations/' . (int) $row['id']) ?>"><span class="mono"><?= htmlspecialchars((string) $row['code'], ENT_QUOTES, 'UTF-8') ?></span> — <?= htmlspecialchars((string) $row['return_date'], ENT_QUOTES, 'UTF-8') ?></a></li>
+                    <li><a href="<?= Router::url('/reservations/' . (int) $row['id']) ?>"><span class="mono"><?= htmlspecialchars((string) $row['code'], ENT_QUOTES, 'UTF-8') ?></span><span class="alert-list-meta"><?= htmlspecialchars((string) $row['return_date'], ENT_QUOTES, 'UTF-8') ?></span></a></li>
                 <?php endforeach; ?>
             </ul>
         </div>
         <?php endif; ?>
         <?php if (($alerts['unpaid'] ?? []) !== []): ?>
-        <div class="card">
+        <div class="card alert-card">
             <h2 class="card-title"><?= Lang::e('dashboard.alert_unpaid') ?></h2>
             <ul class="alert-list">
                 <?php foreach ($alerts['unpaid'] as $row): ?>
-                    <li><a href="<?= Router::url('/reservations/' . (int) $row['id']) ?>"><span class="mono"><?= htmlspecialchars((string) $row['code'], ENT_QUOTES, 'UTF-8') ?></span> — <?= Formatter::money((float) $row['final_amount']) ?></a></li>
+                    <li><a href="<?= Router::url('/reservations/' . (int) $row['id']) ?>"><span class="mono"><?= htmlspecialchars((string) $row['code'], ENT_QUOTES, 'UTF-8') ?></span><span class="alert-list-amount"><?= Formatter::money((float) $row['final_amount']) ?></span></a></li>
                 <?php endforeach; ?>
             </ul>
         </div>
         <?php endif; ?>
         <?php if (($alerts['new_leads'] ?? []) !== []): ?>
-        <div class="card">
+        <div class="card alert-card">
             <h2 class="card-title"><?= Lang::e('dashboard.alert_leads') ?></h2>
             <ul class="alert-list">
                 <?php foreach ($alerts['new_leads'] as $row): ?>
-                    <li><a href="<?= Router::url('/leads/' . (int) $row['id']) ?>"><?= htmlspecialchars((string) $row['full_name'], ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) $row['inicio'], ENT_QUOTES, 'UTF-8') ?></a></li>
+                    <li><a href="<?= Router::url('/leads/' . (int) $row['id']) ?>"><span class="alert-list-name"><?= htmlspecialchars((string) $row['full_name'], ENT_QUOTES, 'UTF-8') ?></span><span class="alert-list-meta"><?= htmlspecialchars((string) $row['inicio'], ENT_QUOTES, 'UTF-8') ?></span></a></li>
                 <?php endforeach; ?>
             </ul>
         </div>

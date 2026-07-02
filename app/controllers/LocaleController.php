@@ -8,13 +8,11 @@ final class LocaleController
     {
         if (!Csrf::validate($_POST['_csrf'] ?? null)) {
             Flash::error(Lang::get('error.csrf'));
-            header('Location: ' . Router::url('/'));
-            exit;
+            Redirect::to('/');
         }
         $lang = (string) ($_POST['lang'] ?? '');
         if (!in_array($lang, ['pt-BR', 'en-US'], true)) {
-            header('Location: ' . Router::url('/'));
-            exit;
+            Redirect::to('/');
         }
         Lang::setLocale($lang);
         if (Auth::check()) {
@@ -32,7 +30,7 @@ final class LocaleController
         $target = $redirect !== '' ? $redirect : $fallback;
         $app = Config::app();
         $target = SafeRedirect::sameOriginOr($fallback, $target, $app['url'] ?? '');
-        header('Location: ' . $target);
-        exit;
+        Redirect::toUrl($target);
     }
 }
+

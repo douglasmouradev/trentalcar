@@ -221,6 +221,8 @@ return [
     'reservation.section_locations' => 'Locations',
     'reservation.section_payment' => 'Amounts & payment',
     'dashboard.quick_actions' => 'Quick actions',
+    'dashboard.welcome' => 'Hello, :name',
+    'dashboard.subtitle' => 'Overview · :date',
     'dashboard.quick_reservation' => 'New reservation',
     'dashboard.quick_customer' => 'New customer',
     'dashboard.quick_calendar' => 'Calendar',

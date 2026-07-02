@@ -1,6 +1,12 @@
 -- ============================================================
--- TITANIUM RENTAL CAR — Database Schema
+-- TITANIUM RENTAL CAR — Database Schema (baseline)
 -- MySQL 8.0+ | UTF8MB4 | InnoDB
+--
+-- Este ficheiro cria o núcleo inicial (8 tabelas). Tabelas e colunas
+-- adicionais (leads, rate_limits, mail_outbox, check-in, 2FA, etc.)
+-- vêm de database/migrations/*.sql — execute SEMPRE após o seed:
+--   php bin/migrate.php
+-- Ver database/migrations/README.md para a ordem completa.
 -- ============================================================
 
 CREATE DATABASE IF NOT EXISTS titanium_rental_car

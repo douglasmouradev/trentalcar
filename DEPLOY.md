@@ -82,7 +82,7 @@ Configure monitorização (Uptime Kuma, Pingdom, etc.) para alertar se `status !
 2. `php bin/migrate.php` (migrations são forward-only; evite downgrades de schema). Prefixos duplicados e ordem: `database/migrations/README.md`.
 3. Restaurar BD se necessário: `mysql ... < storage/backups/db-YYYYMMDD.sql`
 
-## 8. Docker
+## 9. Docker
 
 ```bash
 docker compose up --build -d

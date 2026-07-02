@@ -33,7 +33,7 @@
                     <tr>
                         <td class="mono"><?= htmlspecialchars((string) $row['ym'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= (int) $row['cnt'] ?></td>
-                        <td class="mono">R$ <?= number_format((float) $row['total'], 2, ',', '.') ?></td>
+                        <td class="mono"><?= Formatter::money((float) $row['total']) ?></td>
                     </tr>
                 <?php endforeach; ?>
                 <?php if ($monthly === []): ?><tr><td colspan="3" class="muted"><?= Lang::e('table.empty') ?></td></tr><?php endif; ?>

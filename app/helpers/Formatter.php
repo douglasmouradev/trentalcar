@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 final class Formatter
 {
-    public static function money(float $value): string
+    public static function money(float $value, ?string $locale = null): string
     {
+        $locale = $locale ?? (class_exists('Lang', false) ? Lang::locale() : 'pt-BR');
+        if ($locale === 'en-US') {
+            return '$' . number_format($value, 2, '.', ',');
+        }
+
         return 'R$ ' . number_format($value, 2, ',', '.');
     }
 

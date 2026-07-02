@@ -7,15 +7,13 @@ final class HomeController
     public function index(): void
     {
         if (Auth::check()) {
-            header('Location: ' . Router::url('/dashboard'));
-            exit;
+            Redirect::to('/dashboard');
         }
 
         $landingEnv = isset($_ENV['APP_LANDING']) ? strtolower(trim((string) $_ENV['APP_LANDING'])) : 'true';
         $landingOff = in_array($landingEnv, ['0', 'false', 'no', 'off'], true);
         if ($landingOff) {
-            header('Location: ' . Router::url('/login'));
-            exit;
+            Redirect::to('/login');
         }
 
         header('Content-Type: text/html; charset=UTF-8');

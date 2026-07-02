@@ -39,7 +39,7 @@ SaaS de locação de veículos em **PHP 8.3+** com **MySQL 8.0+**, MVC sem frame
 
 
 
-   O `schema.sql` inclui `reservations.code` como `VARCHAR(16)` e índice em `customers.email`. Execute sempre `bin/migrate.php` após o schema para aplicar migrations incrementais (ver `database/migrations/README.md`).
+   O `schema.sql` inclui `reservations.code` como `VARCHAR(16)` e índice em `customers.email`. **Nota:** o schema cobre só o núcleo inicial (8 tabelas); tabelas como `leads`, `rate_limits` e `mail_outbox` vêm das migrations. Execute **sempre** `php bin/migrate.php` após o seed (ver `database/migrations/README.md`).
 
 
 

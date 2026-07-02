@@ -36,6 +36,9 @@ Existem prefixos partilhados (`006_*`, `007_*`, `008_*`, `009_*`) de evoluções
 009_fix_demo_password_hash
 009_password_reset_tokens
 010 → 017
+018_email_index_cleanup
+019_reservation_dashboard_indexes
+020_rate_limits_window_index
 ```
 
 ## Leads — duas linhas de evolução

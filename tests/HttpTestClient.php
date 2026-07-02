@@ -58,7 +58,7 @@ final class HttpTestClient
     }
 
     /** @return array{code: int, body: string, location: ?string} */
-    public function loginAsOwner(string $email = 'owner@titaniumrental.com', string $password = 'password123'): array
+    public function loginAs(string $email, string $password = 'password123'): array
     {
         $page = $this->get('/login');
         $csrf = $this->extractCsrf($page['body']);
@@ -72,6 +72,12 @@ final class HttpTestClient
             'password' => $password,
             'privacy_accept' => '1',
         ]);
+    }
+
+    /** @return array{code: int, body: string, location: ?string} */
+    public function loginAsOwner(string $email = 'owner@titaniumrental.com', string $password = 'password123'): array
+    {
+        return $this->loginAs($email, $password);
     }
 
     /** @param array<string, bool|float|int|string|null>|null $fields */

@@ -1,23 +1,23 @@
-/* Tokens de marca partilhados — app + landing */
+/* Tokens de marca — app + landing */
 :root {
-  --brand: #1a3a6c;
-  --brand-hover: #224a82;
-  --brand-bright: #2563eb;
-  --primary: #1a3a6c;
-  --primary-hover: #224a82;
-  --surface-page: #f1f5f9;
+  --brand: #152238;
+  --brand-hover: #1c2d4a;
+  --brand-bright: #1a3a6c;
+  --primary: #152238;
+  --primary-hover: #1c2d4a;
+  --surface-page: #eceef2;
   --surface-card: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --success: #15803d;
-  --warning: #b45309;
-  --danger: #b91c1c;
-  --radius-ui: 10px;
-  --radius-lg: 14px;
+  --text-primary: #111827;
+  --text-secondary: #5c6578;
+  --success: #0f6b45;
+  --warning: #9a5b00;
+  --danger: #a61b2d;
+  --radius-ui: 8px;
+  --radius-lg: 10px;
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
   --space-md: 1rem;
   --space-lg: 1.5rem;
-  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
-  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.1);
+  --shadow-sm: 0 1px 2px rgba(17, 24, 39, 0.05);
+  --shadow-md: 0 4px 16px rgba(17, 24, 39, 0.07);
 }

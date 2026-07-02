@@ -173,4 +173,28 @@ final class HttpIntegrationTest extends TestCase
         $r = $this->client->get('/reports');
         $this->assertContains($r['code'], [200, 302, 303, 403]);
     }
+
+    public function testOperatorCannotAccessUsersManagement(): void
+    {
+        $login = $this->client->loginAs('operator@titaniumrental.com');
+        $this->assertContains($login['code'], [302, 303]);
+
+        $r = $this->client->get('/users');
+        $this->assertContains($r['code'], [302, 303, 403]);
+        if ($r['code'] === 302 || $r['code'] === 303) {
+            $this->assertStringNotContainsString('/users', (string) $r['location']);
+        }
+    }
+
+    public function testPartnerCannotAccessLeadsPanel(): void
+    {
+        $login = $this->client->loginAs('partner@titaniumrental.com');
+        $this->assertContains($login['code'], [302, 303]);
+
+        $r = $this->client->get('/leads');
+        $this->assertContains($r['code'], [302, 303, 403]);
+        if ($r['code'] === 302 || $r['code'] === 303) {
+            $this->assertStringNotContainsString('/leads', (string) $r['location']);
+        }
+    }
 }

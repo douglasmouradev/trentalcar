@@ -8,6 +8,16 @@ require_once __DIR__ . '/../app/helpers/Formatter.php';
 
 final class FormatterTest extends TestCase
 {
+    public function testMoneyFormatPtBr(): void
+    {
+        $this->assertSame('R$ 1.234,56', Formatter::money(1234.56, 'pt-BR'));
+    }
+
+    public function testMoneyFormatEnUs(): void
+    {
+        $this->assertSame('$1,234.56', Formatter::money(1234.56, 'en-US'));
+    }
+
     public function testMoneyFormat(): void
     {
         $this->assertSame('R$ 1.234,56', Formatter::money(1234.56));

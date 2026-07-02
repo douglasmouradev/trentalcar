@@ -49,6 +49,7 @@ final class Lead
         $columnList = implode(', ', $columns);
         $stmt = Database::prepare("INSERT INTO leads ({$columnList}) VALUES ({$placeholders})");
         $stmt->execute($values);
+        self::clearCountCache();
 
         return (int) Database::pdo()->lastInsertId();
     }
@@ -108,11 +109,35 @@ final class Lead
         }
         $stmt = Database::prepare('UPDATE leads SET status = ?, notes = COALESCE(?, notes) WHERE id = ?');
         $stmt->execute([$status, $notes, $id]);
+        self::clearCountCache();
     }
 
     public static function countNew(): int
     {
         return (int) Database::query("SELECT COUNT(*) FROM leads WHERE status = 'new'")->fetchColumn();
+    }
+
+    private static ?int $countNewCache = null;
+
+    private static int $countNewCacheAt = 0;
+
+    /** Evita query repetida no layout (TTL curto por pedido). */
+    public static function countNewCached(int $ttlSeconds = 60): int
+    {
+        $now = time();
+        if (self::$countNewCache !== null && ($now - self::$countNewCacheAt) < $ttlSeconds) {
+            return self::$countNewCache;
+        }
+        self::$countNewCache = self::countNew();
+        self::$countNewCacheAt = $now;
+
+        return self::$countNewCache;
+    }
+
+    public static function clearCountCache(): void
+    {
+        self::$countNewCache = null;
+        self::$countNewCacheAt = 0;
     }
 
     public static function countStale(int $hours = 24): int
