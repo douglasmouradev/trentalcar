@@ -545,6 +545,7 @@ return [
     'auth.forgot_submit' => 'Send link',
     'auth.forgot_sent' => 'If the email exists, we sent recovery instructions.',
     'auth.forgot_rate_limit' => 'Too many attempts. Wait a few minutes before trying again.',
+    'auth.reset_rate_limit' => 'Too many reset attempts. Wait a few minutes.',
     'auth.forgot_link' => 'Forgot password',
     'auth.reset_title' => 'New password',
     'auth.reset_submit' => 'Save new password',

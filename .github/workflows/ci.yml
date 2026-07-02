@@ -86,4 +86,13 @@ jobs:
         run: vendor/bin/phpstan analyse --memory-limit=512M
 
       - name: Syntax check (app)
-        run: find app public/index.php config -name '*.php' -print0 | xargs -0 -n1 php -l
+        run: find app bin public/index.php config -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Verify backup script (dry)
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: titanium_rental_car
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php bin/verify-backup.php --help 2>/dev/null || php -l bin/verify-backup.php

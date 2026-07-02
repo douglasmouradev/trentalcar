@@ -100,8 +100,8 @@ final class Router
 
     private static function patternToRegex(string $pattern): string
     {
-        $pattern = preg_replace('#\{id\}#', '(?P<id>\d+)', $pattern);
-        $pattern = preg_replace('#\{([a-zA-Z_]+)\}#', '(?P<$1>[^/]+)', $pattern);
+        $pattern = preg_replace('#\{id\}#', '(?P<id>\d+)', $pattern) ?? $pattern;
+        $pattern = preg_replace('#\{([a-zA-Z_]+)\}#', '(?P<$1>[^/]+)', $pattern) ?? $pattern;
         return '#^' . $pattern . '$#';
     }
 

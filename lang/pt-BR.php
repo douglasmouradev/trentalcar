@@ -523,6 +523,7 @@ return [
     'auth.forgot_submit' => 'Enviar link',
     'auth.forgot_sent' => 'Se o e-mail existir, enviamos instruções de recuperação.',
     'auth.forgot_rate_limit' => 'Muitas tentativas. Aguarde alguns minutos antes de pedir novamente.',
+    'auth.reset_rate_limit' => 'Muitas tentativas de redefinição. Aguarde alguns minutos.',
     'auth.forgot_link' => 'Esqueci minha senha',
     'auth.reset_title' => 'Nova senha',
     'auth.reset_submit' => 'Salvar nova senha',

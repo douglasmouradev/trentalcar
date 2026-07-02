@@ -12,7 +12,7 @@ return [
     'GET:/robots.txt' => ['RobotsController', 'index'],
     'GET:/sitemap.xml' => ['SitemapController', 'index'],
     'GET:/.well-known/security.txt' => ['SecurityTxtController', 'index'],
-    'POST:/lead' => ['LeadController', 'submit'],
+    'POST:/lead' => ['PublicLeadController', 'submit'],
     'GET:/reservar' => ['BookingController', 'index'],
     'GET:/consultar' => ['ConsultController', 'form'],
     'POST:/consultar' => ['ConsultController', 'lookup'],
@@ -83,7 +83,7 @@ return [
     'POST:/leads/{id}/update' => ['LeadsController', 'update', 'auth' => true],
     'POST:/leads/{id}/convert' => ['LeadsController', 'convert', 'auth' => true, 'role' => 'owner'],
 
-    'GET:/partner/profile/export' => ['PartnerProfileController', 'exportCsv', 'auth' => true],
+    'POST:/partner/profile/export' => ['PartnerProfileController', 'exportCsv', 'auth' => true],
 
     'GET:/users' => ['UserController', 'index', 'auth' => true, 'role' => 'owner'],
     'GET:/users/create' => ['UserController', 'createForm', 'auth' => true, 'role' => 'owner'],

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
-final class LeadControllerTest extends TestCase
+final class PublicLeadControllerTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -14,7 +14,7 @@ final class LeadControllerTest extends TestCase
 
     public function testValidDateAcceptsIsoFormatOnly(): void
     {
-        $method = new ReflectionMethod(LeadController::class, 'validDate');
+        $method = new ReflectionMethod(PublicLeadController::class, 'validDate');
         $this->assertTrue($method->invoke(null, '2026-06-01'));
         $this->assertFalse($method->invoke(null, '01-06-2026'));
         $this->assertFalse($method->invoke(null, '2026-13-40'));
@@ -24,7 +24,7 @@ final class LeadControllerTest extends TestCase
     public function testResolveReturnUrlBlocksExternalPaths(): void
     {
         $_POST['_return'] = '//evil.example/phish';
-        $method = new ReflectionMethod(LeadController::class, 'resolveReturnUrl');
+        $method = new ReflectionMethod(PublicLeadController::class, 'resolveReturnUrl');
         $this->assertSame(Router::url('/'), $method->invoke(null));
 
         $_POST['_return'] = '/reservar';
@@ -42,7 +42,7 @@ final class LeadControllerTest extends TestCase
             'fim' => '2026-07-05',
             'car_id' => '12',
         ];
-        $method = new ReflectionMethod(LeadController::class, 'collectOld');
+        $method = new ReflectionMethod(PublicLeadController::class, 'collectOld');
         $old = $method->invoke(null);
         $this->assertSame('Maria', $old['nome']);
         $this->assertSame('maria@example.com', $old['email']);

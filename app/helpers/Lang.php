@@ -33,7 +33,8 @@ final class Lang
             return self::$strings;
         }
         $file = BASE_PATH . '/lang/' . self::locale() . '.php';
-        self::$strings = is_readable($file) ? (require $file) : [];
+        $loaded = is_readable($file) ? (require $file) : [];
+        self::$strings = is_array($loaded) ? $loaded : [];
         return self::$strings;
     }
 

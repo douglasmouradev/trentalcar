@@ -11,24 +11,24 @@ final class Formatter
 
     public static function document(string $digits): string
     {
-        $d = preg_replace('/\D/', '', $digits);
+        $d = preg_replace('/\D/', '', $digits) ?? '';
         if (strlen($d) === 11) {
-            return preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $d);
+            return preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $d) ?? $digits;
         }
         if (strlen($d) === 14) {
-            return preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $d);
+            return preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $d) ?? $digits;
         }
         return $digits;
     }
 
     public static function phone(string $value): string
     {
-        $d = preg_replace('/\D/', '', $value);
+        $d = preg_replace('/\D/', '', $value) ?? '';
         if (strlen($d) === 11) {
-            return preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $d);
+            return preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $d) ?? $value;
         }
         if (strlen($d) === 10) {
-            return preg_replace('/(\d{2})(\d{4})(\d{4})/', '($1) $2-$3', $d);
+            return preg_replace('/(\d{2})(\d{4})(\d{4})/', '($1) $2-$3', $d) ?? $value;
         }
         return $value;
     }

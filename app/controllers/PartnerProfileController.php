@@ -13,8 +13,7 @@ final class PartnerProfileController
         }
         $uid = Auth::id();
         if ($uid === null) {
-            header('Location: ' . Router::url('/login'));
-            exit;
+            Redirect::to('/login');
         }
         $user = User::find($uid);
         if (!$user) {
@@ -40,13 +39,21 @@ final class PartnerProfileController
 
     public function exportCsv(): void
     {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            http_response_code(405);
+            return;
+        }
         if (!Auth::isPartner()) {
             http_response_code(403);
             return;
         }
+        if (!Csrf::validate($_POST['_csrf'] ?? null)) {
+            Flash::error(Lang::get('error.csrf'));
+            Redirect::to('/partner/profile');
+        }
         $uid = Auth::id();
         if ($uid === null) {
-            return;
+            Redirect::to('/login');
         }
         $rows = UserCar::reservationsForPartner($uid, 500);
         header('Content-Type: text/csv; charset=UTF-8');
@@ -79,6 +86,5 @@ final class PartnerProfileController
             ], ';');
         }
         fclose($out);
-        exit;
     }
 }

@@ -159,13 +159,13 @@ final class AuthController
             header('Location: ' . Router::url('/forgot-password'));
             exit;
         }
-        if (PublicRateLimiter::forgotBlocked()) {
+        $email = trim((string) ($_POST['email'] ?? ''));
+        if (PublicRateLimiter::forgotBlocked($email)) {
             Flash::error(Lang::get('auth.forgot_rate_limit'));
             header('Location: ' . Router::url('/forgot-password'));
             exit;
         }
-        PublicRateLimiter::hitForgot();
-        $email = trim((string) ($_POST['email'] ?? ''));
+        PublicRateLimiter::hitForgot($email);
         $user = User::findByEmail($email);
         if ($user && (int) $user['is_active']) {
             $token = PasswordReset::create((int) $user['id']);
@@ -199,6 +199,12 @@ final class AuthController
             header('Location: ' . Router::url('/forgot-password'));
             exit;
         }
+        if (PublicRateLimiter::resetBlocked()) {
+            Flash::error(Lang::get('auth.reset_rate_limit'));
+            header('Location: ' . Router::url('/forgot-password'));
+            exit;
+        }
+        PublicRateLimiter::hitReset();
         $token = trim((string) ($_POST['token'] ?? ''));
         $uid = PasswordReset::findValidUserId($token);
         if ($uid === null) {

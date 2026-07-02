@@ -80,12 +80,13 @@ CREATE TABLE customers (
   created_by    INT UNSIGNED,
   created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_customers_email (email)
 );
 
 CREATE TABLE reservations (
   id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  code                VARCHAR(12)   NOT NULL UNIQUE,
+  code                VARCHAR(16)   NOT NULL UNIQUE,
   customer_id         INT UNSIGNED  NOT NULL,
   car_id              INT UNSIGNED  NOT NULL,
   operator_id         INT UNSIGNED  NOT NULL,

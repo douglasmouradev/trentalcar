@@ -6,21 +6,13 @@ final class ReportController
 {
     public function index(): void
     {
-        $pdo = Database::pdo();
         $from = (string) ($_GET['from'] ?? date('Y-m-01'));
         $to = (string) ($_GET['to'] ?? date('Y-m-t'));
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $from) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
             $from = date('Y-m-01');
             $to = date('Y-m-t');
         }
-        $stmt = Database::prepare(
-            "SELECT DATE_FORMAT(r.pickup_date, '%Y-%m') AS ym, SUM(r.final_amount) AS total, COUNT(*) AS cnt
-             FROM reservations r
-             WHERE r.status IN ('confirmed','active','completed') AND r.pickup_date BETWEEN ? AND ?
-             GROUP BY ym ORDER BY ym"
-        );
-        $stmt->execute([$from, $to]);
-        $monthly = $stmt->fetchAll();
+        $monthly = self::monthlyStats($from, $to);
 
         $fleet = Database::query(
             "SELECT status, COUNT(*) AS c FROM cars GROUP BY status"
@@ -42,26 +34,16 @@ final class ReportController
             return;
         }
         if (!Csrf::validate($_POST['_csrf'] ?? null)) {
-            http_response_code(403);
-            echo 'CSRF';
-            return;
+            Flash::error(Lang::get('error.csrf'));
+            Redirect::to('/reports');
         }
-        $pdo = Database::pdo();
         $from = (string) ($_POST['from'] ?? date('Y-m-01'));
         $to = (string) ($_POST['to'] ?? date('Y-m-t'));
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $from) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
-            http_response_code(400);
-            echo 'Invalid range';
-            return;
+            Flash::error(Lang::get('flash.error'));
+            Redirect::to('/reports');
         }
-        $stmt = Database::prepare(
-            "SELECT DATE_FORMAT(r.pickup_date, '%Y-%m') AS ym, SUM(r.final_amount) AS total, COUNT(*) AS cnt
-             FROM reservations r
-             WHERE r.status IN ('confirmed','active','completed') AND r.pickup_date BETWEEN ? AND ?
-             GROUP BY ym ORDER BY ym"
-        );
-        $stmt->execute([$from, $to]);
-        $rows = $stmt->fetchAll();
+        $rows = self::monthlyStats($from, $to);
 
         $filename = 'relatorio-reservas-' . $from . '-' . $to . '.csv';
         header('Content-Type: text/csv; charset=UTF-8');
@@ -80,5 +62,20 @@ final class ReportController
             ], ';');
         }
         fclose($out);
+    }
+
+    /** @return list<array<string, mixed>> */
+    private static function monthlyStats(string $from, string $to): array
+    {
+        $stmt = Database::prepare(
+            "SELECT DATE_FORMAT(r.pickup_date, '%Y-%m') AS ym, SUM(r.final_amount) AS total, COUNT(*) AS cnt
+             FROM reservations r
+             WHERE r.status IN ('confirmed','active','completed') AND r.pickup_date BETWEEN ? AND ?
+             GROUP BY ym ORDER BY ym"
+        );
+        $stmt->execute([$from, $to]);
+        $rows = $stmt->fetchAll();
+
+        return array_values($rows);
     }
 }

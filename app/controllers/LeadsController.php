@@ -56,7 +56,8 @@ final class LeadsController
     {
         if (!Auth::isStaff()) {
             http_response_code(403);
-            return;
+            Flash::error(Lang::get('error.403_title'));
+            Redirect::to('/leads');
         }
         if (!Csrf::validate($_POST['_csrf'] ?? null)) {
             Flash::error(Lang::get('error.csrf'));
@@ -66,7 +67,8 @@ final class LeadsController
         $lead = Lead::find((int) $id);
         if (!$lead) {
             http_response_code(404);
-            return;
+            Flash::error(Lang::get('error.404_title'));
+            Redirect::to('/leads');
         }
         $status = (string) ($_POST['status'] ?? 'new');
         $notes = trim((string) ($_POST['notes'] ?? '')) ?: null;
@@ -87,7 +89,8 @@ final class LeadsController
     {
         if (!Auth::isOwner()) {
             http_response_code(403);
-            return;
+            Flash::error(Lang::get('error.403_title'));
+            Redirect::to('/leads/' . $id);
         }
         if (!Csrf::validate($_POST['_csrf'] ?? null)) {
             Flash::error(Lang::get('error.csrf'));
@@ -97,7 +100,8 @@ final class LeadsController
         $lead = Lead::find((int) $id);
         if (!$lead) {
             http_response_code(404);
-            return;
+            Flash::error(Lang::get('error.404_title'));
+            Redirect::to('/leads');
         }
         $_SESSION['lead_convert'] = [
             'lead_id' => (int) $lead['id'],

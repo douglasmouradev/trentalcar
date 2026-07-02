@@ -7,6 +7,7 @@
     <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></title>
     <?php View::partial('partials/favicon'); ?>
     <link rel="stylesheet" href="<?= htmlspecialchars(Router::url('/css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
+    <script src="<?= htmlspecialchars(Router::url('/js/voucher.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
     <style>
         @media print { .no-print { display: none !important; } body { background: #fff; } }
         .voucher { max-width: 720px; margin: 2rem auto; padding: 2rem; }
@@ -38,7 +39,7 @@
         <dd class="mono"><?= Formatter::money((float) $r['final_amount']) ?></dd>
     </dl>
     <p class="muted"><?= Lang::e('reservation.voucher_footer') ?></p>
-    <p class="no-print"><button class="btn btn-primary" type="button" onclick="window.print()"><?= Lang::e('reservation.voucher_print') ?></button>
+    <p class="no-print"><button class="btn btn-primary" type="button" id="voucher-print"><?= Lang::e('reservation.voucher_print') ?></button>
         <a class="btn btn-secondary" href="<?= Router::url('/reservations/' . (int) $r['id']) ?>"><?= Lang::e('actions.back') ?></a></p>
 </div>
 </body>

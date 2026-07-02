@@ -333,13 +333,17 @@ $defaultRate = $rv['daily_rate'] ?? ($cars[0]['daily_rate'] ?? 0);
 
         <div class="form-stack">
 
-            <input class="input" id="qc_name" placeholder="<?= Lang::e('customer.name') ?>">
+            <label class="label" for="qc_name"><?= Lang::e('customer.name') ?></label>
+            <input class="input" id="qc_name" name="qc_name" autocomplete="name">
 
-            <input class="input" id="qc_doc" placeholder="<?= Lang::e('customer.document') ?>">
+            <label class="label" for="qc_doc"><?= Lang::e('customer.document') ?></label>
+            <input class="input" id="qc_doc" name="qc_doc" autocomplete="off">
 
-            <input class="input" id="qc_phone" placeholder="<?= Lang::e('customer.phone') ?>">
+            <label class="label" for="qc_phone"><?= Lang::e('customer.phone') ?></label>
+            <input class="input" id="qc_phone" name="qc_phone" autocomplete="tel">
 
-            <input class="input" id="qc_email" placeholder="<?= Lang::e('customer.email') ?>">
+            <label class="label" for="qc_email"><?= Lang::e('customer.email') ?></label>
+            <input class="input" id="qc_email" name="qc_email" type="email" autocomplete="email">
 
             <p id="qc_error" class="form-error hidden" role="alert"></p>
 

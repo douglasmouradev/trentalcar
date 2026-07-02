@@ -104,4 +104,33 @@ final class HttpIntegrationTest extends TestCase
         $this->assertContains($r['code'], [302, 303]);
         $this->assertStringContainsString('/login', (string) $r['location']);
     }
+
+    public function testConsultFormLoads(): void
+    {
+        $r = $this->client->get('/consultar');
+        $this->assertSame(200, $r['code']);
+        $this->assertStringContainsString('consultar', strtolower($r['body']));
+    }
+
+    public function testConsultWithoutCsrfRedirectsToError(): void
+    {
+        $r = $this->client->post('/consultar', [
+            'code' => 'TEST',
+            'email' => 'cliente@example.com',
+        ]);
+        $this->assertContains($r['code'], [302, 303]);
+        $this->assertStringContainsString('consultar', (string) $r['location']);
+    }
+
+    public function testForgotPasswordFormLoads(): void
+    {
+        $r = $this->client->get('/forgot-password');
+        $this->assertSame(200, $r['code']);
+    }
+
+    public function testHealthEndpointResponds(): void
+    {
+        $r = $this->client->get('/health');
+        $this->assertContains($r['code'], [200, 403, 503]);
+    }
 }

@@ -31,7 +31,7 @@
 
 <div class="field-group">
     <label class="label" for="customer-attachment"><?= Lang::e('customer.attachment') ?></label>
-    <input class="input" id="customer-attachment" type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx">
+    <input class="input" id="customer-attachment" type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.webp">
     <?php if (!empty($c['attachment_path']) && !empty($c['id'])): ?>
         <p class="help-text">
             <a href="<?= htmlspecialchars(Router::url('/customers/' . (int) $c['id'] . '/attachment'), ENT_QUOTES, 'UTF-8') ?>" rel="noopener noreferrer">

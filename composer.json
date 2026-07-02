@@ -7,7 +7,8 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^11.3",
-    "phpstan/phpstan": "^2.0"
+    "phpstan/phpstan": "^2.0",
+    "roave/security-advisories": "dev-latest"
   },
   "autoload": {
     "classmap": [
@@ -16,6 +17,9 @@
       "app/controllers",
       "app/models",
       "app/services"
+    ],
+    "files": [
+      "app/bootstrap.php"
     ]
   },
   "scripts": {
