@@ -72,9 +72,10 @@ final class ReservationValidator
 
         if (!$isOwner) {
             $paymentStatus = is_array($old) ? (string) ($old['payment_status'] ?? 'unpaid') : 'unpaid';
+            if (!in_array($paymentStatus, self::PAYMENTS, true)) {
+                $paymentStatus = 'unpaid';
+            }
             $paymentMethod = is_array($old) && !empty($old['payment_method']) ? (string) $old['payment_method'] : null;
-        } elseif (!in_array($paymentStatus, self::PAYMENTS, true)) {
-            $paymentStatus = 'unpaid';
         }
 
         $d1 = new DateTimeImmutable($pickupDate);

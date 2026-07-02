@@ -49,7 +49,7 @@ final class ReservationConflictTest extends TestCase
         self::$pdo->prepare('DELETE FROM reservations WHERE id = ?')->execute([$inserted]);
     }
 
-    public function testCreateAtomicRejectsConflict(): void
+    public function testCreateSafelyRejectsConflict(): void
     {
         $carId = $this->firstCarId();
         $customerId = $this->firstCustomerId();
@@ -81,11 +81,11 @@ final class ReservationConflictTest extends TestCase
             'notes' => null,
         ];
 
-        $id1 = Reservation::createAtomic($base);
-        self::assertIsInt($id1);
+        $id1 = Reservation::createSafely($base);
+        self::assertGreaterThan(0, $id1);
         $base['code'] = 'ATOM-' . bin2hex(random_bytes(4));
-        $id2 = Reservation::createAtomic($base);
-        self::assertFalse($id2);
+        $this->expectException(ReservationConflictException::class);
+        Reservation::createSafely($base);
 
         self::$pdo->prepare('DELETE FROM reservations WHERE id = ?')->execute([$id1]);
     }

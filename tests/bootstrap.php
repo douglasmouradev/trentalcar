@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-define('BASE_PATH', dirname(__DIR__));
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', dirname(__DIR__));
+}
 define('TITANIUM_TESTING', true);
 
 require_once BASE_PATH . '/vendor/autoload.php';
-require_once BASE_PATH . '/app/bootstrap.php';
 
 if (is_file(BASE_PATH . '/.env')) {
     Env::load(BASE_PATH . '/.env');
