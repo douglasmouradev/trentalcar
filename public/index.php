@@ -6,6 +6,10 @@ require dirname(__DIR__) . '/app/bootstrap.php';
 
 require BASE_PATH . '/app/helpers/Env.php';
 Env::load(BASE_PATH . '/.env');
+Env::hydrateFromGetenv([
+    'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD',
+    'APP_URL', 'APP_ENV', 'APP_KEY', 'SMOKE_BASE_URL',
+]);
 
 ProductionGuard::validateBootOrRespond();
 

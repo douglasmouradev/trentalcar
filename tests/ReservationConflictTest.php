@@ -59,6 +59,7 @@ final class ReservationConflictTest extends TestCase
             self::markTestSkipped('Seed insuficiente');
         }
 
+        $day = random_int(10, 20);
         $base = [
             'code' => 'ATOM-' . bin2hex(random_bytes(4)),
             'customer_id' => $customerId,
@@ -66,9 +67,9 @@ final class ReservationConflictTest extends TestCase
             'operator_id' => $userId,
             'pickup_location_id' => $locationId,
             'return_location_id' => $locationId,
-            'pickup_date' => '2031-01-10',
+            'pickup_date' => sprintf('2041-06-%02d', $day),
             'pickup_time' => '09:00:00',
-            'return_date' => '2031-01-12',
+            'return_date' => sprintf('2041-06-%02d', $day + 2),
             'return_time' => '18:00:00',
             'daily_rate' => 100,
             'total_days' => 3,

@@ -31,4 +31,23 @@ final class Env
             putenv("{$name}={$value}");
         }
     }
+
+    /** Preenche chaves vazias no $_ENV a partir de getenv() (CI, Docker, etc.). */
+    /** @param list<string> $keys */
+    public static function hydrateFromGetenv(array $keys): void
+    {
+        foreach ($keys as $var) {
+            if (!is_string($var) || $var === '') {
+                continue;
+            }
+            $fromEnv = getenv($var);
+            if ($fromEnv === false) {
+                continue;
+            }
+            if (!isset($_ENV[$var]) || trim((string) $_ENV[$var]) === '') {
+                $_ENV[$var] = $fromEnv;
+                putenv("{$var}={$fromEnv}");
+            }
+        }
+    }
 }
