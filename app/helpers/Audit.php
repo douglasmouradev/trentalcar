@@ -48,6 +48,25 @@ final class Audit
     }
 
     /**
+     * Redação forte para exportação/UI (LGPD).
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    public static function sanitize(array $data): array
+    {
+        $out = $data;
+        foreach (self::SENSITIVE_FIELDS as $field) {
+            if (!isset($out[$field]) || !is_string($out[$field]) || $out[$field] === '') {
+                continue;
+            }
+            $out[$field] = $field === 'attachment_path' ? '[file]' : '[redacted]';
+        }
+
+        return $out;
+    }
+
+    /**
      * @param array<string, mixed> $data
      * @return array<string, mixed>
      */

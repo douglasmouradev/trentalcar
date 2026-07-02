@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 define('BASE_PATH', dirname(__DIR__));
+define('TITANIUM_TESTING', true);
 
 require_once BASE_PATH . '/app/helpers/Env.php';
 if (is_file(BASE_PATH . '/.env')) {
@@ -18,3 +19,5 @@ spl_autoload_register(static function (string $class): void {
         }
     }
 });
+
+require_once BASE_PATH . '/tests/HttpTestClient.php';

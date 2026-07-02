@@ -32,10 +32,14 @@ final class Database
         try {
             self::$pdo = new PDO($dsn, $c['username'], $c['password'], $opts);
         } catch (PDOException $e) {
-            // Em ambiente de produção, não expor credenciais nem DSN
             AppError::log($e);
-            http_response_code(500);
-            header('Content-Type: text/html; charset=UTF-8');
+            if (self::shouldThrowOnConnectFailure()) {
+                throw new RuntimeException('Database connection failed', 0, $e);
+            }
+            if (!headers_sent()) {
+                http_response_code(500);
+                header('Content-Type: text/html; charset=UTF-8');
+            }
             echo '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Base de dados indisponível</title></head><body>';
             echo '<p>Não foi possível estabelecer ligação à base de dados. Tente novamente em instantes.</p>';
             echo '</body></html>';
@@ -62,5 +66,14 @@ final class Database
         }
 
         return $stmt;
+    }
+
+    private static function shouldThrowOnConnectFailure(): bool
+    {
+        if (PHP_SAPI === 'cli') {
+            return true;
+        }
+
+        return defined('TITANIUM_TESTING');
     }
 }

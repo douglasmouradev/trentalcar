@@ -18,6 +18,7 @@ final class MailTest extends TestCase
         }
         $_ENV['APP_ENV'] = 'testing';
         $_ENV['MAIL_SMTP_HOST'] = '';
+        Config::clearCache();
     }
 
     public function testDevDriverStoresEmlFile(): void

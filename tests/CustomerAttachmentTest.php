@@ -33,7 +33,10 @@ final class CustomerAttachmentTest extends TestCase
         $name = 'legacy_' . bin2hex(random_bytes(4)) . '.txt';
         file_put_contents($dir . '/' . $name, 'legacy');
         $legacy = 'http://localhost/app/storage/customers/' . $name;
-        self::assertSame($dir . '/' . $name, CustomerAttachment::filesystemPath($legacy));
+        $expected = realpath($dir . DIRECTORY_SEPARATOR . $name);
+        $actual = CustomerAttachment::filesystemPath($legacy);
+        self::assertNotFalse($expected);
+        self::assertSame($expected, $actual);
         unlink($dir . '/' . $name);
     }
 }

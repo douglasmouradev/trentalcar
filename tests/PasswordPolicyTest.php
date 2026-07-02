@@ -13,11 +13,11 @@ final class PasswordPolicyTest extends TestCase
 
     public function testRejectsShortPassword(): void
     {
-        $this->assertSame('short', PasswordPolicy::validate('Ab1'));
+        $this->assertSame(Lang::get('user.password_short'), PasswordPolicy::validate('Ab1'));
     }
 
-    public function testRejectsWithoutUppercase(): void
+    public function testRejectsWithoutDigit(): void
     {
-        $this->assertSame('upper', PasswordPolicy::validate('segura2025'));
+        $this->assertSame(Lang::get('auth.password_complexity'), PasswordPolicy::validate('seguraforte'));
     }
 }

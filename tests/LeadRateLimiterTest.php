@@ -8,13 +8,19 @@ final class LeadRateLimiterTest extends TestCase
 {
     protected function setUp(): void
     {
-        parent::setUp();
-        require_once BASE_PATH . '/app/helpers/LeadRateLimiter.php';
+        if (trim((string) ($_ENV['DB_DATABASE'] ?? '')) === '') {
+            self::markTestSkipped('DB_DATABASE não configurado');
+        }
+        try {
+            Database::pdo()->query('SELECT 1');
+        } catch (Throwable $e) {
+            self::markTestSkipped('Base de dados indisponível: ' . $e->getMessage());
+        }
+        $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
     }
 
-    public function testTooManyWhenFileMissingIsFalse(): void
+    public function testTooManyInitiallyFalse(): void
     {
-        $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
         self::assertFalse(LeadRateLimiter::tooMany());
     }
 }

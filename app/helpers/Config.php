@@ -35,5 +35,11 @@ final class Config
         self::$database = $cfg;
         return self::$database;
     }
+
+    public static function clearCache(): void
+    {
+        self::$app = null;
+        self::$database = null;
+    }
 }
 
