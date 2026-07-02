@@ -22,23 +22,21 @@ final class InspectionUpload
         if ((int) ($file['size'] ?? 0) > $max) {
             throw new InvalidArgumentException('file too large');
         }
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->file((string) $file['tmp_name']) ?: '';
-        $ext = match ($mime) {
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/webp' => 'webp',
-            default => throw new InvalidArgumentException('invalid mime'),
-        };
+        $tmp = (string) $file['tmp_name'];
+        $mime = ImageUpload::detectMime($tmp);
+        if ($mime === null) {
+            throw new InvalidArgumentException('invalid mime');
+        }
         $dir = self::storeDir();
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
-        $name = sprintf('r%d-%s-%s.%s', $reservationId, $kind, bin2hex(random_bytes(6)), $ext);
+        $name = sprintf('r%d-%s-%s.%s', $reservationId, $kind, bin2hex(random_bytes(6)), ImageUpload::MIME_EXT[$mime]);
         $dest = $dir . '/' . $name;
-        if (!self::reencodeAndSave((string) $file['tmp_name'], $dest, $mime)) {
+        if (!ImageUpload::saveFromTmp($tmp, $dest, $mime)) {
             throw new RuntimeException('save failed');
         }
+
         return $name;
     }
 
@@ -70,29 +68,5 @@ final class InspectionUpload
     public static function url(int $reservationId, string $stored): string
     {
         return Router::url('/reservations/' . $reservationId . '/inspection-photo?f=' . rawurlencode(basename($stored)));
-    }
-
-    private static function reencodeAndSave(string $tmp, string $dest, string $mime): bool
-    {
-        if (!extension_loaded('gd')) {
-            return move_uploaded_file($tmp, $dest);
-        }
-        $img = match ($mime) {
-            'image/jpeg' => @imagecreatefromjpeg($tmp),
-            'image/png' => @imagecreatefrompng($tmp),
-            'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($tmp) : false,
-            default => false,
-        };
-        if ($img === false) {
-            return move_uploaded_file($tmp, $dest);
-        }
-        $ok = match ($mime) {
-            'image/jpeg' => imagejpeg($img, $dest, 85),
-            'image/png' => imagepng($img, $dest, 6),
-            'image/webp' => function_exists('imagewebp') ? imagewebp($img, $dest, 85) : false,
-            default => false,
-        };
-        imagedestroy($img);
-        return (bool) $ok;
     }
 }

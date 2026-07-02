@@ -7,8 +7,10 @@
 </div>
 <form class="filters card" method="get">
     <div class="filters-row">
-        <input class="input" type="search" name="q" value="<?= htmlspecialchars($filters['q'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= Lang::e('actions.filter') ?>">
-        <select class="input" name="status">
+        <label class="visually-hidden" for="leads-q"><?= Lang::e('actions.filter') ?></label>
+        <input class="input" id="leads-q" type="search" name="q" value="<?= htmlspecialchars($filters['q'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= Lang::e('actions.filter') ?>">
+        <label class="visually-hidden" for="leads-status"><?= Lang::e('reservation.status') ?></label>
+        <select class="input" id="leads-status" name="status">
             <option value=""><?= Lang::e('reservation.status') ?></option>
             <?php foreach (['new','contacted','converted','discarded'] as $s): ?>
                 <option value="<?= $s ?>" <?= ($filters['status'] ?? '') === $s ? 'selected' : '' ?>><?= Lang::e('leads.status_' . $s) ?></option>

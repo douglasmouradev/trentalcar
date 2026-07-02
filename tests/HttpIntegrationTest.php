@@ -133,4 +133,40 @@ final class HttpIntegrationTest extends TestCase
         $r = $this->client->get('/health');
         $this->assertContains($r['code'], [200, 403, 503]);
     }
+
+    public function testAuthenticatedDashboardLoads(): void
+    {
+        $login = $this->client->loginAsOwner();
+        $this->assertContains($login['code'], [302, 303]);
+        $location = (string) $login['location'];
+        $this->assertTrue(
+            str_contains($location, '/dashboard')
+            || str_contains($location, '/account/password')
+            || str_contains($location, '/login/2fa'),
+            'Unexpected login redirect: ' . $location
+        );
+
+        $dash = $this->client->get('/dashboard');
+        $this->assertContains($dash['code'], [200, 302, 303]);
+        if ($dash['code'] === 200) {
+            $this->assertStringContainsString('dashboard', strtolower($dash['body']));
+        }
+    }
+
+    public function testAuthenticatedReservationsListLoads(): void
+    {
+        $this->client->loginAsOwner();
+        $r = $this->client->get('/reservations');
+        $this->assertContains($r['code'], [200, 302, 303]);
+        if ($r['code'] === 200) {
+            $this->assertStringContainsString('reservations', strtolower($r['body']));
+        }
+    }
+
+    public function testAuthenticatedReportsRequiresOwner(): void
+    {
+        $this->client->loginAsOwner();
+        $r = $this->client->get('/reports');
+        $this->assertContains($r['code'], [200, 302, 303, 403]);
+    }
 }

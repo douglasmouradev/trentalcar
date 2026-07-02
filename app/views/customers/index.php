@@ -5,8 +5,10 @@
 </div>
 <form class="filters card" method="get">
     <div class="filters-row">
-        <input class="input" type="search" name="q" value="<?= htmlspecialchars($filters['q'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= Lang::e('actions.filter') ?>">
-        <select class="input" name="type">
+        <label class="visually-hidden" for="customers-q"><?= Lang::e('actions.filter') ?></label>
+        <input class="input" id="customers-q" type="search" name="q" value="<?= htmlspecialchars($filters['q'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= Lang::e('actions.filter') ?>">
+        <label class="visually-hidden" for="customers-type"><?= Lang::e('customer.type') ?></label>
+        <select class="input" id="customers-type" name="type">
             <option value=""><?= Lang::e('customer.type') ?></option>
             <option value="individual" <?= ($filters['type'] ?? '') === 'individual' ? 'selected' : '' ?>><?= Lang::e('customer.individual') ?></option>
             <option value="company" <?= ($filters['type'] ?? '') === 'company' ? 'selected' : '' ?>><?= Lang::e('customer.company') ?></option>

@@ -295,6 +295,3 @@ A app fica em `http://localhost:8888` e o MySQL em `localhost:3307`.
 
 
 - Na página **Relatórios** (perfil dono), use **Exportar CSV** (POST com CSRF) para descarregar o agregado mensal do intervalo de datas seleccionado.
-
-cd "C:\Users\Douglas\Desktop\Projetos\rental car\titanium-rental-car"
-php -S localhost:8888 -t public public/router.php

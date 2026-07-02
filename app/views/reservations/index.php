@@ -10,21 +10,26 @@
         <a class="btn btn-ghost btn-sm" href="<?= Router::url('/reservations?date_from=' . date('Y-m-d') . '&date_to=' . date('Y-m-d')) ?>"><?= Lang::e('filters.today') ?></a>
     </div>
     <div class="filters-row">
-        <input class="input" type="search" name="q" value="<?= htmlspecialchars($filters['q'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= Lang::e('reservation.code') ?>">
-        <select class="input" name="status">
+        <label class="visually-hidden" for="reservations-q"><?= Lang::e('reservation.code') ?></label>
+        <input class="input" id="reservations-q" type="search" name="q" value="<?= htmlspecialchars($filters['q'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= Lang::e('reservation.code') ?>">
+        <label class="visually-hidden" for="reservations-status"><?= Lang::e('reservation.status') ?></label>
+        <select class="input" id="reservations-status" name="status">
             <option value=""><?= Lang::e('reservation.status') ?></option>
             <?php foreach (['pending','confirmed','active','completed','cancelled'] as $s): ?>
                 <option value="<?= $s ?>" <?= ($filters['status'] ?? '') === $s ? 'selected' : '' ?>><?= Lang::e('status.' . $s) ?></option>
             <?php endforeach; ?>
         </select>
-        <select class="input" name="payment_status">
+        <label class="visually-hidden" for="reservations-payment"><?= Lang::e('reservation.payment') ?></label>
+        <select class="input" id="reservations-payment" name="payment_status">
             <option value=""><?= Lang::e('reservation.payment') ?></option>
             <?php foreach (['unpaid','partial','paid'] as $p): ?>
                 <option value="<?= $p ?>" <?= ($filters['payment_status'] ?? '') === $p ? 'selected' : '' ?>><?= Lang::e('payment.' . $p) ?></option>
             <?php endforeach; ?>
         </select>
-        <input class="input" type="date" name="date_from" value="<?= htmlspecialchars($filters['date_from'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-        <input class="input" type="date" name="date_to" value="<?= htmlspecialchars($filters['date_to'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+        <label class="visually-hidden" for="reservations-date-from"><?= Lang::e('reservation.pickup') ?></label>
+        <input class="input" id="reservations-date-from" type="date" name="date_from" value="<?= htmlspecialchars($filters['date_from'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+        <label class="visually-hidden" for="reservations-date-to"><?= Lang::e('reservation.return') ?></label>
+        <input class="input" id="reservations-date-to" type="date" name="date_to" value="<?= htmlspecialchars($filters['date_to'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
         <button class="btn btn-secondary" type="submit"><?= Lang::e('actions.filter') ?></button>
     </div>
 </form>

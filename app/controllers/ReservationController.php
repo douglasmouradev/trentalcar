@@ -6,7 +6,6 @@ final class ReservationController
 {
     public function index(): void
     {
-        PartnerForbiddenMiddleware::handle();
         $op = Auth::isOwner() ? null : Auth::id();
         $page = Pagination::currentPage();
         $perPage = Pagination::perPage();
@@ -30,7 +29,6 @@ final class ReservationController
 
     public function calendar(): void
     {
-        PartnerForbiddenMiddleware::handle();
         $cars = Auth::isOwner()
             ? Car::search([])
             : Car::search(['status' => 'available']);
@@ -44,7 +42,6 @@ final class ReservationController
 
     public function createForm(): void
     {
-        PartnerForbiddenMiddleware::handle();
         $cars = Auth::isOwner()
             ? Car::search([])
             : Car::search(['status' => 'available']);
@@ -85,7 +82,6 @@ final class ReservationController
 
     public function create(): void
     {
-        PartnerForbiddenMiddleware::handle();
         if (!Csrf::validate($_POST['_csrf'] ?? null)) {
             Flash::error(Lang::get('error.csrf'));
             header('Location: ' . Router::url('/reservations/create'));
@@ -120,7 +116,6 @@ final class ReservationController
 
     public function show(string $id): void
     {
-        PartnerForbiddenMiddleware::handle();
         $r = Reservation::find((int) $id);
         if (!$r || !AccessControl::canAccessReservation($r)) {
             http_response_code(404);
@@ -138,7 +133,6 @@ final class ReservationController
 
     public function editForm(string $id): void
     {
-        PartnerForbiddenMiddleware::handle();
         $r = Reservation::find((int) $id);
         if (!$r || !AccessControl::canAccessReservation($r)) {
             http_response_code(404);
@@ -170,7 +164,6 @@ final class ReservationController
 
     public function update(string $id): void
     {
-        PartnerForbiddenMiddleware::handle();
         if (!Csrf::validate($_POST['_csrf'] ?? null)) {
             Flash::error(Lang::get('error.csrf'));
             header('Location: ' . Router::url('/reservations/' . $id . '/edit'));
@@ -204,7 +197,6 @@ final class ReservationController
 
     public function cancel(string $id): void
     {
-        PartnerForbiddenMiddleware::handle();
         if (!Csrf::validate($_POST['_csrf'] ?? null)) {
             Flash::error(Lang::get('error.csrf'));
             header('Location: ' . Router::url('/reservations/' . $id));
@@ -229,7 +221,6 @@ final class ReservationController
 
     public function checkIn(string $id): void
     {
-        PartnerForbiddenMiddleware::handle();
         if (!Csrf::validate($_POST['_csrf'] ?? null)) {
             Flash::error(Lang::get('error.csrf'));
             header('Location: ' . Router::url('/reservations/' . $id));
@@ -274,7 +265,6 @@ final class ReservationController
 
     public function checkOut(string $id): void
     {
-        PartnerForbiddenMiddleware::handle();
         if (!Csrf::validate($_POST['_csrf'] ?? null)) {
             Flash::error(Lang::get('error.csrf'));
             header('Location: ' . Router::url('/reservations/' . $id));
@@ -426,7 +416,6 @@ final class ReservationController
 
     public function inspectionPhoto(string $id): void
     {
-        PartnerForbiddenMiddleware::handle();
         $resId = (int) $id;
         if (!AccessControl::canAccessReservationId($resId)) {
             http_response_code(403);

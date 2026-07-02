@@ -31,7 +31,16 @@ final class CustomerAttachment
             'image/webp' => 'webp',
         ];
 
-        if (!isset($allowed[$mime]) || !self::magicMatches($tmp, $mime)) {
+        if (!isset($allowed[$mime])) {
+            Flash::error(Lang::get('upload.invalid_type'));
+            return false;
+        }
+        if (str_starts_with($mime, 'image/')) {
+            if (!ImageUpload::magicMatches($tmp, $mime)) {
+                Flash::error(Lang::get('upload.invalid_type'));
+                return false;
+            }
+        } elseif (!self::magicMatchesPdf($tmp)) {
             Flash::error(Lang::get('upload.invalid_type'));
             return false;
         }
@@ -45,8 +54,8 @@ final class CustomerAttachment
         $dest = $dir . '/' . $name;
 
         if (str_starts_with($mime, 'image/')) {
-            $encoded = SecureImage::reencode($tmp, $mime, $dest);
-            if ($encoded === null) {
+            $encoded = ImageUpload::saveFromTmp($tmp, $dest, $mime);
+            if (!$encoded) {
                 Flash::error(Lang::get('upload.failed'));
                 return false;
             }
@@ -113,18 +122,10 @@ final class CustomerAttachment
         return $full;
     }
 
-    private static function magicMatches(string $path, string $mime): bool
+    private static function magicMatchesPdf(string $path): bool
     {
-        $head = @file_get_contents($path, false, null, 0, 12);
-        if ($head === false || $head === '') {
-            return false;
-        }
-        return match ($mime) {
-            'application/pdf' => str_starts_with($head, '%PDF'),
-            'image/jpeg' => str_starts_with($head, "\xFF\xD8\xFF"),
-            'image/png' => str_starts_with($head, "\x89PNG\r\n\x1a\n"),
-            'image/webp' => str_starts_with($head, 'RIFF') && substr($head, 8, 4) === 'WEBP',
-            default => false,
-        };
+        $head = @file_get_contents($path, false, null, 0, 4);
+
+        return $head !== false && str_starts_with($head, '%PDF');
     }
 }

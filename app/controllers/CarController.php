@@ -244,10 +244,9 @@ final class CarController
             Flash::error(Lang::get('upload.too_large'));
             return false;
         }
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->file($_FILES[$field]['tmp_name']);
-        $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
-        if (!isset($allowed[$mime])) {
+        $tmp = (string) $_FILES[$field]['tmp_name'];
+        $mime = ImageUpload::detectMime($tmp);
+        if ($mime === null) {
             Flash::error(Lang::get('upload.invalid_type'));
             return false;
         }
@@ -256,15 +255,9 @@ final class CarController
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
-        $name = 'car_' . bin2hex(random_bytes(8)) . '.' . $allowed[$mime];
+        $name = 'car_' . bin2hex(random_bytes(8)) . '.' . ImageUpload::MIME_EXT[$mime];
         $dest = $dir . '/' . $name;
-        if (!move_uploaded_file($_FILES[$field]['tmp_name'], $dest)) {
-            Flash::error(Lang::get('upload.failed'));
-            return false;
-        }
-        $reencoded = SecureImage::reencode($dest, $mime, $dest);
-        if ($reencoded === null) {
-            @unlink($dest);
+        if (!ImageUpload::saveFromTmp($tmp, $dest, $mime)) {
             Flash::error(Lang::get('upload.failed'));
             return false;
         }

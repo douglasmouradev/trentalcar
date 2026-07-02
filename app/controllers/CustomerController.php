@@ -6,7 +6,6 @@ final class CustomerController
 {
     public function index(): void
     {
-        PartnerForbiddenMiddleware::handle();
         $createdBy = Auth::isOwner() ? null : Auth::id();
         $page = Pagination::currentPage();
         $perPage = Pagination::perPage();
@@ -27,7 +26,6 @@ final class CustomerController
 
     public function show(string $id): void
     {
-        PartnerForbiddenMiddleware::handle();
         $c = Customer::find((int) $id);
         if (!$c || !AccessControl::canAccessCustomer($c)) {
             http_response_code(404);
@@ -44,13 +42,11 @@ final class CustomerController
 
     public function createForm(): void
     {
-        PartnerForbiddenMiddleware::handle();
         View::render('customers/create', ['title' => Lang::get('customer.create'), 'customer' => null], 'main');
     }
 
     public function create(): void
     {
-        PartnerForbiddenMiddleware::handle();
         if (!Csrf::validate($_POST['_csrf'] ?? null)) {
             Flash::error(Lang::get('error.csrf'));
             header('Location: ' . Router::url('/customers/create'));
@@ -84,7 +80,6 @@ final class CustomerController
 
     public function editForm(string $id): void
     {
-        PartnerForbiddenMiddleware::handle();
         $c = Customer::find((int) $id);
         if (!$c || !AccessControl::canAccessCustomer($c)) {
             http_response_code(404);
@@ -101,7 +96,6 @@ final class CustomerController
 
     public function update(string $id): void
     {
-        PartnerForbiddenMiddleware::handle();
         if (!Csrf::validate($_POST['_csrf'] ?? null)) {
             Flash::error(Lang::get('error.csrf'));
             header('Location: ' . Router::url('/customers/' . $id . '/edit'));
@@ -138,17 +132,26 @@ final class CustomerController
 
     public function downloadAttachment(string $id): void
     {
-        PartnerForbiddenMiddleware::handle();
+        $uid = Auth::id();
+        if (DownloadRateLimiter::tooMany($uid)) {
+            http_response_code(429);
+            Flash::error(Lang::get('auth.rate_limited'));
+            Redirect::to('/customers/' . $id);
+        }
         $c = Customer::find((int) $id);
         if (!$c || empty($c['attachment_path']) || !AccessControl::canAccessCustomer($c)) {
             http_response_code(404);
             return;
         }
+        DownloadRateLimiter::hit($uid);
         $path = CustomerAttachment::resolvePath((string) $c['attachment_path']);
         if ($path === null) {
             http_response_code(404);
             return;
         }
+        Audit::log($uid, 'download', 'customer_attachment', (int) $id, null, [
+            'filename' => basename($path),
+        ]);
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->file($path) ?: 'application/octet-stream';
         $filename = basename($path);

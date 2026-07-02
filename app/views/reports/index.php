@@ -9,8 +9,10 @@
 </div>
 <div class="filters card">
     <form class="filters-row" method="get">
-        <input class="input" type="date" name="from" value="<?= htmlspecialchars($from, ENT_QUOTES, 'UTF-8') ?>">
-        <input class="input" type="date" name="to" value="<?= htmlspecialchars($to, ENT_QUOTES, 'UTF-8') ?>">
+        <label class="visually-hidden" for="reports-from"><?= Lang::e('reservation.pickup') ?></label>
+        <input class="input" id="reports-from" type="date" name="from" value="<?= htmlspecialchars($from, ENT_QUOTES, 'UTF-8') ?>">
+        <label class="visually-hidden" for="reports-to"><?= Lang::e('reservation.return') ?></label>
+        <input class="input" id="reports-to" type="date" name="to" value="<?= htmlspecialchars($to, ENT_QUOTES, 'UTF-8') ?>">
         <button class="btn btn-secondary" type="submit"><?= Lang::e('actions.filter') ?></button>
     </form>
     <form method="post" action="<?= htmlspecialchars(Router::url('/reports/export'), ENT_QUOTES, 'UTF-8') ?>" class="filters-row mt inline-form">

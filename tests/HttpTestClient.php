@@ -57,6 +57,23 @@ final class HttpTestClient
         return null;
     }
 
+    /** @return array{code: int, body: string, location: ?string} */
+    public function loginAsOwner(string $email = 'owner@titaniumrental.com', string $password = 'password123'): array
+    {
+        $page = $this->get('/login');
+        $csrf = $this->extractCsrf($page['body']);
+        if ($csrf === null) {
+            throw new RuntimeException('CSRF not found on login page');
+        }
+
+        return $this->post('/login', [
+            '_csrf' => $csrf,
+            'email' => $email,
+            'password' => $password,
+            'privacy_accept' => '1',
+        ]);
+    }
+
     /** @param array<string, bool|float|int|string|null>|null $fields */
     private function request(string $method, string $path, ?array $fields = null): array
     {
