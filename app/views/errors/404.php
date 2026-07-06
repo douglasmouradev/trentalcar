@@ -3,12 +3,7 @@ $home = '/';
 if (Auth::check()) {
     $home = Auth::isPartner() ? '/partner/profile' : '/dashboard';
 } else {
-    $landingEnv = isset($_ENV['APP_LANDING']) ? strtolower(trim((string) $_ENV['APP_LANDING'])) : 'true';
-    if (!in_array($landingEnv, ['0', 'false', 'no', 'off'], true)) {
-        $home = '/';
-    } else {
-        $home = '/login';
-    }
+    $home = LandingMode::isEnabled() ? '/' : '/login';
 }
 $homeLabel = Auth::check() ? Lang::get('nav.dashboard') : (strpos($home, 'login') !== false ? Lang::get('error.404_login') : Lang::get('error.404_home'));
 ?>

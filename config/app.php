@@ -13,6 +13,7 @@ return [
     'session_secure' => filter_var($_ENV['SESSION_SECURE'] ?? false, FILTER_VALIDATE_BOOLEAN),
     'app_key' => trim((string) ($_ENV['APP_KEY'] ?? '')),
     'health_token' => trim((string) ($_ENV['HEALTH_TOKEN'] ?? '')),
+    'landing_enabled' => $_ENV['APP_LANDING'] ?? 'true',
     'max_upload' => (int) ($_ENV['MAX_UPLOAD_SIZE'] ?? 5242880),
     'upload_path' => $_ENV['UPLOAD_PATH'] ?? 'public/assets/uploads',
     'per_page' => (int) ($_ENV['APP_PER_PAGE'] ?? 15),

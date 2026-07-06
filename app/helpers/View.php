@@ -14,7 +14,7 @@ final class View
         if (!is_readable($path)) {
             ob_end_clean();
             http_response_code(500);
-            echo 'View not found';
+            echo Lang::get('error.view_not_found');
             return;
         }
         include $path;
@@ -22,7 +22,7 @@ final class View
         $layoutPath = APP_PATH . '/views/layouts/' . $layout . '.php';
         if (!is_readable($layoutPath)) {
             http_response_code(500);
-            echo 'Layout not found';
+            echo Lang::get('error.layout_not_found');
             return;
         }
         include $layoutPath;

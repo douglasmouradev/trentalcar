@@ -10,8 +10,7 @@ final class HomeController
             Redirect::to('/dashboard');
         }
 
-        $landingEnv = isset($_ENV['APP_LANDING']) ? strtolower(trim((string) $_ENV['APP_LANDING'])) : 'true';
-        $landingOff = in_array($landingEnv, ['0', 'false', 'no', 'off'], true);
+        $landingOff = !LandingMode::isEnabled();
         if ($landingOff) {
             Redirect::to('/login');
         }

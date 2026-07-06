@@ -1,4 +1,4 @@
-/* Titanium Rental Car — landing page (locação de veículos) */
+﻿/* Titanium Rental Car â€” landing page (locaÃ§Ã£o de veÃ­culos) */
 @import url("../../css/tokens.css");
 @import url("../../css/polish.css");
 
@@ -90,7 +90,7 @@ a:hover {
   color: var(--chrome-deep);
 }
 
-/* ——— Header ——— */
+/* â€”â€”â€” Header â€”â€”â€” */
 .site-header {
   position: sticky;
   top: 0;
@@ -330,7 +330,7 @@ a:hover {
   box-shadow: none;
 }
 
-/* ——— Sub-tabs (estilo locadora premium) ——— */
+/* â€”â€”â€” Sub-tabs (estilo locadora premium) â€”â€”â€” */
 .lp-tabs {
   background: var(--paper);
   border-bottom: 1px solid var(--line);
@@ -370,7 +370,7 @@ a:hover {
   cursor: default;
 }
 
-/* Abertura — zoom 3D ao scroll (referência: https://codepen.io/argyleink/pen/ZEdrzJZ) */
+/* Abertura â€” zoom 3D ao scroll (referÃªncia: https://codepen.io/argyleink/pen/ZEdrzJZ) */
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -383,242 +383,8 @@ a:hover {
   border: 0;
 }
 
-/* ——— Hen³ intro (https://webflow.com/made-in-webflow/website/hencubed) ——— */
-.lp-hen-intro {
-  --hen-p: 0;
-  position: relative;
-  background: #060a12;
-  color: #f8fafc;
-}
 
-.lp-hen-intro-track {
-  min-height: 300vh;
-}
-
-.lp-hen-intro-sticky {
-  position: sticky;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: clamp(1rem, 3vh, 2rem);
-  min-height: 100dvh;
-  height: 100dvh;
-  padding: clamp(4rem, 12vh, 6rem) 0 clamp(2rem, 6vh, 3rem);
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(26, 58, 108, 0.35), transparent 70%),
-    #060a12;
-}
-
-.lp-hen-marquee {
-  overflow: hidden;
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-  opacity: calc(0.35 + var(--hen-p) * 0.45);
-}
-
-.lp-hen-marquee-inner {
-  display: flex;
-  width: max-content;
-  gap: clamp(1.5rem, 4vw, 3rem);
-  animation: lp-hen-marquee 28s linear infinite;
-}
-
-.lp-hen-marquee--mid .lp-hen-marquee-inner {
-  animation-direction: reverse;
-  animation-duration: 34s;
-}
-
-.lp-hen-marquee--bot .lp-hen-marquee-inner {
-  animation-duration: 22s;
-}
-
-.lp-hen-marquee span {
-  font-size: clamp(0.65rem, 1.8vw, 0.8rem);
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(248, 250, 252, 0.55);
-  white-space: nowrap;
-}
-
-@keyframes lp-hen-marquee {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-.lp-hen-hero-copy {
-  text-align: center;
-  padding-inline: clamp(1rem, 5vw, 2.5rem);
-  transform: scale(calc(1 + var(--hen-p) * 0.08));
-  opacity: calc(1 - var(--hen-p) * 1.15);
-  filter: blur(calc(var(--hen-p) * 14px));
-  will-change: transform, opacity, filter;
-}
-
-.lp-hen-headline {
-  margin: 0;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-}
-
-.lp-hen-line {
-  display: block;
-  font-size: clamp(2.25rem, 9vw, 5.5rem);
-}
-
-.lp-hen-line--accent {
-  color: rgba(255, 255, 255, 0.92);
-  font-style: normal;
-  font-weight: 700;
-}
-
-.lp-hen-brand {
-  margin: clamp(1rem, 3vh, 1.75rem) 0 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  opacity: calc(min(1, var(--hen-p) * 2));
-  transform: translateY(calc((1 - var(--hen-p)) * 24px));
-}
-
-.lp-hen-brand-name {
-  font-size: clamp(1.25rem, 4vw, 2rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.lp-hen-brand-sub {
-  font-size: clamp(0.7rem, 2vw, 0.9rem);
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(248, 250, 252, 0.65);
-}
-
-.lp-hen-scroll-cue {
-  position: absolute;
-  bottom: clamp(1.25rem, 4vh, 2rem);
-  left: 50%;
-  transform: translateX(-50%);
-  margin: 0;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(248, 250, 252, 0.4);
-  opacity: calc(1 - var(--hen-p) * 2);
-}
-
-.lp-hen-scroll-cue::after {
-  content: "";
-  display: block;
-  width: 1px;
-  height: 2.5rem;
-  margin: 0.65rem auto 0;
-  background: linear-gradient(180deg, rgba(248, 250, 252, 0.5), transparent);
-  animation: lp-hen-cue-pulse 1.8s ease-in-out infinite;
-}
-
-@keyframes lp-hen-cue-pulse {
-  0%,
-  100% {
-    transform: scaleY(0.6);
-    opacity: 0.4;
-  }
-
-  50% {
-    transform: scaleY(1);
-    opacity: 1;
-  }
-}
-
-.lp-hen-progress {
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 85;
-  width: 3px;
-  height: 100dvh;
-  pointer-events: none;
-  background: rgba(15, 23, 42, 0.06);
-}
-
-.lp-hen-progress-fill {
-  display: block;
-  width: 100%;
-  height: 100%;
-  transform-origin: top center;
-  transform: scaleY(0);
-  background: linear-gradient(180deg, var(--chrome), rgba(26, 58, 108, 0.35));
-}
-
-.lp-header.lp-header--over-hen {
-  background: rgba(6, 10, 18, 0.72);
-  border-bottom-color: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  box-shadow: none;
-}
-
-.lp-header.lp-header--over-hen .brand-name,
-.lp-header.lp-header--over-hen .brand-sub,
-.lp-header.lp-header--over-hen .site-nav a:not(.btn) {
-  color: rgba(248, 250, 252, 0.92);
-}
-
-.lp-header.lp-header--over-hen .site-nav a:not(.btn):hover {
-  color: #fff;
-}
-
-.lp-header.lp-header--over-hen .lang-switch {
-  border-color: rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.lp-header.lp-header--over-hen .lang-btn {
-  color: rgba(248, 250, 252, 0.9);
-  border-right-color: rgba(255, 255, 255, 0.18);
-}
-
-.lp-header.lp-header--over-hen .lang-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.lp-header.lp-header--over-hen .lang-btn.active {
-  background: #fff;
-  color: var(--chrome);
-  font-weight: 700;
-}
-
-.lp-header.lp-header--over-hen .nav-toggle span,
-.lp-header.lp-header--over-hen .nav-toggle span::before,
-.lp-header.lp-header--over-hen .nav-toggle span::after {
-  background: #f8fafc;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lp-hen-intro,
-  .lp-hen-progress {
-    display: none;
-  }
-}
-
-@media (max-width: 720px) {
-  .lp-hen-intro-track {
-    min-height: 240vh;
-  }
-}
-
-/* ——— Hero + busca ——— */
+/* â€”â€”â€” Hero + busca â€”â€”â€” */
 .lp-hero {
   position: relative;
 }
@@ -906,7 +672,7 @@ a:hover {
   accent-color: var(--chrome);
 }
 
-/* ——— Trust strip ——— */
+/* â€”â€”â€” Trust strip â€”â€”â€” */
 .lp-trust {
   padding: 3rem clamp(1rem, 4vw, 2.5rem) 2.5rem;
   background: transparent;
@@ -952,7 +718,7 @@ a:hover {
   margin-bottom: 0.15rem;
 }
 
-/* ——— Promo ——— */
+/* â€”â€”â€” Promo â€”â€”â€” */
 .lp-promo {
   padding: 0 clamp(1rem, 4vw, 2.5rem);
   margin: 0 auto 2rem;
@@ -994,7 +760,7 @@ a:hover {
   white-space: nowrap;
 }
 
-/* ——— Sections ——— */
+/* â€”â€”â€” Sections â€”â€”â€” */
 .lp-section {
   padding: clamp(2.5rem, 6vw, 4rem) clamp(1rem, 4vw, 2.5rem);
 }
@@ -1039,7 +805,7 @@ a:hover {
   font-size: 1.0625rem;
 }
 
-/* ——— Fleet ——— */
+/* â€”â€”â€” Fleet â€”â€”â€” */
 .lp-fleet-toolbar {
   margin-bottom: 1.25rem;
 }
@@ -1208,7 +974,7 @@ a:hover {
   margin-top: auto;
 }
 
-/* ——— Benefits + steps ——— */
+/* â€”â€”â€” Benefits + steps â€”â€”â€” */
 .lp-split {
   display: grid;
   gap: 1.5rem;
@@ -1288,7 +1054,7 @@ a:hover {
   font-size: 0.9375rem;
 }
 
-/* ——— FAQ ——— */
+/* â€”â€”â€” FAQ â€”â€”â€” */
 .lp-faq {
   max-width: 720px;
 }
@@ -1331,7 +1097,7 @@ a:hover {
 }
 
 .lp-faq-item[open] summary::after {
-  content: "−";
+  content: "âˆ’";
 }
 
 .lp-faq-item p {
@@ -1341,7 +1107,7 @@ a:hover {
   color: var(--ink-soft);
 }
 
-/* ——— CTA band ——— */
+/* â€”â€”â€” CTA band â€”â€”â€” */
 .lp-cta {
   margin: clamp(2rem, 5vw, 3rem) clamp(1rem, 4vw, 2.5rem);
 }
@@ -1410,7 +1176,7 @@ a:hover {
   color: #fff;
 }
 
-/* ——— Footer ——— */
+/* â€”â€”â€” Footer â€”â€”â€” */
 .lp-footer {
   padding: 3.25rem clamp(1rem, 4vw, 2.5rem) 1.75rem;
   background: var(--chrome-deep);
@@ -1491,24 +1257,6 @@ a:hover {
 
 [data-hen-parallax] {
   transform: translateY(var(--hen-parallax-y, 0));
-}
-
-[data-hen-split] .lp-hen-word {
-  display: inline-block;
-  opacity: 0;
-  transform: translateY(0.75em);
-  filter: blur(6px);
-  transition:
-    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-  transition-delay: calc(var(--hen-word-i, 0) * 50ms);
-}
-
-.is-inview [data-hen-split] .lp-hen-word {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
 }
 
 .lp-fleet-empty {
@@ -1628,7 +1376,7 @@ a:hover {
   }
 }
 
-/* Aviso LGPD / cookies (mesmo padrão do painel) */
+/* Aviso LGPD / cookies (mesmo padrÃ£o do painel) */
 .cookie-notice {
   position: fixed;
   bottom: 0;
@@ -1694,7 +1442,7 @@ a:hover {
   background: var(--chrome-deep);
 }
 
-/* Honeypot anti-bot — oculto de utilizadores reais */
+/* Honeypot anti-bot â€” oculto de utilizadores reais */
 .hp-field {
   position: absolute;
   left: -9999px;
@@ -1704,7 +1452,7 @@ a:hover {
   pointer-events: none;
 }
 
-/* Form UX — erros, loading, veículo selecionado */
+/* Form UX â€” erros, loading, veÃ­culo selecionado */
 .lp-form-errors {
   margin-bottom: 1rem;
   padding: 0.75rem 1rem;
@@ -1775,7 +1523,7 @@ a:hover {
   to { transform: rotate(360deg); }
 }
 
-/* Bloco scroll-zoom: efeito não activo — oculto para não quebrar o layout */
+/* Bloco scroll-zoom: efeito nÃ£o activo â€” oculto para nÃ£o quebrar o layout */
 .lp-scroll-zoom {
   display: none;
 }
@@ -1786,7 +1534,7 @@ a:hover {
   }
 }
 
-/* Página /reservar */
+/* PÃ¡gina /reservar */
 .lp-body--booking {
   background: var(--paper, #f8f6f2);
 }

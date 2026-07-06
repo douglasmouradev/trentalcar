@@ -43,6 +43,8 @@ return [
     'error.csrf' => 'Sessão expirada. Tente novamente.',
     'error.404_title' => 'Página não encontrada',
     'error.404_lead' => 'Verifique o endereço ou volte ao painel.',
+    'error.view_not_found' => 'Modelo de página indisponível.',
+    'error.layout_not_found' => 'Layout indisponível.',
     'error.403_title' => 'Acesso negado',
     'flash.saved' => 'Salvo com sucesso.',
     'flash.deleted' => 'Removido com sucesso.',
