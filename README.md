@@ -92,7 +92,7 @@ Se o login falhar após clonar o projeto, rode `php bin/migrate.php` (cria/atual
 
 
 
-A marca usa `public/assets/img/logo.jpeg` (copiada da raiz do repositório do cliente).
+A marca usa `public/assets/img/logo.jpeg` (cópia de `rentalcar.jpeg` na raiz do projeto).
 
 
 
@@ -295,3 +295,8 @@ A app fica em `http://localhost:8888` e o MySQL em `localhost:3307`.
 
 
 - Na página **Relatórios** (perfil dono), use **Exportar CSV** (POST com CSRF) para descarregar o agregado mensal do intervalo de datas seleccionado.
+
+
+
+cd "C:\Users\Douglas\Desktop\Projetos\rental car\titanium-rental-car"
+php -S localhost:8888 -t public public/router.php

@@ -45,7 +45,7 @@ $locale = Lang::locale();
             <?php endforeach; ?>
             <div class="auth-brand">
                 <div class="auth-logo-frame">
-                    <img src="<?= htmlspecialchars(Router::url('/assets/img/logo.jpeg'), ENT_QUOTES, 'UTF-8') ?>" alt="" width="56" height="56" class="auth-logo" loading="lazy">
+                    <img src="<?= htmlspecialchars(Router::url('/assets/img/logo.jpeg'), ENT_QUOTES, 'UTF-8') ?>" alt="" width="72" height="72" class="auth-logo" loading="lazy">
                 </div>
                 <p class="auth-eyebrow"><?= Lang::e('app.name') ?></p>
                 <h1 class="auth-title"><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></h1>

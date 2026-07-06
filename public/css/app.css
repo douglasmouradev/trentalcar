@@ -227,8 +227,12 @@ body.nav-drawer-open {
 }
 
 .brand-logo {
-  border-radius: var(--radius-sm);
-  object-fit: cover;
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: contain;
+  object-position: center;
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--chrome-border);
   flex-shrink: 0;
 }
@@ -317,10 +321,12 @@ body.nav-drawer-open {
 }
 
 .topbar-brand-logo {
-  border-radius: 6px;
-  object-fit: cover;
+  border-radius: 4px;
+  object-fit: contain;
+  object-position: center;
   flex-shrink: 0;
-  border: 1px solid var(--chrome-border);
+  border: 0;
+  background: transparent;
 }
 
 .topbar-brand-name {
@@ -1204,8 +1210,10 @@ select.input {
 
 .auth-logo {
   display: block;
-  border-radius: 12px;
-  object-fit: cover;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  object-position: center;
 }
 
 .auth-eyebrow {
