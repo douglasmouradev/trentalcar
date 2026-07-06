@@ -86,8 +86,15 @@ final class CarController
             exit;
         }
         $d['image_url'] = $upload ?? ($d['image_url'] ?? null);
-        $id = Car::create($d);
-        Audit::log(Auth::id(), 'create', 'car', $id, null, $d);
+        try {
+            $id = Car::create($d);
+            Audit::log(Auth::id(), 'create', 'car', $id, null, $d);
+        } catch (Throwable $e) {
+            AppLog::error('car.create_failed', ['error' => $e->getMessage()]);
+            Flash::error(Lang::get('flash.error'));
+            header('Location: ' . Router::url('/cars/create'));
+            exit;
+        }
         Flash::success(Lang::get('flash.saved'));
         header('Location: ' . Router::url('/cars/' . $id));
         exit;
@@ -136,8 +143,24 @@ final class CarController
         } else {
             $d['image_url'] = $old['image_url'];
         }
-        Car::update((int) $id, $d);
-        Audit::log(Auth::id(), 'update', 'car', (int) $id, $old, $d);
+        try {
+            Car::update((int) $id, $d);
+            Audit::log(Auth::id(), 'update', 'car', (int) $id, $old, $d);
+        } catch (Throwable $e) {
+            if (is_string($uploaded)) {
+                $path = parse_url($uploaded, PHP_URL_PATH);
+                $basename = is_string($path) ? basename($path) : '';
+                $oldPath = parse_url((string) ($old['image_url'] ?? ''), PHP_URL_PATH);
+                $oldBasename = is_string($oldPath) ? basename($oldPath) : '';
+                if ($basename !== '' && $basename !== $oldBasename) {
+                    @unlink(BASE_PATH . '/public/assets/uploads/' . $basename);
+                }
+            }
+            AppLog::error('car.update_failed', ['id' => $id, 'error' => $e->getMessage()]);
+            Flash::error(Lang::get('flash.error'));
+            header('Location: ' . Router::url('/cars/' . $id . '/edit'));
+            exit;
+        }
         Flash::success(Lang::get('flash.saved'));
         header('Location: ' . Router::url('/cars/' . $id));
         exit;

@@ -61,26 +61,39 @@ final class UserCar
     public static function syncWithQuotas(int $userId, array $items): void
     {
         $pdo = Database::pdo();
-        Database::prepare('DELETE FROM user_cars WHERE user_id = ?')->execute([$userId]);
-        if ($items === []) {
-            return;
+        $ownTransaction = !$pdo->inTransaction();
+        if ($ownTransaction) {
+            $pdo->beginTransaction();
         }
-        $hasQuota = self::hasQuotaColumn();
-        $ins = $hasQuota
-            ? Database::prepare('INSERT INTO user_cars (user_id, car_id, quota_percent) VALUES (?, ?, ?)')
-            : Database::prepare('INSERT INTO user_cars (user_id, car_id) VALUES (?, ?)');
-        $validIds = self::filterValidCarIds(array_map(static fn (array $item): int => (int) ($item['car_id'] ?? 0), $items));
-        foreach ($items as $item) {
-            $carId = (int) ($item['car_id'] ?? 0);
-            if ($carId <= 0 || !isset($validIds[$carId])) {
-                continue;
+        try {
+            Database::prepare('DELETE FROM user_cars WHERE user_id = ?')->execute([$userId]);
+            if ($items !== []) {
+                $hasQuota = self::hasQuotaColumn();
+                $ins = $hasQuota
+                    ? Database::prepare('INSERT INTO user_cars (user_id, car_id, quota_percent) VALUES (?, ?, ?)')
+                    : Database::prepare('INSERT INTO user_cars (user_id, car_id) VALUES (?, ?)');
+                $validIds = self::filterValidCarIds(array_map(static fn (array $item): int => (int) ($item['car_id'] ?? 0), $items));
+                foreach ($items as $item) {
+                    $carId = (int) ($item['car_id'] ?? 0);
+                    if ($carId <= 0 || !isset($validIds[$carId])) {
+                        continue;
+                    }
+                    $quota = max(0.01, min(100.0, (float) ($item['quota'] ?? 100)));
+                    if ($hasQuota) {
+                        $ins->execute([$userId, $carId, $quota]);
+                    } else {
+                        $ins->execute([$userId, $carId]);
+                    }
+                }
             }
-            $quota = max(0.01, min(100.0, (float) ($item['quota'] ?? 100)));
-            if ($hasQuota) {
-                $ins->execute([$userId, $carId, $quota]);
-            } else {
-                $ins->execute([$userId, $carId]);
+            if ($ownTransaction) {
+                $pdo->commit();
             }
+        } catch (Throwable $e) {
+            if ($ownTransaction && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
         }
     }
 

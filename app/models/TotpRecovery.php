@@ -16,11 +16,20 @@ final class TotpRecovery
         Database::prepare('DELETE FROM totp_recovery_codes WHERE user_id = ?')->execute([$userId]);
 
         $plain = [];
-        $stmt = Database::prepare('INSERT INTO totp_recovery_codes (user_id, code_hash) VALUES (?, ?)');
-        for ($i = 0; $i < self::CODE_COUNT; $i++) {
-            $code = self::generatePlainCode();
-            $plain[] = $code;
-            $stmt->execute([$userId, hash('sha256', self::normalize($code))]);
+        $pdo->beginTransaction();
+        try {
+            $stmt = Database::prepare('INSERT INTO totp_recovery_codes (user_id, code_hash) VALUES (?, ?)');
+            for ($i = 0; $i < self::CODE_COUNT; $i++) {
+                $code = self::generatePlainCode();
+                $plain[] = $code;
+                $stmt->execute([$userId, hash('sha256', self::normalize($code))]);
+            }
+            $pdo->commit();
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
         }
         return $plain;
     }

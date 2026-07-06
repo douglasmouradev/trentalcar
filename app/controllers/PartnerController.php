@@ -48,13 +48,19 @@ final class PartnerController
             exit;
         }
         try {
+            $pdo = Database::pdo();
+            $pdo->beginTransaction();
             $id = User::create($data);
+            UserCar::syncWithQuotas($id, self::assignmentsFromPost());
+            $pdo->commit();
         } catch (Throwable) {
+            if (isset($pdo) && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             Flash::error(Lang::get('flash.error'));
             header('Location: ' . Router::url('/partners/create'));
             exit;
         }
-        UserCar::syncWithQuotas($id, self::assignmentsFromPost());
         Audit::log(Auth::id(), 'create', 'partner', $id, null, ['email' => $data['email']]);
         Flash::success(Lang::get('flash.saved'));
         header('Location: ' . Router::url('/partners'));
@@ -100,8 +106,20 @@ final class PartnerController
             header('Location: ' . Router::url('/partners/' . $uid . '/edit'));
             exit;
         }
-        User::update($uid, $data);
-        UserCar::syncWithQuotas($uid, self::assignmentsFromPost());
+        try {
+            $pdo = Database::pdo();
+            $pdo->beginTransaction();
+            User::update($uid, $data);
+            UserCar::syncWithQuotas($uid, self::assignmentsFromPost());
+            $pdo->commit();
+        } catch (Throwable) {
+            if (isset($pdo) && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            Flash::error(Lang::get('flash.error'));
+            header('Location: ' . Router::url('/partners/' . $uid . '/edit'));
+            exit;
+        }
         Audit::log(Auth::id(), 'update', 'partner', $uid, ['email' => $old['email']], ['email' => $data['email']]);
         Flash::success(Lang::get('flash.saved'));
         header('Location: ' . Router::url('/partners'));

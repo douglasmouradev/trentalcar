@@ -30,8 +30,15 @@ final class LocationController
             header('Location: ' . Router::url('/locations/create'));
             exit;
         }
-        $id = Location::create($d);
-        Audit::log(Auth::id(), 'create', 'location', $id, null, $d);
+        try {
+            $id = Location::create($d);
+            Audit::log(Auth::id(), 'create', 'location', $id, null, $d);
+        } catch (Throwable $e) {
+            AppLog::error('location.create_failed', ['error' => $e->getMessage()]);
+            Flash::error(Lang::get('flash.error'));
+            header('Location: ' . Router::url('/locations/create'));
+            exit;
+        }
         Flash::success(Lang::get('flash.saved'));
         header('Location: ' . Router::url('/locations'));
         exit;
@@ -66,8 +73,15 @@ final class LocationController
             header('Location: ' . Router::url('/locations/' . $id . '/edit'));
             exit;
         }
-        Location::update((int) $id, $d);
-        Audit::log(Auth::id(), 'update', 'location', (int) $id, $old, $d);
+        try {
+            Location::update((int) $id, $d);
+            Audit::log(Auth::id(), 'update', 'location', (int) $id, $old, $d);
+        } catch (Throwable $e) {
+            AppLog::error('location.update_failed', ['id' => $id, 'error' => $e->getMessage()]);
+            Flash::error(Lang::get('flash.error'));
+            header('Location: ' . Router::url('/locations/' . $id . '/edit'));
+            exit;
+        }
         Flash::success(Lang::get('flash.saved'));
         header('Location: ' . Router::url('/locations'));
         exit;

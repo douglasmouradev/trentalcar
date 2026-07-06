@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 final class ReservationController
 {
+    private const STATUSES = ['pending', 'confirmed', 'active', 'completed', 'cancelled'];
+    private const PAYMENT_STATUSES = ['unpaid', 'partial', 'paid', 'refunded'];
+
     public function index(): void
     {
         $op = Auth::isOwner() ? null : Auth::id();
         $page = Pagination::currentPage();
         $perPage = Pagination::perPage();
-        $filters = array_filter([
-            'status' => trim((string) ($_GET['status'] ?? '')),
-            'payment_status' => trim((string) ($_GET['payment_status'] ?? '')),
-            'q' => trim((string) ($_GET['q'] ?? '')),
-            'date_from' => trim((string) ($_GET['date_from'] ?? '')),
-            'date_to' => trim((string) ($_GET['date_to'] ?? '')),
-        ], static fn (string $v): bool => $v !== '');
+        $filters = $this->sanitizeListFilters($_GET);
         $p = Reservation::forOperatorPaginated($op, $page, $perPage, $filters);
         View::render('reservations/index', [
             'title' => Lang::get('nav.reservations'),
@@ -94,17 +91,21 @@ final class ReservationController
             exit;
         }
         $d['operator_id'] = Auth::id();
+        $leadId = (int) ($_POST['lead_id'] ?? 0);
+        $leadId = ($leadId > 0 && Lead::find($leadId) !== null) ? $leadId : null;
         try {
-            $id = Reservation::createSafely($d);
+            $id = Reservation::createSafely($d, $leadId);
         } catch (ReservationConflictException) {
             Flash::error(Lang::get('reservation.conflict'));
             $_SESSION['reservation_draft'] = $_POST;
             header('Location: ' . Router::url('/reservations/create'));
             exit;
-        }
-        $leadId = (int) ($_POST['lead_id'] ?? 0);
-        if ($leadId > 0 && Lead::find($leadId) !== null) {
-            Lead::updateStatus($leadId, 'converted', null);
+        } catch (Throwable $e) {
+            AppLog::error('reservation.create_failed', ['error' => $e->getMessage()]);
+            Flash::error(Lang::get('flash.error'));
+            $_SESSION['reservation_draft'] = $_POST;
+            header('Location: ' . Router::url('/reservations/create'));
+            exit;
         }
         $code = (string) (Reservation::find($id)['code'] ?? '');
         Audit::log(Auth::id(), 'create', 'reservation', $id, null, $d);
@@ -183,6 +184,11 @@ final class ReservationController
             Reservation::updateSafely((int) $id, $d);
         } catch (ReservationConflictException) {
             Flash::error(Lang::get('reservation.conflict'));
+            header('Location: ' . Router::url('/reservations/' . $id . '/edit'));
+            exit;
+        } catch (Throwable $e) {
+            AppLog::error('reservation.update_failed', ['id' => $id, 'error' => $e->getMessage()]);
+            Flash::error(Lang::get('flash.error'));
             header('Location: ' . Router::url('/reservations/' . $id . '/edit'));
             exit;
         }
@@ -438,5 +444,28 @@ final class ReservationController
         header('Cache-Control: private, max-age=3600');
         readfile($path);
         exit;
+    }
+
+    /**
+     * @param array<string, mixed> $query
+     * @return array<string, string>
+     */
+    private function sanitizeListFilters(array $query): array
+    {
+        $status = trim((string) ($query['status'] ?? ''));
+        $paymentStatus = trim((string) ($query['payment_status'] ?? ''));
+        $filters = array_filter([
+            'status' => in_array($status, self::STATUSES, true) ? $status : '',
+            'payment_status' => in_array($paymentStatus, self::PAYMENT_STATUSES, true) ? $paymentStatus : '',
+            'q' => trim((string) ($query['q'] ?? '')),
+            'date_from' => preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($query['date_from'] ?? '')) === 1
+                ? (string) $query['date_from']
+                : '',
+            'date_to' => preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($query['date_to'] ?? '')) === 1
+                ? (string) $query['date_to']
+                : '',
+        ], static fn (string $v): bool => $v !== '');
+
+        return $filters;
     }
 }
