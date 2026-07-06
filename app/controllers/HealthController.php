@@ -8,9 +8,9 @@ final class HealthController
     {
         $app = Config::app();
         $token = (string) ($app['health_token'] ?? '');
-        $isProd = ($app['env'] ?? 'production') === 'production';
+        $isDeployed = ProductionGuard::isDeployed();
 
-        if ($isProd && $token === '') {
+        if ($isDeployed && $token === '') {
             http_response_code(503);
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['ok' => false, 'error' => 'misconfigured'], JSON_THROW_ON_ERROR);

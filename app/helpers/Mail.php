@@ -32,7 +32,10 @@ final class Mail
         ];
         $ok = @mail($to, '=?UTF-8?B?' . base64_encode($subject) . '?=', $mime['body'], implode("\r\n", $headers));
         if (!$ok) {
-            AppLog::error('mail.send_failed', ['to' => $to, 'subject' => $subject]);
+            AppLog::error('mail.send_failed', [
+                'to_hash' => hash('sha256', strtolower($to)),
+                'subject_len' => strlen($subject),
+            ]);
         }
         return $ok;
     }
@@ -223,7 +226,8 @@ final class Mail
             mkdir($dir, 0755, true);
         }
         $file = $dir . '/' . date('Ymd-His') . '_' . bin2hex(random_bytes(4)) . '.eml';
-        $content = "To: {$to}\nSubject: {$subject}\nDate: " . date('c') . "\n\n{$body}\n";
+        $toHash = hash('sha256', strtolower($to));
+        $content = "To-Hash: {$toHash}\nSubject: {$subject}\nDate: " . date('c') . "\n\n{$body}\n";
         return file_put_contents($file, $content) !== false;
     }
 }

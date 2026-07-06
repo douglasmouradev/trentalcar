@@ -9,7 +9,7 @@ final class LoginRateLimiter
 
     public static function tooManyAttempts(?string $email = null): bool
     {
-        if (ProductionGuard::isProduction()
+        if (ProductionGuard::isDeployed()
             && DbRateLimiter::tooMany(DbRateLimiter::clientBucket('login'), self::MAX, self::WINDOW)) {
             return true;
         }
@@ -22,7 +22,7 @@ final class LoginRateLimiter
 
     public static function hit(?string $email = null): void
     {
-        if (ProductionGuard::isProduction()) {
+        if (ProductionGuard::isDeployed()) {
             DbRateLimiter::hit(DbRateLimiter::clientBucket('login'), self::WINDOW);
         }
         if ($email !== null && $email !== '') {
@@ -33,7 +33,7 @@ final class LoginRateLimiter
 
     public static function clear(?string $email = null): void
     {
-        if (ProductionGuard::isProduction()) {
+        if (ProductionGuard::isDeployed()) {
             DbRateLimiter::clear(DbRateLimiter::clientBucket('login'));
         }
         if ($email !== null && $email !== '') {

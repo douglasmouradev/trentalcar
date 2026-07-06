@@ -22,7 +22,24 @@ final class Customer
         $sql .= ' ORDER BY full_name LIMIT ' . (int) $limit;
         $stmt = Database::prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetchAll();
+        return array_map(
+            static fn (array $row): array => [
+                'id' => (int) $row['id'],
+                'type' => (string) $row['type'],
+                'full_name' => (string) $row['full_name'],
+                'document' => self::maskDocument((string) $row['document']),
+            ],
+            $stmt->fetchAll()
+        );
+    }
+
+    private static function maskDocument(string $document): string
+    {
+        $digits = preg_replace('/\D/', '', $document) ?? '';
+        if (strlen($digits) <= 4) {
+            return '****';
+        }
+        return str_repeat('*', strlen($digits) - 4) . substr($digits, -4);
     }
 
     /** @return array<string, mixed>|null */

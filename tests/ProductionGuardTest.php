@@ -62,6 +62,32 @@ final class ProductionGuardTest extends TestCase
         $this->assertFalse(ProductionGuard::isProduction());
     }
 
+    public function testIsDeployedIncludesStaging(): void
+    {
+        $_ENV['APP_ENV'] = 'staging';
+        $this->assertTrue(ProductionGuard::isDeployed());
+        $_ENV['APP_ENV'] = 'development';
+        $this->assertFalse(ProductionGuard::isDeployed());
+    }
+
+    public function testValidateBootFailsWhenAppKeyTooShort(): void
+    {
+        $_ENV['APP_ENV'] = 'staging';
+        $_ENV['APP_DEBUG'] = 'false';
+        $_ENV['APP_URL'] = 'https://staging.example.com';
+        $_ENV['APP_KEY'] = 'short';
+        $_ENV['HEALTH_TOKEN'] = 'health';
+        $_ENV['DB_HOST'] = 'localhost';
+        $_ENV['DB_DATABASE'] = 'db';
+        $_ENV['DB_USERNAME'] = 'u';
+        $_ENV['DB_PASSWORD'] = 'secret';
+        $_ENV['PRIVACY_DPO_EMAIL'] = 'dpo@test.com';
+        $_ENV['SECURITY_CONTACT_EMAIL'] = 'sec@test.com';
+
+        $this->expectException(RuntimeException::class);
+        ProductionGuard::validateBoot();
+    }
+
     public function testValidateBootFailsWhenDebugOn(): void
     {
         $_ENV['APP_ENV'] = 'production';

@@ -22,7 +22,7 @@ final class DbRateLimiter
             return (int) $row['hits'] >= $max;
         } catch (Throwable $e) {
             AppError::log($e);
-            if (ProductionGuard::isProduction()) {
+            if (ProductionGuard::isDeployed()) {
                 return true;
             }
             return FileRateLimiter::tooMany($bucket, $max, $windowSeconds);
@@ -57,7 +57,7 @@ final class DbRateLimiter
                 $pdo->rollBack();
             }
             AppError::log($e);
-            if (ProductionGuard::isProduction()) {
+            if (ProductionGuard::isDeployed()) {
                 return 1;
             }
             return FileRateLimiter::hit($bucket, $windowSeconds);

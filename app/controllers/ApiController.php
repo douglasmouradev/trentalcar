@@ -10,10 +10,16 @@ final class ApiController
     {
         ApiRateLimiter::guardJson();
         header('Content-Type: application/json; charset=utf-8');
-        $q = (string) ($_GET['q'] ?? '');
-        $createdBy = Auth::isOwner() ? null : Auth::id();
-        $rows = Customer::searchAutocomplete($q, 20, $createdBy);
-        echo json_encode(['ok' => true, 'data' => $rows], JSON_THROW_ON_ERROR);
+        try {
+            $q = (string) ($_GET['q'] ?? '');
+            $createdBy = Auth::isOwner() ? null : Auth::id();
+            $rows = Customer::searchAutocomplete($q, 20, $createdBy);
+            echo json_encode(['ok' => true, 'data' => $rows], JSON_THROW_ON_ERROR);
+        } catch (Throwable $e) {
+            AppLog::error('api.customers_search', ['error' => $e->getMessage()]);
+            http_response_code(500);
+            echo json_encode(['ok' => false, 'error' => 'db'], JSON_THROW_ON_ERROR);
+        }
     }
 
     public function reservationConflict(): void
@@ -40,6 +46,11 @@ final class ApiController
         if ($carId <= 0 || $pickupDate === '' || $returnDate === '') {
             http_response_code(400);
             echo json_encode(['ok' => false, 'conflict' => false, 'error' => 'invalid'], JSON_THROW_ON_ERROR);
+            return;
+        }
+        if (!self::isValidDate($pickupDate) || !self::isValidDate($returnDate)) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'conflict' => false, 'error' => 'invalid_dates'], JSON_THROW_ON_ERROR);
             return;
         }
         if (!Auth::partnerMayViewCar($carId)) {

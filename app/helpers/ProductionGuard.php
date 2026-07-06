@@ -6,13 +6,29 @@ final class ProductionGuard
 {
     public static function isProduction(): bool
     {
-        return ($_ENV['APP_ENV'] ?? 'production') === 'production';
+        return self::envName() === 'production';
+    }
+
+    /** Ambiente exposto na rede (produção ou staging) — não é desenvolvimento local. */
+    public static function isDeployed(): bool
+    {
+        return !in_array(self::envName(), ['development', 'local', 'testing'], true);
+    }
+
+    public static function isDevelopment(): bool
+    {
+        return !self::isDeployed();
+    }
+
+    private static function envName(): string
+    {
+        return strtolower(trim((string) ($_ENV['APP_ENV'] ?? 'production')));
     }
 
     /** Valida variáveis obrigatórias antes de servir tráfego. */
     public static function validateBoot(): void
     {
-        if (!self::isProduction()) {
+        if (!self::isDeployed()) {
             return;
         }
 
@@ -28,16 +44,22 @@ final class ProductionGuard
             }
         }
 
+        $appKey = trim((string) ($_ENV['APP_KEY'] ?? ''));
+        if ($appKey !== '' && strlen($appKey) < 32) {
+            $missing[] = 'APP_KEY (mínimo 32 caracteres)';
+        }
+
         if (filter_var($_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
             $missing[] = 'APP_DEBUG (deve ser false)';
         }
 
-        if (!filter_var($_ENV['SESSION_SECURE'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+        if (self::isProduction()
+            && !filter_var($_ENV['SESSION_SECURE'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
             $missing[] = 'SESSION_SECURE (deve ser true com HTTPS)';
         }
 
         if ($missing !== []) {
-            throw new RuntimeException('Produção mal configurada: ' . implode(', ', $missing));
+            throw new RuntimeException('Ambiente mal configurado: ' . implode(', ', $missing));
         }
     }
 

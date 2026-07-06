@@ -18,6 +18,7 @@ $appCfg = Config::app();
 
 $lifetime = (int) ($appCfg['session_lifetime'] ?? 480) * 60;
 ini_set('session.gc_maxlifetime', (string) $lifetime);
+ini_set('session.use_strict_mode', '1');
 $secure = (bool) ($appCfg['session_secure'] ?? false);
 session_set_cookie_params([
     'lifetime' => $lifetime,

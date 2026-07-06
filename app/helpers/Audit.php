@@ -30,21 +30,29 @@ final class Audit
         ?array $oldData = null,
         ?array $newData = null
     ): void {
-        $ip = $_SERVER['REMOTE_ADDR'] ?? null;
-        $ipStored = is_string($ip) && $ip !== '' ? hash('sha256', $ip) : null;
-        $stmt = Database::prepare(
-            'INSERT INTO audit_logs (user_id, action, entity, entity_id, old_data, new_data, ip_address)
-             VALUES (?, ?, ?, ?, ?, ?, ?)'
-        );
-        $stmt->execute([
-            $userId,
-            $action,
-            $entity,
-            $entityId,
-            $oldData === null ? null : json_encode(self::redact($oldData), JSON_THROW_ON_ERROR),
-            $newData === null ? null : json_encode(self::redact($newData), JSON_THROW_ON_ERROR),
-            $ipStored,
-        ]);
+        try {
+            $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+            $ipStored = is_string($ip) && $ip !== '' ? hash('sha256', $ip) : null;
+            $stmt = Database::prepare(
+                'INSERT INTO audit_logs (user_id, action, entity, entity_id, old_data, new_data, ip_address)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)'
+            );
+            $stmt->execute([
+                $userId,
+                $action,
+                $entity,
+                $entityId,
+                $oldData === null ? null : json_encode(self::redact($oldData), JSON_THROW_ON_ERROR),
+                $newData === null ? null : json_encode(self::redact($newData), JSON_THROW_ON_ERROR),
+                $ipStored,
+            ]);
+        } catch (Throwable $e) {
+            AppLog::error('audit.log_failed', [
+                'action' => $action,
+                'entity' => $entity,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

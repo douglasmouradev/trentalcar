@@ -183,8 +183,21 @@ final class AuthController
             header('Location: ' . Router::url('/dashboard'));
             exit;
         }
-        $token = trim((string) ($_GET['token'] ?? ''));
+        $queryToken = trim((string) ($_GET['token'] ?? ''));
+        if ($queryToken !== '') {
+            if (PasswordReset::findValidUserId($queryToken) === null) {
+                unset($_SESSION['password_reset_token']);
+                Flash::error(Lang::get('auth.reset_invalid'));
+                header('Location: ' . Router::url('/forgot-password'));
+                exit;
+            }
+            $_SESSION['password_reset_token'] = $queryToken;
+            header('Location: ' . Router::url('/reset-password'));
+            exit;
+        }
+        $token = trim((string) ($_SESSION['password_reset_token'] ?? ''));
         if ($token === '' || PasswordReset::findValidUserId($token) === null) {
+            unset($_SESSION['password_reset_token']);
             Flash::error(Lang::get('auth.reset_invalid'));
             header('Location: ' . Router::url('/forgot-password'));
             exit;
@@ -215,12 +228,14 @@ final class AuthController
         $pass = (string) ($_POST['password'] ?? '');
         $confirm = (string) ($_POST['password_confirm'] ?? '');
         if ($pass !== $confirm || PasswordPolicy::validate($pass) !== null) {
+            $_SESSION['password_reset_token'] = $token;
             Flash::error(Lang::get('auth.password_mismatch'));
-            header('Location: ' . Router::url('/reset-password?token=' . urlencode($token)));
+            header('Location: ' . Router::url('/reset-password'));
             exit;
         }
         User::updatePassword($uid, $pass);
         PasswordReset::consume($token);
+        unset($_SESSION['password_reset_token']);
         Flash::success(Lang::get('auth.password_changed'));
         header('Location: ' . Router::url('/login'));
         exit;

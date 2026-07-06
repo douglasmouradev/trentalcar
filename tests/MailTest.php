@@ -48,7 +48,11 @@ final class MailTest extends TestCase
         $this->assertCount(1, $files);
         $content = file_get_contents($files[0]);
         $this->assertIsString($content);
-        $this->assertStringContainsString('notify@example.com', $content);
+        $this->assertStringContainsString('To-Hash:', $content);
+        $this->assertSame(
+            hash('sha256', strtolower('notify@example.com')),
+            trim((string) preg_replace('/^To-Hash:\s*/', '', strtok($content, "\n")))
+        );
         $this->assertStringContainsString('Test subject', $content);
         $this->assertStringContainsString('Body line', $content);
     }

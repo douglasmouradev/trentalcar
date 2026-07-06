@@ -35,7 +35,11 @@ final class CustomerController
         View::render('customers/show', [
             'title' => (string) $c['full_name'],
             'customer' => $c,
-            'reservations' => Reservation::forCustomer((int) $id),
+            'reservations' => Reservation::forCustomer(
+                (int) $id,
+                50,
+                Auth::isOwner() ? null : Auth::id()
+            ),
             'isAnonymized' => Customer::isAnonymized($c),
         ], 'main');
     }
@@ -123,8 +127,15 @@ final class CustomerController
             exit;
         }
         $d['attachment_path'] = $attachment;
-        Customer::update((int) $id, $d);
-        Audit::log(Auth::id(), 'update', 'customer', (int) $id, $old, $d);
+        try {
+            Customer::update((int) $id, $d);
+            Audit::log(Auth::id(), 'update', 'customer', (int) $id, $old, $d);
+        } catch (Throwable $e) {
+            AppLog::error('customer.update_failed', ['id' => $id, 'error' => $e->getMessage()]);
+            Flash::error(Lang::get('flash.error'));
+            header('Location: ' . Router::url('/customers/' . $id . '/edit'));
+            exit;
+        }
         Flash::success(Lang::get('flash.saved'));
         header('Location: ' . Router::url('/customers'));
         exit;
