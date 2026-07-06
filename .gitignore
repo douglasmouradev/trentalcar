@@ -15,3 +15,4 @@
 !/storage/leads/.gitkeep
 /storage/inspections/*
 !/storage/inspections/.gitkeep
+/test-output.txt

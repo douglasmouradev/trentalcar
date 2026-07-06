@@ -1255,10 +1255,6 @@ a:hover {
   filter: blur(0);
 }
 
-[data-hen-parallax] {
-  transform: translateY(var(--hen-parallax-y, 0));
-}
-
 .lp-fleet-empty {
   grid-column: 1 / -1;
   text-align: center;

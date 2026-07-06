@@ -35,7 +35,11 @@ final class Router
             if ($auth) {
                 AuthMiddleware::handle();
                 if (Auth::isPartner() && !self::partnerMayAccessPath($path)) {
-                    PartnerForbiddenMiddleware::handle();
+                    if (str_starts_with($path, '/api/')) {
+                        PartnerForbiddenMiddleware::handleJson();
+                    } else {
+                        PartnerForbiddenMiddleware::handle();
+                    }
                 }
             }
             if ($role !== null) {

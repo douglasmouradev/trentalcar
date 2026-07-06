@@ -57,7 +57,7 @@ SaaS de locação de veículos em **PHP 8.3+** com **MySQL 8.0+**, MVC sem frame
 
 
 
-   Acesse `http://localhost:8888` (ajuste conforme `APP_URL`). Use **`public/router.php`** para que rotas como `/login` e `/dashboard` funcionem (o servidor embutido não lê `.htaccess`). A landing e as páginas **LGPD** (`/privacidade`, `/termos`) estão integradas em `public/` — não use a pasta legada `site/` (ver `site/README.md`).
+   Acesse `http://localhost:8888` (ajuste conforme `APP_URL`). Use **`public/router.php`** para que rotas como `/login` e `/dashboard` funcionem (o servidor embutido não lê `.htaccess`). A landing e as páginas **LGPD** (`/privacidade`, `/termos`) estão integradas em `public/`.
 
 
 
@@ -92,7 +92,7 @@ Se o login falhar após clonar o projeto, rode `php bin/migrate.php` (cria/atual
 
 
 
-A marca usa `public/assets/img/logo.jpeg` (cópia de `rentalcar.jpeg` na raiz do projeto).
+A marca usa `public/assets/img/logo.jpeg`.
 
 
 
@@ -171,7 +171,6 @@ Use o seletor no topo da app autenticada (`POST /locale` com CSRF). Visitantes n
 - O formulário na página inicial (`POST /lead`) grava pedidos na tabela **`leads`** (MySQL). Fallback JSONL em `storage/leads/` se a BD falhar.
 - E-mail ao visitante + notificação à equipa (fila `mail_outbox` — `php bin/process-mail.php`).
 - Páginas públicas: `/`, `/reservar`, `/consultar`.
-- A pasta `site/` está **deprecated** (só `README.md` + marcador) — ver `site/README.md`.
 - SEO: `GET /sitemap.xml`, `GET /robots.txt`, dados estruturados na landing.
 
 
