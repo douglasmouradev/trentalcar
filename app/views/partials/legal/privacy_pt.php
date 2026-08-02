@@ -20,7 +20,7 @@ $dpoPhone = $privacy['dpo_phone'] ?? '';
         <p>O controlador é a pessoa jurídica responsável pelas decisões referentes ao tratamento de dados pessoais:</p>
         <ul>
             <li><strong>Razão social / nome fantasia:</strong> <?= $cName !== '' ? htmlspecialchars($cName, ENT_QUOTES, 'UTF-8') : '<em>Preencha em <code>PRIVACY_CONTROLLER_NAME</code> no ambiente (.env).</em>' ?></li>
-            <li><strong>CNPJ (se aplicável):</strong> <?= $cCnpj !== '' ? htmlspecialchars($cCnpj, ENT_QUOTES, 'UTF-8') : '<em>Preencha <code>PRIVACY_CONTROLLER_CNPJ</code>.</em>' ?></li>
+            <li><strong>EIN (se aplicável):</strong> <?= $cCnpj !== '' ? htmlspecialchars($cCnpj, ENT_QUOTES, 'UTF-8') : '<em>Preencha <code>PRIVACY_CONTROLLER_EIN</code>.</em>' ?></li>
             <li><strong>Endereço:</strong> <?= $addr !== '' ? nl2br(htmlspecialchars($addr, ENT_QUOTES, 'UTF-8')) : '<em>Preencha <code>PRIVACY_ADDRESS</code>.</em>' ?></li>
         </ul>
     </section>

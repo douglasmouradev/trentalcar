@@ -34,9 +34,9 @@ final class Contact
         return trim((string) ($_ENV['PRIVACY_CONTROLLER_NAME'] ?? 'Titanium Rental Car Ltda'));
     }
 
-    public static function cnpj(): string
+    public static function ein(): string
     {
-        return trim((string) ($_ENV['BUSINESS_CNPJ'] ?? $_ENV['PRIVACY_CONTROLLER_CNPJ'] ?? ''));
+        return trim((string) ($_ENV['BUSINESS_EIN'] ?? $_ENV['PRIVACY_CONTROLLER_EIN'] ?? $_ENV['BUSINESS_CNPJ'] ?? $_ENV['PRIVACY_CONTROLLER_CNPJ'] ?? '61-2244130'));
     }
 
     public static function address(): string
@@ -73,9 +73,9 @@ final class Contact
     public static function footerLegalLine(): string
     {
         $parts = [self::legalName()];
-        $cnpj = self::cnpj();
-        if ($cnpj !== '') {
-            $parts[] = 'CNPJ ' . $cnpj;
+        $ein = self::ein();
+        if ($ein !== '') {
+            $parts[] = 'EIN ' . $ein;
         }
         $parts[] = self::address();
         return implode(' · ', $parts);

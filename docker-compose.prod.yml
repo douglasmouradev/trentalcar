@@ -1,0 +1,56 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: titanium_app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${APP_PORT:-8888}:80"
+    volumes:
+      - ./.env:/var/www/html/.env:ro
+      - titanium_storage:/var/www/html/storage
+      - titanium_uploads:/var/www/html/public/assets/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+    container_name: titanium_worker
+    restart: unless-stopped
+    entrypoint: []
+    command: ["/bin/sh", "-lc", "cd /var/www/html && while true; do php bin/cron-tasks.php; sleep 300; done"]
+    volumes:
+      - ./.env:/var/www/html/.env:ro
+      - titanium_storage:/var/www/html/storage
+      - titanium_uploads:/var/www/html/public/assets/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    container_name: titanium_db
+    restart: unless-stopped
+    command:
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?defina MYSQL_ROOT_PASSWORD no .env}"
+      MYSQL_DATABASE: "${DB_DATABASE:-titanium_rental_car}"
+      MYSQL_USER: "${DB_USERNAME:-titanium}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:?defina DB_PASSWORD no .env}"
+    volumes:
+      - titanium_db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  titanium_db_data:
+  titanium_storage:
+  titanium_uploads:

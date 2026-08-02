@@ -19,7 +19,7 @@ return [
     'per_page' => (int) ($_ENV['APP_PER_PAGE'] ?? 15),
     'privacy' => [
         'controller_name' => trim((string) ($_ENV['PRIVACY_CONTROLLER_NAME'] ?? '')),
-        'controller_cnpj' => trim((string) ($_ENV['PRIVACY_CONTROLLER_CNPJ'] ?? '')),
+        'controller_cnpj' => trim((string) ($_ENV['PRIVACY_CONTROLLER_EIN'] ?? $_ENV['PRIVACY_CONTROLLER_CNPJ'] ?? '61-2244130')),
         'address' => trim((string) ($_ENV['PRIVACY_ADDRESS'] ?? '')),
         'dpo_email' => trim((string) ($_ENV['PRIVACY_DPO_EMAIL'] ?? '')),
         'dpo_phone' => trim((string) ($_ENV['PRIVACY_DPO_PHONE'] ?? '')),

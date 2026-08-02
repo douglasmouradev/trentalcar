@@ -21,7 +21,7 @@ $dpoPhone = $privacy['dpo_phone'] ?? '';
         <h2>2. Controller</h2>
         <ul>
             <li><strong>Name:</strong> <?= $cName !== '' ? htmlspecialchars($cName, ENT_QUOTES, 'UTF-8') : '<em>Set <code>PRIVACY_CONTROLLER_NAME</code> in .env.</em>' ?></li>
-            <li><strong>Tax ID (if any):</strong> <?= $cCnpj !== '' ? htmlspecialchars($cCnpj, ENT_QUOTES, 'UTF-8') : '<em>Set <code>PRIVACY_CONTROLLER_CNPJ</code>.</em>' ?></li>
+            <li><strong>EIN (if any):</strong> <?= $cCnpj !== '' ? htmlspecialchars($cCnpj, ENT_QUOTES, 'UTF-8') : '<em>Set <code>PRIVACY_CONTROLLER_EIN</code>.</em>' ?></li>
             <li><strong>Address:</strong> <?= $addr !== '' ? nl2br(htmlspecialchars($addr, ENT_QUOTES, 'UTF-8')) : '<em>Set <code>PRIVACY_ADDRESS</code>.</em>' ?></li>
         </ul>
     </section>
