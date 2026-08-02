@@ -127,7 +127,7 @@ jobs:
         run: vendor/bin/phpunit --log-junit phpunit-results.xml --display-errors --display-deprecations
 
       - name: Publish PHPUnit report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v3
         if: always()
         with:
           name: PHPUnit
