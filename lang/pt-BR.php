@@ -415,6 +415,7 @@ return [
     'landing.cta_title' => 'Fale com a loja',
     'landing.cta_lead' => ':hours. Para orçamento rápido, use o WhatsApp com datas e local já definidos.',
     'landing.cta_wa' => 'WhatsApp',
+    'landing.cta_instagram' => 'Instagram',
     'landing.footer_col_about' => 'Sobre',
     'landing.footer_about_body' => 'Locação de veículos em Orlando e região. Frota própria, confirmação humana antes da reserva.',
     'landing.footer_hours' => 'Atendimento: :hours',

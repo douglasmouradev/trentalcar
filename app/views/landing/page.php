@@ -276,6 +276,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
         </div>
         <div class="lp-cta-actions">
           <a class="btn btn-primary btn-lg" href="<?= htmlspecialchars(Contact::whatsappUrl(), ENT_QUOTES, 'UTF-8') ?>" rel="noopener noreferrer" target="_blank"><?= Lang::e('landing.cta_wa') ?></a>
+          <a class="btn btn-ghost btn-lg" href="<?= htmlspecialchars(Contact::instagramUrl(), ENT_QUOTES, 'UTF-8') ?>" rel="noopener noreferrer" target="_blank"><?= Lang::e('landing.cta_instagram') ?></a>
           <a class="btn btn-ghost btn-lg" href="tel:<?= htmlspecialchars(Contact::phoneTel(), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars(Contact::phoneDisplay(), ENT_QUOTES, 'UTF-8') ?></a>
           <a class="btn btn-ghost btn-lg" href="mailto:<?= htmlspecialchars(Contact::email(), ENT_QUOTES, 'UTF-8') ?>?subject=Reserva%20-%20Titanium"><?= htmlspecialchars(Contact::email(), ENT_QUOTES, 'UTF-8') ?></a>
         </div>

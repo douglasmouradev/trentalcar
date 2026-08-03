@@ -418,6 +418,7 @@ return [
     'landing.cta_title' => 'Contact the reservations desk',
     'landing.cta_lead' => ':hours. For a quick quote, use WhatsApp with dates and location ready.',
     'landing.cta_wa' => 'WhatsApp',
+    'landing.cta_instagram' => 'Instagram',
     'landing.footer_col_about' => 'About',
     'landing.footer_about_body' => 'Vehicle rental in Orlando and the surrounding area. Own fleet, human confirmation before booking.',
     'landing.footer_hours' => 'Hours: :hours',

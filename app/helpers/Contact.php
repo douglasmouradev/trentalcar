@@ -25,6 +25,28 @@ final class Contact
         return trim((string) ($_ENV['CONTACT_EMAIL'] ?? 'contato@titaniumrentalcar.com'));
     }
 
+    public static function instagramUrl(): string
+    {
+        $url = trim((string) ($_ENV['CONTACT_INSTAGRAM'] ?? 'https://www.instagram.com/titaniumrentalcar'));
+        if ($url === '') {
+            return 'https://www.instagram.com/titaniumrentalcar';
+        }
+        if (!preg_match('#^https?://#i', $url)) {
+            $handle = ltrim($url, '@/');
+            return 'https://www.instagram.com/' . $handle;
+        }
+
+        return $url;
+    }
+
+    public static function instagramHandle(): string
+    {
+        $path = parse_url(self::instagramUrl(), PHP_URL_PATH) ?: '/titaniumrentalcar';
+        $handle = trim((string) $path, '/');
+
+        return $handle !== '' ? '@' . explode('/', $handle)[0] : '@titaniumrentalcar';
+    }
+
     public static function legalName(): string
     {
         $name = trim((string) ($_ENV['BUSINESS_LEGAL_NAME'] ?? ''));
