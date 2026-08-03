@@ -286,7 +286,7 @@ return [
     'landing.lead_limite' => 'Too many requests from this network. Call :phone or use WhatsApp.',
     'landing.lead_erro' => 'We could not save your request. Check the fields and try again.',
 
-    'landing.notice_bar' => 'Pick-up at MIA, MCO or hotel delivery · from :rate/day · :hours · reply within :response',
+    'landing.notice_bar' => 'Pick-up at MIA, MCO or hotel delivery · :hours · reply within :response',
     'landing.meta_title' => 'Titanium Rental Car — Car rental in Orlando',
     'landing.meta_description' => 'Rentals in Orlando/Miami: pick-up at MIA Airport, MCO Airport or hotel delivery. WhatsApp confirmation before booking.',
     'landing.brand_sub' => 'Vehicle rental',

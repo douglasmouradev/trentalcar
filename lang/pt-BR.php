@@ -286,7 +286,7 @@ return [
     'landing.lead_limite' => 'Muitos pedidos desta rede. Ligue :phone ou use o WhatsApp.',
     'landing.lead_erro' => 'Não foi possível enviar. Confira os campos e tente de novo.',
 
-    'landing.notice_bar' => 'Retirada no aeroporto MIA, MCO ou entrega no hotel · a partir de :rate/dia · :hours · resposta em até :response',
+    'landing.notice_bar' => 'Retirada no aeroporto MIA, MCO ou entrega no hotel · :hours · resposta em até :response',
     'landing.meta_title' => 'Titanium Rental Car — Aluguel de carros em Orlando',
     'landing.meta_description' => 'Locação em Orlando/Miami: retirada no aeroporto MIA, MCO ou entrega no hotel. Confirmação por WhatsApp antes da reserva.',
     'landing.brand_sub' => 'Aluguel de veículos',

@@ -87,7 +87,6 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
 
   <div class="lp-notice-bar" role="status">
     <p><?= Lang::e('landing.notice_bar', [
-        'rate' => Contact::minDailyRate(),
         'hours' => Contact::businessHours(),
         'response' => Contact::responseTime(),
     ]) ?></p>
