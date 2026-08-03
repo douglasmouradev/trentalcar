@@ -67,42 +67,54 @@
     y.textContent = String(new Date().getFullYear());
   }
 
-  // Local de devolução diferente
+  // Local de devolução diferente + nome do hotel
   var sameReturn = document.querySelector('input[name="mesmo_local"]');
   var returnBox = document.getElementById('lp-return-location');
+  var formBusca = document.getElementById('form-busca');
+  var hotelValue = (formBusca && formBusca.dataset.hotelValue) || 'Entrega no hotel';
+  var localSelect = document.getElementById('lead-local');
+  var hotelBox = document.getElementById('lp-hotel-name');
+  var hotelInput = document.getElementById('lead-hotel-nome');
+  var returnSelect = document.getElementById('lead-local-devolucao');
+  var hotelReturnBox = document.getElementById('lp-hotel-name-return');
+  var hotelReturnInput = document.getElementById('lead-hotel-nome-devolucao');
+
+  function syncHotelField(selectEl, boxEl, inputEl, forceHide) {
+    if (!selectEl || !boxEl || !inputEl) return;
+    var show = !forceHide && selectEl.value === hotelValue;
+    boxEl.classList.toggle('lp-hotel-name--visible', show);
+    inputEl.disabled = !show;
+    inputEl.required = show;
+    if (!show) {
+      inputEl.value = '';
+    }
+  }
+
   if (sameReturn && returnBox) {
     var syncReturn = function () {
       var show = !sameReturn.checked;
       returnBox.classList.toggle('lp-return-location--visible', show);
-      if (!show) {
-        var input = returnBox.querySelector('input');
-        if (input) {
-          input.value = '';
-        }
+      syncHotelField(returnSelect, hotelReturnBox, hotelReturnInput, !show);
+      if (!show && returnSelect) {
+        returnSelect.value = '';
       }
     };
     sameReturn.addEventListener('change', syncReturn);
     syncReturn();
   }
 
-  // Nome do hotel quando entrega no hotel
-  var localSelect = document.getElementById('lead-local');
-  var hotelBox = document.getElementById('lp-hotel-name');
-  var hotelInput = document.getElementById('lead-hotel-nome');
-  var formBusca = document.getElementById('form-busca');
-  var hotelValue = (formBusca && formBusca.dataset.hotelValue) || 'Entrega no hotel';
-  if (localSelect && hotelBox && hotelInput) {
-    var syncHotel = function () {
-      var show = localSelect.value === hotelValue;
-      hotelBox.classList.toggle('lp-hotel-name--visible', show);
-      hotelBox.hidden = !show;
-      hotelInput.required = show;
-      if (!show) {
-        hotelInput.value = '';
-      }
-    };
-    localSelect.addEventListener('change', syncHotel);
-    syncHotel();
+  if (localSelect) {
+    localSelect.addEventListener('change', function () {
+      syncHotelField(localSelect, hotelBox, hotelInput, false);
+    });
+    syncHotelField(localSelect, hotelBox, hotelInput, false);
+  }
+
+  if (returnSelect) {
+    returnSelect.addEventListener('change', function () {
+      var returnVisible = returnBox && returnBox.classList.contains('lp-return-location--visible');
+      syncHotelField(returnSelect, hotelReturnBox, hotelReturnInput, !returnVisible);
+    });
   }
 
   var header = document.getElementById('lp-header');

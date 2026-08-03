@@ -26,6 +26,7 @@ final class PublicLeadController
         $phone = trim((string) ($old['telefone'] ?? ''));
         $local = trim((string) ($old['local'] ?? ''));
         $hotelNome = trim((string) ($old['hotel_nome'] ?? ''));
+        $hotelNomeDevolucao = trim((string) ($old['hotel_nome_devolucao'] ?? ''));
         $inicio = trim((string) ($old['inicio'] ?? ''));
         $fim = trim((string) ($old['fim'] ?? ''));
         $mesmo = isset($_POST['mesmo_local']) ? '1' : '0';
@@ -33,6 +34,7 @@ final class PublicLeadController
         $carId = (int) ($old['car_id'] ?? 0);
         $old['mesmo_local'] = $mesmo;
         $old['hotel_nome'] = $hotelNome;
+        $old['hotel_nome_devolucao'] = $hotelNomeDevolucao;
 
         if ($name === '' || strlen($name) > 150) {
             $errors[] = Lang::get('landing.error_name');
@@ -58,13 +60,18 @@ final class PublicLeadController
             if ($localDevolucao === '' || !LeadPickupOptions::isValid($localDevolucao)) {
                 $errors[] = Lang::get('landing.error_return_local');
             }
+            if (LeadPickupOptions::isHotel($localDevolucao) && ($hotelNomeDevolucao === '' || strlen($hotelNomeDevolucao) > 120)) {
+                $errors[] = Lang::get('landing.error_hotel');
+            }
         } else {
             $localDevolucao = $local;
+            $hotelNomeDevolucao = $hotelNome;
         }
 
         $localStored = LeadPickupOptions::withHotelName($local, $hotelNome);
+        $localDevolucaoStored = LeadPickupOptions::withHotelName($localDevolucao, $hotelNomeDevolucao);
         if ($mesmo === '1') {
-            $localDevolucao = $localStored;
+            $localDevolucaoStored = $localStored;
         }
         if ($carId > 0 && Car::find($carId) === null) {
             $carId = 0;
@@ -88,7 +95,7 @@ final class PublicLeadController
                 'inicio' => $inicio,
                 'fim' => $fim,
                 'mesmo_local' => (int) $mesmo,
-                'local_devolucao' => $localDevolucao,
+                'local_devolucao' => $localDevolucaoStored,
                 'car_id' => $carId > 0 ? $carId : null,
                 'ip_hash' => hash('sha256', (string) ($_SERVER['REMOTE_ADDR'] ?? '')),
             ]);
@@ -103,7 +110,7 @@ final class PublicLeadController
                     'inicio' => $inicio,
                     'fim' => $fim,
                     'mesmo_local' => $mesmo,
-                    'local_devolucao' => $localDevolucao,
+                    'local_devolucao' => $localDevolucaoStored,
                 ]);
             } catch (Throwable $fallbackError) {
                 AppLog::error('lead.fallback_failed', ['error' => $fallbackError->getMessage()]);
@@ -144,6 +151,7 @@ final class PublicLeadController
             'telefone' => trim((string) ($_POST['telefone'] ?? $_POST['phone'] ?? '')),
             'local' => trim((string) ($_POST['local'] ?? '')),
             'hotel_nome' => trim((string) ($_POST['hotel_nome'] ?? '')),
+            'hotel_nome_devolucao' => trim((string) ($_POST['hotel_nome_devolucao'] ?? '')),
             'inicio' => trim((string) ($_POST['inicio'] ?? '')),
             'fim' => trim((string) ($_POST['fim'] ?? '')),
             'mesmo_local' => isset($_POST['mesmo_local']) ? '1' : '0',

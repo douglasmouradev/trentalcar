@@ -132,9 +132,9 @@ $today = date('Y-m-d');
 </main>
 
 <?php View::partial('partials/public_footer', ['asset' => $asset]); ?>
-<script src="<?= $asset('/js/lang-switcher.js') ?>" defer></script>
-<script src="<?= $asset('/js/cookie-notice.js') ?>" defer></script>
-<script src="<?= $asset('/landing/js/site.js') ?>" defer></script>
-<script src="<?= $asset('/landing/js/lead-form.js') ?>" defer></script>
+<script src="<?= htmlspecialchars(Asset::url('/js/lang-switcher.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars(Asset::url('/js/cookie-notice.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars(Asset::url('/landing/js/site.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars(Asset::url('/landing/js/lead-form.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
 </body>
 </html>

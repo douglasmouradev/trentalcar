@@ -15,6 +15,12 @@
   var fim = form.querySelector('input[name="fim"]');
   var localSelect = form.querySelector('#lead-local');
   var hotelInput = form.querySelector('#lead-hotel-nome');
+  var hotelBox = form.querySelector('#lp-hotel-name');
+  var returnSelect = form.querySelector('#lead-local-devolucao');
+  var hotelReturnInput = form.querySelector('#lead-hotel-nome-devolucao');
+  var hotelReturnBox = form.querySelector('#lp-hotel-name-return');
+  var sameReturn = form.querySelector('input[name="mesmo_local"]');
+  var returnBox = document.getElementById('lp-return-location');
   var hotelValue = form.dataset.hotelValue || 'Entrega no hotel';
   var submitBtn = form.querySelector('button[type="submit"]');
   var submitLabel = submitBtn ? submitBtn.textContent : '';
@@ -24,6 +30,43 @@
   var minStr = today.toISOString().slice(0, 10);
   if (inicio) inicio.min = minStr;
   if (fim) fim.min = minStr;
+
+  function syncHotelField(selectEl, boxEl, inputEl, forceHide) {
+    if (!selectEl || !boxEl || !inputEl) return;
+    var show = !forceHide && selectEl.value === hotelValue;
+    boxEl.classList.toggle('lp-hotel-name--visible', show);
+    inputEl.disabled = !show;
+    inputEl.required = show;
+    if (!show) {
+      inputEl.value = '';
+    }
+  }
+
+  function syncReturnVisibility() {
+    if (!sameReturn || !returnBox) return;
+    var show = !sameReturn.checked;
+    returnBox.classList.toggle('lp-return-location--visible', show);
+    syncHotelField(returnSelect, hotelReturnBox, hotelReturnInput, !show);
+    if (!show && returnSelect) {
+      returnSelect.value = '';
+    }
+  }
+
+  if (localSelect) {
+    localSelect.addEventListener('change', function () {
+      syncHotelField(localSelect, hotelBox, hotelInput, false);
+    });
+    syncHotelField(localSelect, hotelBox, hotelInput, false);
+  }
+  if (returnSelect) {
+    returnSelect.addEventListener('change', function () {
+      var returnVisible = returnBox && returnBox.classList.contains('lp-return-location--visible');
+      syncHotelField(returnSelect, hotelReturnBox, hotelReturnInput, !returnVisible);
+    });
+  }
+  if (sameReturn) {
+    sameReturn.addEventListener('change', syncReturnVisibility);
+  }
 
   function showErrors(messages) {
     if (!errorBox) return;
@@ -51,7 +94,18 @@
     } else if (fim.value < inicio.value) {
       msgs.push(i18n.dateOrder);
     }
-    if (localSelect && hotelInput && localSelect.value === hotelValue && !hotelInput.value.trim()) {
+    if (localSelect && hotelInput && localSelect.value === hotelValue && !hotelInput.disabled && !hotelInput.value.trim()) {
+      msgs.push(i18n.hotelRequired);
+    }
+    if (
+      sameReturn &&
+      !sameReturn.checked &&
+      returnSelect &&
+      hotelReturnInput &&
+      returnSelect.value === hotelValue &&
+      !hotelReturnInput.disabled &&
+      !hotelReturnInput.value.trim()
+    ) {
       msgs.push(i18n.hotelRequired);
     }
     showErrors(msgs);

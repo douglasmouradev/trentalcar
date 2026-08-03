@@ -14,6 +14,8 @@ if ($selectedCar !== null) {
 }
 $today = date('Y-m-d');
 $hotelSelected = LeadPickupOptions::isHotel((string) ($leadOld['local'] ?? ''));
+$mesmoChecked = !isset($leadOld['mesmo_local']) || (string) ($leadOld['mesmo_local'] ?? '1') === '1';
+$hotelReturnSelected = !$mesmoChecked && LeadPickupOptions::isHotel((string) ($leadOld['local_devolucao'] ?? ''));
 ?>
 <div class="lp-form-errors" id="lead-form-errors" role="alert" <?= $leadErrors === [] ? 'hidden' : '' ?>>
   <?php if ($leadErrors !== []): ?>
@@ -66,15 +68,26 @@ $hotelSelected = LeadPickupOptions::isHotel((string) ($leadOld['local'] ?? ''));
   <fieldset class="lp-booking-section">
     <legend class="lp-booking-section-title"><?= Lang::e('landing.form_trip') ?></legend>
     <div class="lp-booking-grid">
-      <label class="lp-field lp-field--grow">
-        <span class="lp-label"><?= Lang::e('landing.form_local_label') ?></span>
-        <select class="lp-input" name="local" id="lead-local" required>
-          <option value="" disabled <?= ((string) ($leadOld['local'] ?? '')) === '' ? 'selected' : '' ?>><?= Lang::e('landing.form_local_ph') ?></option>
-          <?php foreach (LeadPickupOptions::choices() as $opt): ?>
-            <option value="<?= htmlspecialchars($opt['value'], ENT_QUOTES, 'UTF-8') ?>" <?= ((string) ($leadOld['local'] ?? '')) === $opt['value'] ? 'selected' : '' ?>><?= htmlspecialchars($opt['label'], ENT_QUOTES, 'UTF-8') ?></option>
-          <?php endforeach; ?>
-        </select>
-      </label>
+      <div class="lp-field lp-field--grow lp-pickup-wrap">
+        <label class="lp-field-inner" for="lead-local">
+          <span class="lp-label"><?= Lang::e('landing.form_local_label') ?></span>
+          <select class="lp-input" name="local" id="lead-local" required>
+            <option value="" disabled <?= ((string) ($leadOld['local'] ?? '')) === '' ? 'selected' : '' ?>><?= Lang::e('landing.form_local_ph') ?></option>
+            <?php foreach (LeadPickupOptions::choices() as $opt): ?>
+              <option value="<?= htmlspecialchars($opt['value'], ENT_QUOTES, 'UTF-8') ?>" <?= ((string) ($leadOld['local'] ?? '')) === $opt['value'] ? 'selected' : '' ?>><?= htmlspecialchars($opt['label'], ENT_QUOTES, 'UTF-8') ?></option>
+            <?php endforeach; ?>
+          </select>
+        </label>
+        <div class="lp-hotel-name<?= $hotelSelected ? ' lp-hotel-name--visible' : '' ?>" id="lp-hotel-name">
+          <label class="lp-field-inner" for="lead-hotel-nome">
+            <span class="lp-label"><?= Lang::e('landing.form_hotel_label') ?></span>
+            <input class="lp-input" type="text" name="hotel_nome" id="lead-hotel-nome" maxlength="120" autocomplete="organization"
+                   placeholder="<?= Lang::e('landing.form_hotel_ph') ?>"
+                   <?= $hotelSelected ? 'required' : 'disabled' ?>
+                   value="<?= htmlspecialchars((string) ($leadOld['hotel_nome'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+          </label>
+        </div>
+      </div>
       <label class="lp-field">
         <span class="lp-label"><?= Lang::e('landing.form_pickup') ?></span>
         <input class="lp-input" type="date" name="inicio" required min="<?= $today ?>" value="<?= htmlspecialchars((string) ($leadOld['inicio'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
@@ -88,30 +101,31 @@ $hotelSelected = LeadPickupOptions::isHotel((string) ($leadOld['local'] ?? ''));
         <button type="submit" class="btn btn-search"><?= Lang::e('landing.form_submit') ?></button>
       </div>
     </div>
-    <div class="lp-hotel-name<?= $hotelSelected ? ' lp-hotel-name--visible' : '' ?>" id="lp-hotel-name"<?= $hotelSelected ? '' : ' hidden' ?>>
-      <label class="lp-field lp-field--grow">
-        <span class="lp-label"><?= Lang::e('landing.form_hotel_label') ?></span>
-        <input class="lp-input" type="text" name="hotel_nome" id="lead-hotel-nome" maxlength="120" autocomplete="organization"
-               placeholder="<?= Lang::e('landing.form_hotel_ph') ?>"
-               <?= $hotelSelected ? 'required' : '' ?>
-               value="<?= htmlspecialchars((string) ($leadOld['hotel_nome'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-      </label>
-    </div>
   </fieldset>
-  <?php $mesmoChecked = !isset($leadOld['mesmo_local']) || (string) ($leadOld['mesmo_local'] ?? '1') === '1'; ?>
   <label class="lp-same-return">
     <input type="checkbox" name="mesmo_local" value="1" <?= $mesmoChecked ? 'checked' : '' ?>>
     <?= Lang::e('landing.form_same_return') ?>
   </label>
   <div class="lp-return-location<?= $mesmoChecked ? '' : ' lp-return-location--visible' ?>" id="lp-return-location">
-    <label class="lp-field lp-field--grow">
-      <span class="lp-label"><?= Lang::e('landing.form_return_local_label') ?></span>
-      <select class="lp-input" name="local_devolucao" id="lead-local-devolucao">
-        <option value="" <?= ((string) ($leadOld['local_devolucao'] ?? '')) === '' ? 'selected' : '' ?>><?= Lang::e('landing.form_return_local_ph') ?></option>
-        <?php foreach (LeadPickupOptions::choices() as $opt): ?>
-          <option value="<?= htmlspecialchars($opt['value'], ENT_QUOTES, 'UTF-8') ?>" <?= ((string) ($leadOld['local_devolucao'] ?? '')) === $opt['value'] ? 'selected' : '' ?>><?= htmlspecialchars($opt['label'], ENT_QUOTES, 'UTF-8') ?></option>
-        <?php endforeach; ?>
-      </select>
-    </label>
+    <div class="lp-field lp-field--grow lp-return-wrap">
+      <label class="lp-field-inner" for="lead-local-devolucao">
+        <span class="lp-label"><?= Lang::e('landing.form_return_local_label') ?></span>
+        <select class="lp-input" name="local_devolucao" id="lead-local-devolucao">
+          <option value="" <?= ((string) ($leadOld['local_devolucao'] ?? '')) === '' ? 'selected' : '' ?>><?= Lang::e('landing.form_return_local_ph') ?></option>
+          <?php foreach (LeadPickupOptions::choices() as $opt): ?>
+            <option value="<?= htmlspecialchars($opt['value'], ENT_QUOTES, 'UTF-8') ?>" <?= ((string) ($leadOld['local_devolucao'] ?? '')) === $opt['value'] ? 'selected' : '' ?>><?= htmlspecialchars($opt['label'], ENT_QUOTES, 'UTF-8') ?></option>
+          <?php endforeach; ?>
+        </select>
+      </label>
+      <div class="lp-hotel-name<?= $hotelReturnSelected ? ' lp-hotel-name--visible' : '' ?>" id="lp-hotel-name-return">
+        <label class="lp-field-inner" for="lead-hotel-nome-devolucao">
+          <span class="lp-label"><?= Lang::e('landing.form_hotel_return_label') ?></span>
+          <input class="lp-input" type="text" name="hotel_nome_devolucao" id="lead-hotel-nome-devolucao" maxlength="120" autocomplete="organization"
+                 placeholder="<?= Lang::e('landing.form_hotel_ph') ?>"
+                 <?= $hotelReturnSelected ? 'required' : 'disabled' ?>
+                 value="<?= htmlspecialchars((string) ($leadOld['hotel_nome_devolucao'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+        </label>
+      </div>
+    </div>
   </div>
 </form>

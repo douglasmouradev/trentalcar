@@ -568,12 +568,21 @@ a:hover {
   display: block;
 }
 
-.lp-hotel-name {
-  display: none;
-  margin-top: 0.85rem;
+.lp-field-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
 }
 
-.lp-hotel-name--visible {
+.lp-hotel-name {
+  display: none;
+  margin-top: 0.75rem;
+}
+
+.lp-hotel-name--visible,
+.lp-pickup-wrap:has(#lead-local option:checked[value="Entrega no hotel"]) > .lp-hotel-name,
+.lp-return-wrap:has(#lead-local-devolucao option:checked[value="Entrega no hotel"]) > .lp-hotel-name {
   display: block;
 }
 
