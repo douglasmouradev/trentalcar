@@ -116,14 +116,10 @@ final class Car
     public static function monthlyExpenseFields(): array
     {
         return [
-            'monthly_fuel',
-            'monthly_toll',
-            'monthly_wash',
-            'monthly_maintenance',
-            'monthly_extra',
             'monthly_insurance',
             'monthly_document',
             'monthly_ipva',
+            'monthly_wash',
             'monthly_site_rent',
             'monthly_internet',
             'monthly_water',
@@ -131,6 +127,10 @@ final class Car
             'monthly_phone',
             'monthly_staff',
             'monthly_tag_annual',
+            'monthly_fuel',
+            'monthly_toll',
+            'monthly_maintenance',
+            'monthly_extra',
         ];
     }
 
