@@ -118,7 +118,16 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
           <img class="lp-hero-brand-logo" src="<?= $asset('/assets/img/logo.png') ?>" alt="<?= Lang::e('app.name') ?>" width="480" height="720" decoding="async" fetchpriority="high">
         </a>
         <div class="lp-hero-inner">
-          <p class="lp-hero-kicker"><?= Lang::e('landing.hero_kicker') ?></p>
+          <p class="lp-hero-kicker">
+            <span class="lp-hero-flag" aria-hidden="true" title="United States">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19 10" width="38" height="20" role="img" focusable="false">
+                <rect width="19" height="10" fill="#bf0a30"/>
+                <path d="M0 1.1h19M0 3.3h19M0 5.5h19M0 7.7h19" stroke="#fff" stroke-width="1.1"/>
+                <rect width="7.6" height="5.4" fill="#002868"/>
+              </svg>
+            </span>
+            <span class="lp-hero-kicker-text"><?= Lang::e('landing.hero_kicker') ?></span>
+          </p>
           <h1 id="lp-hero-title"><?= Lang::e('landing.hero_title') ?></h1>
           <p class="lp-hero-lead"><?= Lang::e('landing.hero_lead') ?></p>
           <div class="lp-hero-actions">
