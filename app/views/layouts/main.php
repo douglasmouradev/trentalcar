@@ -31,7 +31,7 @@ if ($userName !== '') {
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/css/app.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
-<body class="theme-titanium">
+<body class="theme-titanium" data-usd-brl-rate="<?= htmlspecialchars((string) ExchangeRate::rate(), ENT_QUOTES, 'UTF-8') ?>">
 <a class="skip-link" href="#main-content"><?= Lang::e('a11y.skip_content') ?></a>
 <div class="app-shell<?= $logged ? ' app-shell--nav-drawer' : '' ?>" id="appShell">
     <?php if ($logged): ?>

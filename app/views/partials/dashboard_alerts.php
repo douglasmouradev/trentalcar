@@ -50,7 +50,7 @@ if (!$hasAny) {
             <h2 class="card-title"><?= Lang::e('dashboard.alert_unpaid') ?></h2>
             <ul class="alert-list">
                 <?php foreach ($alerts['unpaid'] as $row): ?>
-                    <li><a href="<?= Router::url('/reservations/' . (int) $row['id']) ?>"><span class="mono"><?= htmlspecialchars((string) $row['code'], ENT_QUOTES, 'UTF-8') ?></span><span class="alert-list-amount"><?= Formatter::money((float) $row['final_amount']) ?></span></a></li>
+                    <li><a href="<?= Router::url('/reservations/' . (int) $row['id']) ?>"><span class="mono"><?= htmlspecialchars((string) $row['code'], ENT_QUOTES, 'UTF-8') ?></span><span class="alert-list-amount"><?= Formatter::moneyWithBrl((float) $row['final_amount']) ?></span></a></li>
                 <?php endforeach; ?>
             </ul>
         </div>

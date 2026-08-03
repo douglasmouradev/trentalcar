@@ -15,7 +15,7 @@
         .voucher-code { font-size: 1.5rem; font-weight: 700; font-family: var(--font-mono, monospace); }
     </style>
 </head>
-<body class="theme-titanium">
+<body class="theme-titanium" data-usd-brl-rate="<?= htmlspecialchars((string) ExchangeRate::rate(), ENT_QUOTES, 'UTF-8') ?>">
 <div class="voucher card">
     <div class="voucher-head">
         <div>
@@ -36,7 +36,7 @@
         <dt><?= Lang::e('reservation.status') ?></dt>
         <dd><?= Lang::e('status.' . $r['status']) ?></dd>
         <dt><?= Lang::e('reservation.total') ?></dt>
-        <dd class="mono"><?= Formatter::money((float) $r['final_amount']) ?></dd>
+        <dd class="mono"><?= Formatter::moneyWithBrl((float) $r['final_amount']) ?></dd>
     </dl>
     <p class="muted"><?= Lang::e('reservation.voucher_footer') ?></p>
     <p class="no-print"><button class="btn btn-primary" type="button" id="voucher-print"><?= Lang::e('reservation.voucher_print') ?></button>

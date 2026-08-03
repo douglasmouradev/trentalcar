@@ -53,7 +53,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
       'areaServed' => 'BR',
   ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?></script>
 </head>
-<body class="lp-body">
+<body class="lp-body" data-usd-brl-rate="<?= htmlspecialchars((string) ExchangeRate::rate(), ENT_QUOTES, 'UTF-8') ?>">
   <a class="skip-link" href="#conteudo"><?= Lang::e('a11y.skip_content') ?></a>
 
   <header class="site-header lp-header" id="lp-header">

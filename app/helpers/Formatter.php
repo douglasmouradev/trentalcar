@@ -6,12 +6,20 @@ final class Formatter
 {
     public static function money(float $value, ?string $locale = null): string
     {
-        $locale = $locale ?? (class_exists('Lang', false) ? Lang::locale() : 'pt-BR');
-        if ($locale === 'en-US') {
-            return '$' . number_format($value, 2, '.', ',');
-        }
+        unset($locale);
+        return '$' . number_format($value, 2, '.', ',');
+    }
 
+    public static function moneyBrl(float $value): string
+    {
         return 'R$ ' . number_format($value, 2, ',', '.');
+    }
+
+    /** Valor em USD com equivalente em BRL pela cotação do dia. */
+    public static function moneyWithBrl(float $usd): string
+    {
+        $brl = ExchangeRate::toBrl($usd);
+        return self::money($usd) . ' ≈ ' . self::moneyBrl($brl);
     }
 
     public static function document(string $digits): string

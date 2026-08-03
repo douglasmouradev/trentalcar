@@ -22,7 +22,7 @@ $maxRev = max(1.0, ...array_map(static fn (array $m): float => (float) ($m['reve
 
 <div class="grid kpis">
     <div class="card kpi"><div class="kpi-label"><?= Lang::e('partner.my_vehicles') ?></div><div class="kpi-value"><?= count($assignments) ?></div></div>
-    <div class="card kpi"><div class="kpi-label"><?= Lang::e('partner.revenue_month') ?></div><div class="kpi-value"><?= Formatter::money($revenueMonth) ?></div></div>
+    <div class="card kpi"><div class="kpi-label"><?= Lang::e('partner.revenue_month') ?></div><div class="kpi-value"><?= Formatter::moneyWithBrl($revenueMonth) ?></div></div>
 </div>
 
 <div class="card mt">
@@ -30,7 +30,7 @@ $maxRev = max(1.0, ...array_map(static fn (array $m): float => (float) ($m['reve
     <div class="bar-chart" role="img" aria-label="<?= Lang::e('partner.revenue_history') ?>">
         <?php foreach ($revenueHistory as $m): ?>
             <?php $h = max(4, (int) round(((float) $m['revenue'] / $maxRev) * 100)); ?>
-            <div class="bar-chart-col" title="<?= htmlspecialchars($m['month'] . ': ' . Formatter::money((float) $m['revenue']), ENT_QUOTES, 'UTF-8') ?>">
+            <div class="bar-chart-col" title="<?= htmlspecialchars($m['month'] . ': ' . Formatter::moneyWithBrl((float) $m['revenue']), ENT_QUOTES, 'UTF-8') ?>">
                 <div class="bar-chart-bar" style="height:<?= $h ?>%"></div>
                 <span class="bar-chart-label"><?= htmlspecialchars(substr($m['month'], 5), ENT_QUOTES, 'UTF-8') ?></span>
             </div>
@@ -72,7 +72,7 @@ $maxRev = max(1.0, ...array_map(static fn (array $m): float => (float) ($m['reve
                     <td data-label="<?= Lang::e('car.plate') ?>" class="mono"><?= htmlspecialchars((string) $a['license_plate'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td data-label="<?= Lang::e('car.status') ?>"><?= Ui::carStatusBadge((string) $a['status']) ?></td>
                     <td data-label="<?= Lang::e('partner.quota_percent') ?>" class="mono"><?= number_format((float) ($a['quota_percent'] ?? 0), 2, ',', '.') ?>%</td>
-                    <td data-label="<?= Lang::e('partner.revenue_share') ?>" class="mono"><?= Formatter::money($revenueMap[$cid] ?? 0.0) ?></td>
+                    <td data-label="<?= Lang::e('partner.revenue_share') ?>" class="mono"><?= Formatter::moneyWithBrl($revenueMap[$cid] ?? 0.0) ?></td>
                     <td data-label=""><a class="btn btn-sm btn-secondary" href="<?= Router::url('/cars/' . $cid) ?>"><?= Lang::e('actions.view') ?></a></td>
                 </tr>
             <?php endforeach; ?>
@@ -96,7 +96,7 @@ $maxRev = max(1.0, ...array_map(static fn (array $m): float => (float) ($m['reve
                     <td data-label="<?= Lang::e('reservation.code') ?>" class="mono"><?= htmlspecialchars((string) $r['code'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td data-label="<?= Lang::e('reservation.customer') ?>"><?= htmlspecialchars((string) $r['customer_name'], ENT_QUOTES, 'UTF-8') ?></td>
                     <td data-label="<?= Lang::e('car.model') ?>"><?= htmlspecialchars((string) $r['brand'] . ' ' . (string) $r['model'], ENT_QUOTES, 'UTF-8') ?></td>
-                    <td data-label="<?= Lang::e('partner.revenue_share') ?>" class="mono"><?= Formatter::money((float) ($r['share_amount'] ?? 0)) ?></td>
+                    <td data-label="<?= Lang::e('partner.revenue_share') ?>" class="mono"><?= Formatter::moneyWithBrl((float) ($r['share_amount'] ?? 0)) ?></td>
                     <td data-label="<?= Lang::e('reservation.status') ?>"><?= Ui::statusBadge((string) $r['status']) ?></td>
                 </tr>
             <?php endforeach; ?>

@@ -115,7 +115,7 @@ $todayLabel = date('d/m/Y');
     <div class="grid kpis">
         <div class="card kpi kpi--revenue">
             <div class="kpi-label"><?= Lang::e('dashboard.revenue_month') ?></div>
-            <div class="kpi-value"><?= Formatter::money($revenueMonth) ?></div>
+            <div class="kpi-value"><?= Formatter::moneyWithBrl($revenueMonth) ?></div>
             <?php if (!empty($revenueDelta)): ?>
                 <div class="kpi-delta"><?= htmlspecialchars($revenueDelta, ENT_QUOTES, 'UTF-8') ?> <?= Lang::e('dashboard.revenue_delta') ?></div>
             <?php endif; ?>
@@ -176,7 +176,7 @@ $todayLabel = date('d/m/Y');
 
                 <?php foreach ($revenueByCategory as $cat): ?>
 
-                    <li><span class="mono"><?= Ui::categoryLabel((string) $cat['category']) ?></span> <span class="category-amount"><?= Formatter::money((float) $cat['total']) ?></span></li>
+                    <li><span class="mono"><?= Ui::categoryLabel((string) $cat['category']) ?></span> <span class="category-amount"><?= Formatter::moneyWithBrl((float) $cat['total']) ?></span></li>
 
                 <?php endforeach; ?>
 

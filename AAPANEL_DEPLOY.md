@@ -78,7 +78,7 @@ CONTACT_ADDRESS="Endereco publico"
 BUSINESS_LEGAL_NAME="Sua Empresa Ltda"
 BUSINESS_EIN="61-2244130"
 BUSINESS_HOURS="Segunda a sabado, 8h as 18h"
-BUSINESS_MIN_RATE="R$ 99,90"
+BUSINESS_MIN_RATE="$99.90"
 BUSINESS_RESPONSE_TIME="2 horas uteis"
 
 MAIL_FROM=noreply@seudominio.com.br

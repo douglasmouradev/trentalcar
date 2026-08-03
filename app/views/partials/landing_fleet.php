@@ -11,7 +11,7 @@ $asset = static fn (string $path): string => htmlspecialchars(Router::url($path)
         $filterKey = Car::landingFilterKey((string) ($car['category'] ?? 'standard'));
     $img = Car::publicImageUrl(!empty($car['image_url']) ? (string) $car['image_url'] : null);
         $title = htmlspecialchars((string) $car['brand'] . ' ' . (string) $car['model'], ENT_QUOTES, 'UTF-8');
-        $rate = Formatter::money((float) ($car['daily_rate'] ?? 0));
+        $rate = Formatter::moneyWithBrl((float) ($car['daily_rate'] ?? 0));
         ?>
         <article class="lp-car" data-category="<?= htmlspecialchars($filterKey, ENT_QUOTES, 'UTF-8') ?>">
             <div class="lp-car-img">

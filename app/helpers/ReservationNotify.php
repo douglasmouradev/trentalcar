@@ -24,7 +24,7 @@ final class ReservationNotify
             'pickup' => $full['pickup_date'] . ' ' . substr((string) $full['pickup_time'], 0, 5),
             'return' => $full['return_date'] . ' ' . substr((string) $full['return_time'], 0, 5),
             'car' => $full['brand'] . ' ' . $full['model'] . ' (' . $full['license_plate'] . ')',
-            'total' => Formatter::money((float) $full['final_amount']),
+            'total' => Formatter::moneyWithBrl((float) $full['final_amount']),
             'voucher_url' => Router::url('/reservations/' . $reservationId . '/voucher'),
         ]);
         Mail::send((string) $customer['email'], $subject, $body);

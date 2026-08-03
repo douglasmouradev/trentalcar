@@ -69,7 +69,7 @@
                 <td class="mono" data-label="<?= Lang::e('car.plate') ?>"><?= htmlspecialchars($car['license_plate'], ENT_QUOTES, 'UTF-8') ?></td>
                 <td data-label="<?= Lang::e('car.model') ?>"><?= htmlspecialchars($car['brand'] . ' ' . $car['model'], ENT_QUOTES, 'UTF-8') ?></td>
                 <td data-label="<?= Lang::e('car.category') ?>"><?= Ui::categoryLabel((string) $car['category']) ?></td>
-                <td class="mono" data-label="<?= Lang::e('car.daily_rate') ?>"><?= Formatter::money((float) $car['daily_rate']) ?></td>
+                <td class="mono" data-label="<?= Lang::e('car.daily_rate') ?>"><?= Formatter::moneyWithBrl((float) $car['daily_rate']) ?></td>
                 <td data-label="<?= Lang::e('car.status') ?>"><?= Ui::carStatusBadge((string) $car['status']) ?></td>
                 <td class="actions" data-label="<?= Lang::e('table.actions') ?>">
                     <a class="btn btn-sm btn-secondary" href="<?= Router::url('/cars/' . (int) $car['id']) ?>"><?= Lang::e('actions.view') ?></a>

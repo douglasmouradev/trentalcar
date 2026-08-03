@@ -24,7 +24,7 @@
             <dt><?= Lang::e('car.plate') ?></dt><dd class="mono"><?= htmlspecialchars($car['license_plate'], ENT_QUOTES, 'UTF-8') ?></dd>
             <dt><?= Lang::e('car.color') ?></dt><dd><span class="swatch" style="background:<?= htmlspecialchars($car['color_hex'], ENT_QUOTES, 'UTF-8') ?>"></span> <?= htmlspecialchars($car['color'], ENT_QUOTES, 'UTF-8') ?></dd>
             <dt><?= Lang::e('car.year') ?></dt><dd><?= (int) $car['year'] ?></dd>
-            <dt><?= Lang::e('car.daily_rate') ?></dt><dd class="mono"><?= Formatter::money((float) $car['daily_rate']) ?></dd>
+            <dt><?= Lang::e('car.daily_rate') ?></dt><dd class="mono"><?= Formatter::moneyWithBrl((float) $car['daily_rate']) ?></dd>
             <dt><?= Lang::e('car.status') ?></dt><dd><?= Ui::carStatusBadge((string) $car['status']) ?></dd>
             <?php if (Auth::isPartner() && $myQuota !== null): ?>
             <dt><?= Lang::e('partner.my_quota') ?></dt><dd class="mono"><?= number_format($myQuota, 2, ',', '.') ?>%</dd>
@@ -35,9 +35,9 @@
         <?php if (Auth::isOwner()): ?>
         <h2 class="card-title"><?= Lang::e('car.monthly_expenses') ?></h2>        <dl class="dl">
             <?php foreach (Car::monthlyExpenseFields() as $field): ?>
-            <dt><?= Lang::e('car.' . $field) ?></dt><dd class="mono"><?= Formatter::money((float) ($car[$field] ?? 0)) ?></dd>
+            <dt><?= Lang::e('car.' . $field) ?></dt><dd class="mono"><?= Formatter::moneyWithBrl((float) ($car[$field] ?? 0)) ?></dd>
             <?php endforeach; ?>
-            <dt><strong><?= Lang::e('car.monthly_total') ?></strong></dt><dd class="mono"><strong><?= Formatter::money(Car::monthlyExpensesTotal($car)) ?></strong></dd>
+            <dt><strong><?= Lang::e('car.monthly_total') ?></strong></dt><dd class="mono"><strong><?= Formatter::moneyWithBrl(Car::monthlyExpensesTotal($car)) ?></strong></dd>
         </dl>
         <?php else: ?>
         <h2 class="card-title"><?= Lang::e('partner.my_quota') ?></h2>

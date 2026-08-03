@@ -101,7 +101,7 @@ $hex = (string) ($c['color_hex'] ?? '#CCCCCC');
     </div>
     <div class="monthly-total-row" aria-live="polite" aria-atomic="true">
         <span class="label monthly-total-label"><?= Lang::e('car.monthly_total_live') ?></span>
-        <div id="monthlyTotalLive" class="monthly-total-live mono">R$&nbsp;0,00</div>
+        <div id="monthlyTotalLive" class="monthly-total-live mono">$0.00</div>
     </div>
 </div>
 <script src="<?= htmlspecialchars(Router::url('/js/car-monthly-total.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>

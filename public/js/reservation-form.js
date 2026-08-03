@@ -27,8 +27,13 @@
 
   const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-  function fmtBrl(n) {
-    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  function fmtMoney(n) {
+    const rateRaw = document.body?.dataset?.usdBrlRate;
+    const rate = rateRaw ? parseFloat(rateRaw) : NaN;
+    const usdBrl = Number.isFinite(rate) && rate > 0 ? rate : 5.5;
+    const usd = n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    const brl = (n * usdBrl).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    return `${usd} ≈ ${brl}`;
   }
 
   function daysInclusive(a, b) {
@@ -44,7 +49,7 @@
     const disc = parseFloat(discount?.value || '0') || 0;
     const days = daysInclusive(pickupD?.value || '', returnD?.value || '');
     const total = Math.max(0, rate * days - disc);
-    if (totalEl) totalEl.textContent = fmtBrl(total);
+    if (totalEl) totalEl.textContent = fmtMoney(total);
   }
 
   function syncCar() {

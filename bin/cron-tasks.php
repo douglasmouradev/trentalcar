@@ -21,10 +21,12 @@ if ($hour === 3) {
 $ratePurged = 0;
 $tokenPurged = 0;
 $leadPurged = 0;
+$fxOk = false;
 try {
     $ratePurged = DbMaintenance::purgeExpiredRateLimits();
     $tokenPurged = DbMaintenance::purgePasswordResetTokens();
     $leadPurged = LeadJsonlFallback::purgeExpired();
+    $fxOk = ExchangeRate::refresh(false);
 } catch (Throwable $e) {
     AppLog::error('cron.cleanup_failed', ['error' => $e->getMessage()]);
 }
@@ -36,4 +38,6 @@ echo json_encode([
     'rate_limits_purged' => $ratePurged,
     'reset_tokens_purged' => $tokenPurged,
     'lead_jsonl_purged' => $leadPurged,
+    'usd_brl_refreshed' => $fxOk,
+    'usd_brl_rate' => ExchangeRate::rate(),
 ], JSON_PRETTY_PRINT) . PHP_EOL;

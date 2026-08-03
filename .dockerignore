@@ -17,6 +17,8 @@ storage/*
 !storage/.htaccess
 !storage/backups/
 !storage/backups/.gitkeep
+!storage/cache/
+!storage/cache/.gitkeep
 !storage/customers/
 !storage/customers/.gitkeep
 !storage/inspections/

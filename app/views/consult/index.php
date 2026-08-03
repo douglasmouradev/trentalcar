@@ -22,7 +22,7 @@ $old = $old ?? ['code' => '', 'email' => ''];
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/landing/css/site.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
-<body class="lp-body lp-body--booking">
+<body class="lp-body lp-body--booking" data-usd-brl-rate="<?= htmlspecialchars((string) ExchangeRate::rate(), ENT_QUOTES, 'UTF-8') ?>">
 <a class="skip-link" href="#conteudo"><?= Lang::e('a11y.skip_content') ?></a>
 <?php View::partial('partials/public_header', ['asset' => $asset, 'locale' => $locale, 'activeNav' => 'consult']); ?>
 
@@ -64,7 +64,7 @@ $old = $old ?? ['code' => '', 'email' => ''];
                     <dt><?= Lang::e('reservation.car') ?></dt><dd><?= htmlspecialchars((string) $reservation['brand'] . ' ' . (string) $reservation['model'], ENT_QUOTES, 'UTF-8') ?></dd>
                     <dt><?= Lang::e('reservation.pickup') ?></dt><dd><?= htmlspecialchars((string) $reservation['pickup_date'], ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars((string) $reservation['pickup_location_name'], ENT_QUOTES, 'UTF-8') ?></dd>
                     <dt><?= Lang::e('reservation.return') ?></dt><dd><?= htmlspecialchars((string) $reservation['return_date'], ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars((string) $reservation['return_location_name'], ENT_QUOTES, 'UTF-8') ?></dd>
-                    <dt><?= Lang::e('reservation.total') ?></dt><dd class="mono"><?= Formatter::money((float) $reservation['final_amount']) ?></dd>
+                    <dt><?= Lang::e('reservation.total') ?></dt><dd class="mono"><?= Formatter::moneyWithBrl((float) $reservation['final_amount']) ?></dd>
                 </dl>
                 <p class="muted"><?= Lang::e('consult.contact_hint') ?></p>
                 <a class="btn btn-secondary" href="<?= htmlspecialchars(Contact::whatsappUrl(), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener"><?= Lang::e('landing.cta_wa') ?></a>

@@ -62,7 +62,7 @@ final class Contact
 
     public static function minDailyRate(): string
     {
-        return trim((string) ($_ENV['BUSINESS_MIN_RATE'] ?? 'R$ 99,90'));
+        return trim((string) ($_ENV['BUSINESS_MIN_RATE'] ?? '$99.90'));
     }
 
     public static function responseTime(): string

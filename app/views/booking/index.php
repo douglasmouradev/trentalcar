@@ -27,7 +27,7 @@ $today = date('Y-m-d');
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= htmlspecialchars(Asset::url('/landing/css/site.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
-<body class="lp-body lp-body--booking">
+<body class="lp-body lp-body--booking" data-usd-brl-rate="<?= htmlspecialchars((string) ExchangeRate::rate(), ENT_QUOTES, 'UTF-8') ?>">
 <a class="skip-link" href="#conteudo"><?= Lang::e('a11y.skip_content') ?></a>
 <?php View::partial('partials/public_header', ['asset' => $asset, 'locale' => $locale, 'activeNav' => 'booking']); ?>
 
@@ -102,7 +102,7 @@ $today = date('Y-m-d');
                         <div class="lp-car-body">
                             <p class="lp-car-group"><?= Lang::e('category.' . ($car['category'] ?? 'standard')) ?></p>
                             <h3><?= $alt ?></h3>
-                            <p class="lp-car-price"><?= Lang::e('landing.car_price_from') ?> <strong><?= Formatter::money((float) $car['daily_rate']) ?></strong> <span><?= Lang::e('landing.car_per_day') ?></span></p>
+                            <p class="lp-car-price"><?= Lang::e('landing.car_price_from') ?> <strong><?= Formatter::moneyWithBrl((float) $car['daily_rate']) ?></strong> <span><?= Lang::e('landing.car_per_day') ?></span></p>
                             <a class="btn btn-block btn-primary" href="#reserva" data-car-id="<?= (int) $car['id'] ?>" data-car-label="<?= $alt ?>"><?= Lang::e('booking.cta') ?></a>
                         </div>
                     </article>
