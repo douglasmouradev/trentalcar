@@ -2546,7 +2546,8 @@ select.input {
 
 /* ——— Dashboard ——— */
 .dashboard-page {
-  max-width: 1200px;
+  max-width: none;
+  width: 100%;
 }
 
 .page-head--dashboard {
