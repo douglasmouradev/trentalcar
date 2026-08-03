@@ -81,7 +81,7 @@ return [
     'car.seats' => 'Seats',
     'car.transmission' => 'Transmission',
     'car.fuel' => 'Fuel',
-    'car.mileage' => 'Mileage',
+    'car.mileage' => 'Miles',
     'car.notes' => 'Notes',
     'car.image' => 'Photo',
     'car.monthly_expenses' => 'Monthly costs (estimated)',

@@ -228,11 +228,11 @@ $canCheckOut = ($r['status'] ?? '') === 'active';
     <dl class="dl">
         <?php if (!empty($r['actual_pickup_at'])): ?>
         <dt><?= Lang::e('reservation.actual_pickup') ?></dt>
-        <dd class="mono"><?= htmlspecialchars((string) $r['actual_pickup_at'], ENT_QUOTES, 'UTF-8') ?><?php if (!empty($r['pickup_mileage'])): ?> — <?= (int) $r['pickup_mileage'] ?> km<?php endif; ?></dd>
+        <dd class="mono"><?= htmlspecialchars((string) $r['actual_pickup_at'], ENT_QUOTES, 'UTF-8') ?><?php if (!empty($r['pickup_mileage'])): ?> — <?= (int) $r['pickup_mileage'] ?> mi<?php endif; ?></dd>
         <?php endif; ?>
         <?php if (!empty($r['actual_return_at'])): ?>
         <dt><?= Lang::e('reservation.actual_return') ?></dt>
-        <dd class="mono"><?= htmlspecialchars((string) $r['actual_return_at'], ENT_QUOTES, 'UTF-8') ?><?php if (!empty($r['return_mileage'])): ?> — <?= (int) $r['return_mileage'] ?> km<?php endif; ?></dd>
+        <dd class="mono"><?= htmlspecialchars((string) $r['actual_return_at'], ENT_QUOTES, 'UTF-8') ?><?php if (!empty($r['return_mileage'])): ?> — <?= (int) $r['return_mileage'] ?> mi<?php endif; ?></dd>
         <?php endif; ?>
     </dl>
 </div>
