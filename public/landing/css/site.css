@@ -423,25 +423,25 @@ a:hover {
   object-fit: cover;
   object-position: center;
   display: block;
-  transform: scale(1.04);
+  transform: scale(1.02);
 }
 
 .lp-hero-side--miami img {
-  object-position: 75% center;
+  object-position: center center;
 }
 
 .lp-hero-side--castle img {
-  object-position: center 40%;
+  object-position: center 45%;
 }
 
 .lp-hero-side--miami {
-  mask-image: linear-gradient(90deg, #000 0%, #000 55%, transparent 100%);
-  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 55%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0%, #000 68%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 68%, transparent 100%);
 }
 
 .lp-hero-side--castle {
-  mask-image: linear-gradient(270deg, #000 0%, #000 55%, transparent 100%);
-  -webkit-mask-image: linear-gradient(270deg, #000 0%, #000 55%, transparent 100%);
+  mask-image: linear-gradient(270deg, #000 0%, #000 68%, transparent 100%);
+  -webkit-mask-image: linear-gradient(270deg, #000 0%, #000 68%, transparent 100%);
 }
 
 .lp-hero-stage::before {
@@ -450,8 +450,8 @@ a:hover {
   inset: 0;
   z-index: 0;
   background:
-    linear-gradient(90deg, rgba(12, 21, 37, 0.35) 0%, rgba(12, 21, 37, 0.88) 38%, rgba(12, 21, 37, 0.92) 62%, rgba(12, 21, 37, 0.35) 100%),
-    linear-gradient(180deg, rgba(12, 21, 37, 0.45) 0%, rgba(12, 21, 37, 0.2) 40%, rgba(12, 21, 37, 0.75) 100%);
+    linear-gradient(90deg, rgba(12, 21, 37, 0.18) 0%, rgba(12, 21, 37, 0.72) 36%, rgba(12, 21, 37, 0.78) 64%, rgba(12, 21, 37, 0.18) 100%),
+    linear-gradient(180deg, rgba(12, 21, 37, 0.28) 0%, rgba(12, 21, 37, 0.12) 45%, rgba(12, 21, 37, 0.55) 100%);
   pointer-events: none;
 }
 
@@ -1347,8 +1347,8 @@ a:hover {
 @media (max-width: 1024px) {
   .lp-hero-stage::before {
     background:
-      linear-gradient(90deg, rgba(12, 21, 37, 0.55) 0%, rgba(12, 21, 37, 0.9) 35%, rgba(12, 21, 37, 0.9) 65%, rgba(12, 21, 37, 0.55) 100%),
-      linear-gradient(180deg, rgba(12, 21, 37, 0.5) 0%, rgba(12, 21, 37, 0.25) 40%, rgba(12, 21, 37, 0.8) 100%);
+      linear-gradient(90deg, rgba(12, 21, 37, 0.35) 0%, rgba(12, 21, 37, 0.82) 34%, rgba(12, 21, 37, 0.82) 66%, rgba(12, 21, 37, 0.35) 100%),
+      linear-gradient(180deg, rgba(12, 21, 37, 0.4) 0%, rgba(12, 21, 37, 0.2) 40%, rgba(12, 21, 37, 0.7) 100%);
   }
 
   .lp-trust-inner {
