@@ -396,21 +396,65 @@ a:hover {
   gap: clamp(1rem, 3vw, 1.75rem);
   min-height: clamp(520px, 88vh, 780px);
   padding: clamp(2.5rem, 8vw, 5rem) clamp(1rem, 4vw, 2.5rem) clamp(8rem, 16vw, 10rem);
-  background:
-    linear-gradient(105deg, rgba(12, 21, 37, 0.94) 0%, rgba(21, 34, 56, 0.82) 50%, rgba(12, 21, 37, 0.88) 100%),
-    var(--hero-img) center / cover no-repeat;
+  background: #0c1525;
   color: #fff;
   position: relative;
   text-align: center;
+  overflow: hidden;
+}
+
+.lp-hero-sides {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.lp-hero-side {
+  position: relative;
+  overflow: hidden;
+}
+
+.lp-hero-side img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transform: scale(1.04);
+}
+
+.lp-hero-side--miami {
+  mask-image: linear-gradient(90deg, #000 0%, #000 55%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 55%, transparent 100%);
+}
+
+.lp-hero-side--castle {
+  mask-image: linear-gradient(270deg, #000 0%, #000 55%, transparent 100%);
+  -webkit-mask-image: linear-gradient(270deg, #000 0%, #000 55%, transparent 100%);
+}
+
+.lp-hero-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(90deg, rgba(12, 21, 37, 0.35) 0%, rgba(12, 21, 37, 0.88) 38%, rgba(12, 21, 37, 0.92) 62%, rgba(12, 21, 37, 0.35) 100%),
+    linear-gradient(180deg, rgba(12, 21, 37, 0.45) 0%, rgba(12, 21, 37, 0.2) 40%, rgba(12, 21, 37, 0.75) 100%);
+  pointer-events: none;
 }
 
 .lp-hero-stage::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 0;
   background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 .lp-hero-brand {
@@ -458,7 +502,7 @@ a:hover {
 }
 
 .lp-hero h1 {
-  margin: 0 0 1.15rem;
+  margin: 0 auto 1.15rem;
   font-family: var(--font-sans);
   font-size: clamp(2rem, 4.5vw, 3.15rem);
   font-weight: 600;
@@ -469,7 +513,7 @@ a:hover {
 }
 
 .lp-hero-lead {
-  margin: 0 0 1.75rem;
+  margin: 0 auto 1.75rem;
   font-size: 1.125rem;
   line-height: 1.65;
   color: rgba(255, 255, 255, 0.82);
@@ -1293,6 +1337,12 @@ a:hover {
 }
 
 @media (max-width: 1024px) {
+  .lp-hero-stage::before {
+    background:
+      linear-gradient(90deg, rgba(12, 21, 37, 0.55) 0%, rgba(12, 21, 37, 0.9) 35%, rgba(12, 21, 37, 0.9) 65%, rgba(12, 21, 37, 0.55) 100%),
+      linear-gradient(180deg, rgba(12, 21, 37, 0.5) 0%, rgba(12, 21, 37, 0.25) 40%, rgba(12, 21, 37, 0.8) 100%);
+  }
+
   .lp-trust-inner {
     grid-template-columns: repeat(2, 1fr);
   }

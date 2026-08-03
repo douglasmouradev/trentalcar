@@ -107,6 +107,14 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
     <?php endif; ?>
     <section class="lp-hero" aria-labelledby="lp-hero-title">
       <div class="lp-hero-stage">
+        <div class="lp-hero-sides" aria-hidden="true">
+          <div class="lp-hero-side lp-hero-side--miami">
+            <img src="<?= htmlspecialchars(Asset::url('/landing/assets/hero-miami-beach.jpg'), ENT_QUOTES, 'UTF-8') ?>" alt="" width="900" height="1200" decoding="async" loading="eager">
+          </div>
+          <div class="lp-hero-side lp-hero-side--castle">
+            <img src="<?= htmlspecialchars(Asset::url('/landing/assets/hero-orlando-castle.jpg'), ENT_QUOTES, 'UTF-8') ?>" alt="" width="900" height="1200" decoding="async" loading="eager">
+          </div>
+        </div>
         <a class="lp-hero-brand" href="#topo" aria-label="<?= Lang::e('app.name') ?>">
           <img class="lp-hero-brand-logo" src="<?= $asset('/assets/img/logo.png') ?>" alt="<?= Lang::e('app.name') ?>" width="480" height="720" decoding="async" fetchpriority="high">
         </a>
