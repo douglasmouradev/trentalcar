@@ -57,7 +57,7 @@ final class Contact
 
     public static function businessHours(): string
     {
-        return trim((string) ($_ENV['BUSINESS_HOURS'] ?? 'Segunda a sábado, 8h às 18h'));
+        return trim((string) ($_ENV['BUSINESS_HOURS'] ?? 'Domingo a domingo, 24 horas'));
     }
 
     public static function minDailyRate(): string

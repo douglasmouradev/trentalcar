@@ -77,7 +77,7 @@ CONTACT_EMAIL=contato@titaniumrentalcar.com
 CONTACT_ADDRESS="Endereco publico"
 BUSINESS_LEGAL_NAME="Sua Empresa Ltda"
 BUSINESS_EIN="61-2244130"
-BUSINESS_HOURS="Segunda a sabado, 8h as 18h"
+BUSINESS_HOURS="Domingo a domingo, 24 horas"
 BUSINESS_MIN_RATE="$99.90"
 BUSINESS_RESPONSE_TIME="2 horas uteis"
 
