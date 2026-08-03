@@ -426,6 +426,14 @@ a:hover {
   transform: scale(1.04);
 }
 
+.lp-hero-side--miami img {
+  object-position: 75% center;
+}
+
+.lp-hero-side--castle img {
+  object-position: center 40%;
+}
+
 .lp-hero-side--miami {
   mask-image: linear-gradient(90deg, #000 0%, #000 55%, transparent 100%);
   -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 55%, transparent 100%);
