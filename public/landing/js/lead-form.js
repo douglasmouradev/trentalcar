@@ -7,11 +7,15 @@
   var i18n = {
     dateOrder: form.dataset.errorDateOrder || 'Return date must be on or after pick-up.',
     dateRequired: form.dataset.errorDateRequired || 'Select pick-up and return dates.',
+    hotelRequired: form.dataset.errorHotel || 'Enter the hotel name for delivery.',
     submitting: form.dataset.labelSubmitting || 'Sending…',
   };
 
   var inicio = form.querySelector('input[name="inicio"]');
   var fim = form.querySelector('input[name="fim"]');
+  var localSelect = form.querySelector('#lead-local');
+  var hotelInput = form.querySelector('#lead-hotel-nome');
+  var hotelValue = form.dataset.hotelValue || 'Entrega no hotel';
   var submitBtn = form.querySelector('button[type="submit"]');
   var submitLabel = submitBtn ? submitBtn.textContent : '';
   var errorBox = document.getElementById('lead-form-errors');
@@ -40,12 +44,15 @@
     errorBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  function validateDates() {
+  function validateForm() {
     var msgs = [];
     if (!inicio || !fim || !inicio.value || !fim.value) {
       msgs.push(i18n.dateRequired);
     } else if (fim.value < inicio.value) {
       msgs.push(i18n.dateOrder);
+    }
+    if (localSelect && hotelInput && localSelect.value === hotelValue && !hotelInput.value.trim()) {
+      msgs.push(i18n.hotelRequired);
     }
     showErrors(msgs);
     return msgs.length === 0;
@@ -59,15 +66,15 @@
           fim.value = inicio.value;
         }
       }
-      validateDates();
+      validateForm();
     });
   }
   if (fim) {
-    fim.addEventListener('change', validateDates);
+    fim.addEventListener('change', validateForm);
   }
 
   form.addEventListener('submit', function (ev) {
-    if (!validateDates()) {
+    if (!validateForm()) {
       ev.preventDefault();
       return;
     }

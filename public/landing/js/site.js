@@ -85,6 +85,26 @@
     syncReturn();
   }
 
+  // Nome do hotel quando entrega no hotel
+  var localSelect = document.getElementById('lead-local');
+  var hotelBox = document.getElementById('lp-hotel-name');
+  var hotelInput = document.getElementById('lead-hotel-nome');
+  var formBusca = document.getElementById('form-busca');
+  var hotelValue = (formBusca && formBusca.dataset.hotelValue) || 'Entrega no hotel';
+  if (localSelect && hotelBox && hotelInput) {
+    var syncHotel = function () {
+      var show = localSelect.value === hotelValue;
+      hotelBox.classList.toggle('lp-hotel-name--visible', show);
+      hotelBox.hidden = !show;
+      hotelInput.required = show;
+      if (!show) {
+        hotelInput.value = '';
+      }
+    };
+    localSelect.addEventListener('change', syncHotel);
+    syncHotel();
+  }
+
   var header = document.getElementById('lp-header');
   if (header) {
     var onScroll = function () {

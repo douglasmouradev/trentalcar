@@ -568,6 +568,15 @@ a:hover {
   display: block;
 }
 
+.lp-hotel-name {
+  display: none;
+  margin-top: 0.85rem;
+}
+
+.lp-hotel-name--visible {
+  display: block;
+}
+
 .lp-lead-banner {
   max-width: 1180px;
   margin: 0 auto;

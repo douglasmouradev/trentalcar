@@ -25,12 +25,14 @@ final class PublicLeadController
         $email = trim((string) ($old['email'] ?? ''));
         $phone = trim((string) ($old['telefone'] ?? ''));
         $local = trim((string) ($old['local'] ?? ''));
+        $hotelNome = trim((string) ($old['hotel_nome'] ?? ''));
         $inicio = trim((string) ($old['inicio'] ?? ''));
         $fim = trim((string) ($old['fim'] ?? ''));
         $mesmo = isset($_POST['mesmo_local']) ? '1' : '0';
         $localDevolucao = trim((string) ($old['local_devolucao'] ?? ''));
         $carId = (int) ($old['car_id'] ?? 0);
         $old['mesmo_local'] = $mesmo;
+        $old['hotel_nome'] = $hotelNome;
 
         if ($name === '' || strlen($name) > 150) {
             $errors[] = Lang::get('landing.error_name');
@@ -44,6 +46,9 @@ final class PublicLeadController
         if ($local === '' || !LeadPickupOptions::isValid($local)) {
             $errors[] = Lang::get('landing.error_local');
         }
+        if (LeadPickupOptions::isHotel($local) && ($hotelNome === '' || strlen($hotelNome) > 120)) {
+            $errors[] = Lang::get('landing.error_hotel');
+        }
         if (!self::validDate($inicio) || !self::validDate($fim)) {
             $errors[] = Lang::get('landing.error_date_required');
         } elseif (strcmp($inicio, $fim) > 0) {
@@ -55,6 +60,11 @@ final class PublicLeadController
             }
         } else {
             $localDevolucao = $local;
+        }
+
+        $localStored = LeadPickupOptions::withHotelName($local, $hotelNome);
+        if ($mesmo === '1') {
+            $localDevolucao = $localStored;
         }
         if ($carId > 0 && Car::find($carId) === null) {
             $carId = 0;
@@ -74,7 +84,7 @@ final class PublicLeadController
                 'full_name' => $name,
                 'email' => $email,
                 'phone' => $phone,
-                'local' => $local,
+                'local' => $localStored,
                 'inicio' => $inicio,
                 'fim' => $fim,
                 'mesmo_local' => (int) $mesmo,
@@ -89,7 +99,7 @@ final class PublicLeadController
                     'full_name' => $name,
                     'email' => $email,
                     'phone' => $phone,
-                    'local' => $local,
+                    'local' => $localStored,
                     'inicio' => $inicio,
                     'fim' => $fim,
                     'mesmo_local' => $mesmo,
@@ -111,14 +121,14 @@ final class PublicLeadController
         try {
             LeadNotify::sendConfirmation($email, $name, $inicio, $fim, $carLabel);
             if ($leadId > 0) {
-                LeadNotify::notifyStaff($leadId, $name, $email, $phone, $inicio, $fim, $carLabel, $local);
+                LeadNotify::notifyStaff($leadId, $name, $email, $phone, $inicio, $fim, $carLabel, $localStored);
             }
         } catch (Throwable $e) {
             AppLog::error('lead.notify_failed', ['error' => $e->getMessage()]);
         }
 
         $_SESSION['lead_whatsapp_url'] = Contact::whatsappUrl(
-            LeadNotify::whatsappMessage($name, $inicio, $fim, $local, $carLabel)
+            LeadNotify::whatsappMessage($name, $inicio, $fim, $localStored, $carLabel)
         );
 
         LeadRateLimiter::hit();
@@ -133,6 +143,7 @@ final class PublicLeadController
             'email' => trim((string) ($_POST['email'] ?? '')),
             'telefone' => trim((string) ($_POST['telefone'] ?? $_POST['phone'] ?? '')),
             'local' => trim((string) ($_POST['local'] ?? '')),
+            'hotel_nome' => trim((string) ($_POST['hotel_nome'] ?? '')),
             'inicio' => trim((string) ($_POST['inicio'] ?? '')),
             'fim' => trim((string) ($_POST['fim'] ?? '')),
             'mesmo_local' => isset($_POST['mesmo_local']) ? '1' : '0',

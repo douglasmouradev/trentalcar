@@ -13,6 +13,7 @@ if ($selectedCar !== null) {
     $carId = (int) ($selectedCar['id'] ?? $carId);
 }
 $today = date('Y-m-d');
+$hotelSelected = LeadPickupOptions::isHotel((string) ($leadOld['local'] ?? ''));
 ?>
 <div class="lp-form-errors" id="lead-form-errors" role="alert" <?= $leadErrors === [] ? 'hidden' : '' ?>>
   <?php if ($leadErrors !== []): ?>
@@ -34,6 +35,8 @@ $today = date('Y-m-d');
       aria-describedby="lp-booking-hint"
       data-error-date-order="<?= htmlspecialchars(Lang::get('landing.error_date_order'), ENT_QUOTES, 'UTF-8') ?>"
       data-error-date-required="<?= htmlspecialchars(Lang::get('landing.error_date_required'), ENT_QUOTES, 'UTF-8') ?>"
+      data-error-hotel="<?= htmlspecialchars(Lang::get('landing.error_hotel'), ENT_QUOTES, 'UTF-8') ?>"
+      data-hotel-value="<?= htmlspecialchars(LeadPickupOptions::HOTEL, ENT_QUOTES, 'UTF-8') ?>"
       data-label-submitting="<?= htmlspecialchars(Lang::get('landing.form_submitting'), ENT_QUOTES, 'UTF-8') ?>">
   <?= Csrf::field() ?>
   <input type="hidden" name="_return" value="<?= htmlspecialchars($returnPath, ENT_QUOTES, 'UTF-8') ?>">
@@ -84,6 +87,15 @@ $today = date('Y-m-d');
         <span class="lp-label lp-label--ghost" aria-hidden="true">&nbsp;</span>
         <button type="submit" class="btn btn-search"><?= Lang::e('landing.form_submit') ?></button>
       </div>
+    </div>
+    <div class="lp-hotel-name<?= $hotelSelected ? ' lp-hotel-name--visible' : '' ?>" id="lp-hotel-name"<?= $hotelSelected ? '' : ' hidden' ?>>
+      <label class="lp-field lp-field--grow">
+        <span class="lp-label"><?= Lang::e('landing.form_hotel_label') ?></span>
+        <input class="lp-input" type="text" name="hotel_nome" id="lead-hotel-nome" maxlength="120" autocomplete="organization"
+               placeholder="<?= Lang::e('landing.form_hotel_ph') ?>"
+               <?= $hotelSelected ? 'required' : '' ?>
+               value="<?= htmlspecialchars((string) ($leadOld['hotel_nome'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+      </label>
     </div>
   </fieldset>
   <?php $mesmoChecked = !isset($leadOld['mesmo_local']) || (string) ($leadOld['mesmo_local'] ?? '1') === '1'; ?>
