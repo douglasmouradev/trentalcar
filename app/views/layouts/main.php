@@ -37,7 +37,7 @@ if ($userName !== '') {
     <?php if ($logged): ?>
     <aside class="sidebar" id="sidebar" aria-hidden="true">
         <div class="brand">
-            <img src="<?= htmlspecialchars(Router::url('/assets/img/logo.png'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= Lang::e('app.name') ?>" class="brand-logo" width="44" height="44">
+            <img src="<?= htmlspecialchars(Router::url('/assets/img/logo.png'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= Lang::e('app.name') ?>" class="brand-logo" width="72" height="72">
             <div>
                 <div class="brand-title"><?= Lang::e('app.name') ?></div>
                 <div class="brand-sub"><?= Lang::e('app.tagline') ?></div>
@@ -87,7 +87,7 @@ if ($userName !== '') {
                 </span>
             </button>
             <div class="topbar-brand">
-                <img src="<?= htmlspecialchars(Router::url('/assets/img/logo.png'), ENT_QUOTES, 'UTF-8') ?>" alt="" class="topbar-brand-logo" width="32" height="32">
+                <img src="<?= htmlspecialchars(Router::url('/assets/img/logo.png'), ENT_QUOTES, 'UTF-8') ?>" alt="" class="topbar-brand-logo" width="52" height="52">
                 <span class="topbar-brand-name"><?= Lang::e('app.name') ?></span>
             </div>
             <?php endif; ?>

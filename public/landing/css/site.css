@@ -173,8 +173,8 @@ a:hover {
 }
 
 .brand img {
-  width: 44px;
-  height: 44px;
+  width: 72px;
+  height: 72px;
   flex-shrink: 0;
   border-radius: 6px;
   object-fit: contain;
@@ -423,8 +423,8 @@ a:hover {
 .lp-hero-brand-logo {
   display: block;
   width: auto;
-  height: clamp(7rem, 22vmin, 12rem);
-  max-width: min(200px, 42vw);
+  height: clamp(11rem, 32vmin, 18rem);
+  max-width: min(320px, 70vw);
   object-fit: contain;
   object-position: left center;
   filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.35));

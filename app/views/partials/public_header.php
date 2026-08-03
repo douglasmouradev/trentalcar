@@ -7,7 +7,7 @@ $appRoot = rtrim(Router::url('/'), '/');
 ?>
 <header class="site-header lp-header is-scrolled" id="lp-header">
     <a class="brand" href="<?= $asset('/') ?>">
-        <img src="<?= $asset('/assets/img/logo.png') ?>" width="44" height="44" alt="<?= Lang::e('app.name') ?>">
+        <img src="<?= $asset('/assets/img/logo.png') ?>" width="72" height="72" alt="<?= Lang::e('app.name') ?>">
         <span class="brand-text">
             <strong>Titanium</strong>
             <span><?= Lang::e('landing.brand_sub') ?></span>

@@ -27,7 +27,7 @@ $locale = Lang::locale();
         <div class="auth-aside-logo-wrap">
             <div class="auth-aside-logo-panel">
                 <a class="auth-aside-brand" href="<?= htmlspecialchars(Router::url('/'), ENT_QUOTES, 'UTF-8') ?>" aria-label="<?= Lang::e('app.name') ?>">
-                    <img class="auth-aside-logo" src="<?= htmlspecialchars(Router::url('/assets/img/logo.png'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= Lang::e('app.name') ?>" width="720" height="288" decoding="async" fetchpriority="high">
+                    <img class="auth-aside-logo" src="<?= htmlspecialchars(Router::url('/assets/img/logo.png'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= Lang::e('app.name') ?>" width="360" height="540" decoding="async" fetchpriority="high">
                 </a>
             </div>
         </div>
@@ -45,7 +45,7 @@ $locale = Lang::locale();
             <?php endforeach; ?>
             <div class="auth-brand">
                 <div class="auth-logo-frame">
-                    <img src="<?= htmlspecialchars(Router::url('/assets/img/logo.png'), ENT_QUOTES, 'UTF-8') ?>" alt="" width="72" height="72" class="auth-logo" loading="lazy">
+                    <img src="<?= htmlspecialchars(Router::url('/assets/img/logo.png'), ENT_QUOTES, 'UTF-8') ?>" alt="" width="110" height="110" class="auth-logo" loading="lazy">
                 </div>
                 <p class="auth-eyebrow"><?= Lang::e('app.name') ?></p>
                 <h1 class="auth-title"><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></h1>
