@@ -108,7 +108,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
     <section class="lp-hero" aria-labelledby="lp-hero-title">
       <div class="lp-hero-stage">
         <a class="lp-hero-brand" href="#topo" aria-label="<?= Lang::e('app.name') ?>">
-          <img class="lp-hero-brand-logo" src="<?= $asset('/assets/img/logo.jpeg') ?>" alt="<?= Lang::e('app.name') ?>" width="280" height="120" decoding="async" fetchpriority="high">
+          <img class="lp-hero-brand-logo" src="<?= $asset('/assets/img/logo.jpeg') ?>" alt="<?= Lang::e('app.name') ?>" width="200" height="300" decoding="async" fetchpriority="high">
         </a>
         <div class="lp-hero-inner">
           <p class="lp-hero-kicker"><?= Lang::e('landing.hero_kicker') ?></p>
