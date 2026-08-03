@@ -41,7 +41,7 @@ final class PublicLeadController
         if ($phone === '' || strlen($phone) > 30) {
             $errors[] = Lang::get('landing.error_phone');
         }
-        if ($local === '' || strlen($local) > 240) {
+        if ($local === '' || !LeadPickupOptions::isValid($local)) {
             $errors[] = Lang::get('landing.error_local');
         }
         if (!self::validDate($inicio) || !self::validDate($fim)) {
@@ -50,7 +50,7 @@ final class PublicLeadController
             $errors[] = Lang::get('landing.error_date_order');
         }
         if ($mesmo === '0') {
-            if ($localDevolucao === '' || strlen($localDevolucao) > 240) {
+            if ($localDevolucao === '' || !LeadPickupOptions::isValid($localDevolucao)) {
                 $errors[] = Lang::get('landing.error_return_local');
             }
         } else {

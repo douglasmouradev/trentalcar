@@ -65,7 +65,12 @@ $today = date('Y-m-d');
     <div class="lp-booking-grid">
       <label class="lp-field lp-field--grow">
         <span class="lp-label"><?= Lang::e('landing.form_local_label') ?></span>
-        <input class="lp-input" type="text" name="local" maxlength="240" autocomplete="address-level2" placeholder="<?= Lang::e('landing.form_local_ph') ?>" required value="<?= htmlspecialchars((string) ($leadOld['local'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+        <select class="lp-input" name="local" id="lead-local" required>
+          <option value="" disabled <?= ((string) ($leadOld['local'] ?? '')) === '' ? 'selected' : '' ?>><?= Lang::e('landing.form_local_ph') ?></option>
+          <?php foreach (LeadPickupOptions::choices() as $opt): ?>
+            <option value="<?= htmlspecialchars($opt['value'], ENT_QUOTES, 'UTF-8') ?>" <?= ((string) ($leadOld['local'] ?? '')) === $opt['value'] ? 'selected' : '' ?>><?= htmlspecialchars($opt['label'], ENT_QUOTES, 'UTF-8') ?></option>
+          <?php endforeach; ?>
+        </select>
       </label>
       <label class="lp-field">
         <span class="lp-label"><?= Lang::e('landing.form_pickup') ?></span>
@@ -89,7 +94,12 @@ $today = date('Y-m-d');
   <div class="lp-return-location<?= $mesmoChecked ? '' : ' lp-return-location--visible' ?>" id="lp-return-location">
     <label class="lp-field lp-field--grow">
       <span class="lp-label"><?= Lang::e('landing.form_return_local_label') ?></span>
-      <input class="lp-input" type="text" name="local_devolucao" maxlength="240" autocomplete="address-level2" placeholder="<?= Lang::e('landing.form_return_local_ph') ?>" value="<?= htmlspecialchars((string) ($leadOld['local_devolucao'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+      <select class="lp-input" name="local_devolucao" id="lead-local-devolucao">
+        <option value="" <?= ((string) ($leadOld['local_devolucao'] ?? '')) === '' ? 'selected' : '' ?>><?= Lang::e('landing.form_return_local_ph') ?></option>
+        <?php foreach (LeadPickupOptions::choices() as $opt): ?>
+          <option value="<?= htmlspecialchars($opt['value'], ENT_QUOTES, 'UTF-8') ?>" <?= ((string) ($leadOld['local_devolucao'] ?? '')) === $opt['value'] ? 'selected' : '' ?>><?= htmlspecialchars($opt['label'], ENT_QUOTES, 'UTF-8') ?></option>
+        <?php endforeach; ?>
+      </select>
     </label>
   </div>
 </form>
