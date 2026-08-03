@@ -16,8 +16,8 @@ declare(strict_types=1);
     <input class="input" type="password" name="password" minlength="8" autocomplete="new-password" placeholder="<?= Lang::e('user.password_keep') ?>">
     <label class="label"><?= Lang::e('user.role') ?></label>
     <select class="input" name="role" id="user-role-select">
-        <option value="operator" <?= ($user['role'] ?? '') === 'operator' ? 'selected' : '' ?>><?= Lang::e('user.operator') ?></option>
         <option value="owner" <?= ($user['role'] ?? '') === 'owner' ? 'selected' : '' ?>><?= Lang::e('user.owner') ?></option>
+        <option value="operator" <?= ($user['role'] ?? '') === 'operator' ? 'selected' : '' ?>><?= Lang::e('user.operator') ?></option>
     </select>
     <label class="label"><?= Lang::e('customer.phone') ?></label>
     <input class="input" name="phone" value="<?= htmlspecialchars((string) ($user['phone'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
