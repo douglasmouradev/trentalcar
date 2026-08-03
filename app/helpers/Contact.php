@@ -22,7 +22,7 @@ final class Contact
 
     public static function email(): string
     {
-        return trim((string) ($_ENV['CONTACT_EMAIL'] ?? 'reservas@titaniumrental.com.br'));
+        return trim((string) ($_ENV['CONTACT_EMAIL'] ?? 'contato@titaniumrentalcar.com'));
     }
 
     public static function legalName(): string
@@ -36,7 +36,7 @@ final class Contact
 
     public static function ein(): string
     {
-        return trim((string) ($_ENV['BUSINESS_EIN'] ?? $_ENV['PRIVACY_CONTROLLER_EIN'] ?? $_ENV['BUSINESS_CNPJ'] ?? $_ENV['PRIVACY_CONTROLLER_CNPJ'] ?? '61-2244130'));
+        return trim((string) ($_ENV['BUSINESS_EIN'] ?? $_ENV['PRIVACY_CONTROLLER_EIN'] ?? '61-2244130'));
     }
 
     public static function address(): string

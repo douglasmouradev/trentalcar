@@ -73,7 +73,7 @@ SECURITY_CONTACT_EMAIL=seguranca@seudominio.com.br
 
 CONTACT_WHATSAPP=5500000000000
 CONTACT_PHONE="(00) 0000-0000"
-CONTACT_EMAIL=reservas@seudominio.com.br
+CONTACT_EMAIL=contato@titaniumrentalcar.com
 CONTACT_ADDRESS="Endereco publico"
 BUSINESS_LEGAL_NAME="Sua Empresa Ltda"
 BUSINESS_EIN="61-2244130"
