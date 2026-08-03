@@ -478,11 +478,11 @@ a:hover {
 
 .lp-hero-brand-logo {
   display: block;
-  width: clamp(10rem, 28vmin, 16rem);
-  height: clamp(18rem, 54vmin, 32rem);
-  max-width: min(260px, 70vw);
+  width: auto;
+  height: clamp(15rem, 44vmin, 26rem);
+  max-width: min(480px, 88vw);
   margin-inline: auto;
-  object-fit: fill;
+  object-fit: contain;
   object-position: center center;
   filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.35));
 }
