@@ -44,7 +44,7 @@ CREATE TABLE locations (
 
 CREATE TABLE cars (
   id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  license_plate    VARCHAR(15)   NOT NULL UNIQUE,
+  license_plate    VARCHAR(15)   NULL UNIQUE,
   brand            VARCHAR(60)   NOT NULL,
   model            VARCHAR(80)   NOT NULL,
   year             YEAR          NOT NULL,

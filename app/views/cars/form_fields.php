@@ -8,7 +8,7 @@ $hex = (string) ($c['color_hex'] ?? '#CCCCCC');
 <div class="grid two">
     <div class="field">
         <label class="label" for="license_plate"><?= Lang::e('car.plate') ?></label>
-        <input class="input" id="license_plate" name="license_plate" required value="<?= htmlspecialchars((string) ($c['license_plate'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+        <input class="input" id="license_plate" name="license_plate" value="<?= htmlspecialchars((string) ($c['license_plate'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
     </div>
     <div class="field">
         <label class="label" for="brand"><?= Lang::e('car.brand') ?></label>

@@ -222,7 +222,7 @@ final class CarController
         }
 
         return [
-            'license_plate' => strtoupper(trim((string) ($post['license_plate'] ?? ''))),
+            'license_plate' => strtoupper(trim((string) ($post['license_plate'] ?? ''))) ?: null,
             'brand' => trim((string) ($post['brand'] ?? '')),
             'model' => trim((string) ($post['model'] ?? '')),
             'year' => (int) ($post['year'] ?? date('Y')),
@@ -258,8 +258,7 @@ final class CarController
     /** @param array<string, mixed> $d */
     private function isValidCarData(array $d): bool
     {
-        return ($d['license_plate'] ?? '') !== ''
-            && ($d['brand'] ?? '') !== ''
+        return ($d['brand'] ?? '') !== ''
             && ($d['model'] ?? '') !== ''
             && (int) ($d['location_id'] ?? 0) > 0
             && Location::isActive((int) $d['location_id']);
