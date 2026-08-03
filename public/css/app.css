@@ -232,8 +232,8 @@ body.nav-drawer-open {
   border-radius: 6px;
   object-fit: contain;
   object-position: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--chrome-border);
+  background: transparent;
+  border: none;
   flex-shrink: 0;
 }
 
@@ -1202,9 +1202,9 @@ select.input {
   display: inline-flex;
   padding: 0.35rem;
   border-radius: 16px;
-  background: linear-gradient(145deg, #fff 0%, var(--surface-muted) 100%);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  background: transparent;
+  border: none;
+  box-shadow: none;
   margin-bottom: 1rem;
 }
 

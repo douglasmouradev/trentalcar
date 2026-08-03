@@ -92,7 +92,7 @@ Se o login falhar após clonar o projeto, rode `php bin/migrate.php` (cria/atual
 
 
 
-A marca usa `public/assets/img/logo.jpeg`.
+A marca usa `public/assets/img/logo.png`.
 
 
 

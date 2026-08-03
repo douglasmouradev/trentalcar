@@ -239,7 +239,7 @@ final class Car
         if ($path !== '') {
             return Router::url('/assets/uploads/' . rawurlencode(basename($path)));
         }
-        return Router::url('/assets/img/logo.jpeg');
+        return Router::url('/assets/img/logo.png');
     }
 
     public static function isAvailableForDates(int $carId, string $start, string $end): bool

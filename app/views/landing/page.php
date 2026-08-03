@@ -20,7 +20,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <?php
   $canonical = Router::url('/');
-  $ogImage = Router::url('/assets/img/logo.jpeg');
+  $ogImage = Router::url('/assets/img/logo.png');
   ?>
   <meta name="description" content="<?= htmlspecialchars($metaDesc, ENT_QUOTES, 'UTF-8') ?>">
   <meta name="theme-color" content="#152238">
@@ -58,7 +58,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
 
   <header class="site-header lp-header" id="lp-header">
     <a class="brand" href="#topo" id="topo">
-      <img src="<?= $asset('/assets/img/logo.jpeg') ?>" width="44" height="44" alt="<?= Lang::e('app.name') ?>">
+      <img src="<?= $asset('/assets/img/logo.png') ?>" width="44" height="44" alt="<?= Lang::e('app.name') ?>">
       <span class="brand-text">
         <span class="brand-name">Titanium Rental Car</span>
         <span class="brand-sub"><?= Lang::e('landing.brand_sub') ?></span>
@@ -108,7 +108,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
     <section class="lp-hero" aria-labelledby="lp-hero-title">
       <div class="lp-hero-stage">
         <a class="lp-hero-brand" href="#topo" aria-label="<?= Lang::e('app.name') ?>">
-          <img class="lp-hero-brand-logo" src="<?= $asset('/assets/img/logo.jpeg') ?>" alt="<?= Lang::e('app.name') ?>" width="200" height="300" decoding="async" fetchpriority="high">
+          <img class="lp-hero-brand-logo" src="<?= $asset('/assets/img/logo.png') ?>" alt="<?= Lang::e('app.name') ?>" width="200" height="300" decoding="async" fetchpriority="high">
         </a>
         <div class="lp-hero-inner">
           <p class="lp-hero-kicker"><?= Lang::e('landing.hero_kicker') ?></p>

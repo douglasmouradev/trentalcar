@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 /** Favicon e ícones para separadores / PWA (logo Titanium). */
-$icon = htmlspecialchars(Router::url('/assets/img/logo.jpeg'), ENT_QUOTES, 'UTF-8');
+$icon = htmlspecialchars(Router::url('/assets/img/logo.png'), ENT_QUOTES, 'UTF-8');
 $svg = htmlspecialchars(Router::url('/assets/favicon.svg'), ENT_QUOTES, 'UTF-8');
 $ico = htmlspecialchars(Router::url('/favicon.ico'), ENT_QUOTES, 'UTF-8');
 ?>
