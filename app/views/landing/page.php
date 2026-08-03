@@ -50,7 +50,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
       'url' => $canonical,
       'telephone' => Contact::phoneDisplay(),
       'email' => Contact::email(),
-      'areaServed' => 'BR',
+      'areaServed' => 'Orlando, FL',
   ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?></script>
 </head>
 <body class="lp-body" data-usd-brl-rate="<?= htmlspecialchars((string) ExchangeRate::rate(), ENT_QUOTES, 'UTF-8') ?>">

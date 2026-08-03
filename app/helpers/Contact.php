@@ -52,7 +52,7 @@ final class Contact
         if ($addr !== '') {
             return $addr;
         }
-        return trim((string) ($_ENV['PRIVACY_ADDRESS'] ?? 'Av. Paulista, 1000 — Bela Vista, São Paulo — SP'));
+        return trim((string) ($_ENV['PRIVACY_ADDRESS'] ?? '400 W Church St — Downtown, Orlando — FL'));
     }
 
     public static function businessHours(): string
