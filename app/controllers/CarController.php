@@ -241,6 +241,16 @@ final class CarController
             'monthly_wash' => max(0.0, (float) ($post['monthly_wash'] ?? 0)),
             'monthly_maintenance' => max(0.0, (float) ($post['monthly_maintenance'] ?? 0)),
             'monthly_extra' => max(0.0, (float) ($post['monthly_extra'] ?? 0)),
+            'monthly_insurance' => max(0.0, (float) ($post['monthly_insurance'] ?? 0)),
+            'monthly_document' => max(0.0, (float) ($post['monthly_document'] ?? 0)),
+            'monthly_ipva' => max(0.0, (float) ($post['monthly_ipva'] ?? 0)),
+            'monthly_site_rent' => max(0.0, (float) ($post['monthly_site_rent'] ?? 0)),
+            'monthly_internet' => max(0.0, (float) ($post['monthly_internet'] ?? 0)),
+            'monthly_water' => max(0.0, (float) ($post['monthly_water'] ?? 0)),
+            'monthly_electricity' => max(0.0, (float) ($post['monthly_electricity'] ?? 0)),
+            'monthly_phone' => max(0.0, (float) ($post['monthly_phone'] ?? 0)),
+            'monthly_staff' => max(0.0, (float) ($post['monthly_staff'] ?? 0)),
+            'monthly_tag_annual' => max(0.0, (float) ($post['monthly_tag_annual'] ?? 0)),
             'notes' => trim((string) ($post['notes'] ?? '')) ?: null,
         ];
     }

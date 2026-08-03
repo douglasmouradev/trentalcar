@@ -112,53 +112,87 @@ final class Car
         return (int) $stmt->fetchColumn();
     }
 
+    /** @return list<string> */
+    public static function monthlyExpenseFields(): array
+    {
+        return [
+            'monthly_fuel',
+            'monthly_toll',
+            'monthly_wash',
+            'monthly_maintenance',
+            'monthly_extra',
+            'monthly_insurance',
+            'monthly_document',
+            'monthly_ipva',
+            'monthly_site_rent',
+            'monthly_internet',
+            'monthly_water',
+            'monthly_electricity',
+            'monthly_phone',
+            'monthly_staff',
+            'monthly_tag_annual',
+        ];
+    }
+
     /**
      * Soma dos gastos mensais estimados (R$).
      * @param array<string, mixed> $c
      */
     public static function monthlyExpensesTotal(array $c): float
     {
-        return max(0.0, (float) ($c['monthly_fuel'] ?? 0))
-            + max(0.0, (float) ($c['monthly_toll'] ?? 0))
-            + max(0.0, (float) ($c['monthly_wash'] ?? 0))
-            + max(0.0, (float) ($c['monthly_maintenance'] ?? 0))
-            + max(0.0, (float) ($c['monthly_extra'] ?? 0));
+        $total = 0.0;
+        foreach (self::monthlyExpenseFields() as $field) {
+            $total += max(0.0, (float) ($c[$field] ?? 0));
+        }
+        return $total;
     }
 
     /** @param array<string, mixed> $d */
     public static function create(array $d): int
     {
+        $monthlyCols = implode(', ', self::monthlyExpenseFields());
+        $monthlyPlaceholders = implode(', ', array_fill(0, count(self::monthlyExpenseFields()), '?'));
         $stmt = Database::prepare(
-            'INSERT INTO cars (license_plate, brand, model, year, color, color_hex, category, seats, transmission, fuel, daily_rate, status, location_id, mileage,
-             monthly_fuel, monthly_toll, monthly_wash, monthly_maintenance, monthly_extra, image_url, notes)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+            "INSERT INTO cars (license_plate, brand, model, year, color, color_hex, category, seats, transmission, fuel, daily_rate, status, location_id, mileage,
+             {$monthlyCols}, image_url, notes)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,{$monthlyPlaceholders},?,?)"
         );
-        $stmt->execute([
+        $params = [
             $d['license_plate'], $d['brand'], $d['model'], (int) $d['year'], $d['color'],
             $d['color_hex'] ?? '#CCCCCC', $d['category'], (int) ($d['seats'] ?? 5),
             $d['transmission'], $d['fuel'], $d['daily_rate'], $d['status'],
             $d['location_id'] ?: null, (int) ($d['mileage'] ?? 0),
-            $d['monthly_fuel'], $d['monthly_toll'], $d['monthly_wash'], $d['monthly_maintenance'], $d['monthly_extra'],
-            $d['image_url'] ?? null, $d['notes'] ?? null,
-        ]);
+        ];
+        foreach (self::monthlyExpenseFields() as $field) {
+            $params[] = max(0.0, (float) ($d[$field] ?? 0));
+        }
+        $params[] = $d['image_url'] ?? null;
+        $params[] = $d['notes'] ?? null;
+        $stmt->execute($params);
         return (int) Database::pdo()->lastInsertId();
     }
 
     /** @param array<string, mixed> $d */
     public static function update(int $id, array $d): void
     {
+        $monthlySet = implode(', ', array_map(static fn (string $f): string => "{$f}=?", self::monthlyExpenseFields()));
         $stmt = Database::prepare(
-            'UPDATE cars SET license_plate=?, brand=?, model=?, year=?, color=?, color_hex=?, category=?, seats=?, transmission=?, fuel=?, daily_rate=?, status=?, location_id=?, mileage=?,
-             monthly_fuel=?, monthly_toll=?, monthly_wash=?, monthly_maintenance=?, monthly_extra=?, image_url=?, notes=? WHERE id=?'
+            "UPDATE cars SET license_plate=?, brand=?, model=?, year=?, color=?, color_hex=?, category=?, seats=?, transmission=?, fuel=?, daily_rate=?, status=?, location_id=?, mileage=?,
+             {$monthlySet}, image_url=?, notes=? WHERE id=?"
         );
-        $stmt->execute([
+        $params = [
             $d['license_plate'], $d['brand'], $d['model'], (int) $d['year'], $d['color'],
             $d['color_hex'] ?? '#CCCCCC', $d['category'], (int) ($d['seats'] ?? 5),
             $d['transmission'], $d['fuel'], $d['daily_rate'], $d['status'],
             $d['location_id'] ?: null, (int) ($d['mileage'] ?? 0),
-            $d['monthly_fuel'], $d['monthly_toll'], $d['monthly_wash'], $d['monthly_maintenance'], $d['monthly_extra'],
-            $d['image_url'] ?? null, $d['notes'] ?? null, $id,
-        ]);
+        ];
+        foreach (self::monthlyExpenseFields() as $field) {
+            $params[] = max(0.0, (float) ($d[$field] ?? 0));
+        }
+        $params[] = $d['image_url'] ?? null;
+        $params[] = $d['notes'] ?? null;
+        $params[] = $id;
+        $stmt->execute($params);
     }
 
     public static function delete(int $id): void

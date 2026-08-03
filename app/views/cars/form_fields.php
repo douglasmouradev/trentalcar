@@ -92,26 +92,12 @@ $hex = (string) ($c['color_hex'] ?? '#CCCCCC');
     <h3 class="form-section-title"><?= Lang::e('car.monthly_expenses') ?></h3>
     <p class="muted form-section-hint"><?= Lang::e('car.monthly_expenses_hint') ?></p>
     <div class="grid three">
+        <?php foreach (Car::monthlyExpenseFields() as $field): ?>
         <div class="field">
-            <label class="label"><?= Lang::e('car.monthly_fuel') ?></label>
-            <input class="input mono" name="monthly_fuel" type="number" step="0.01" min="0" value="<?= htmlspecialchars((string) ($c['monthly_fuel'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
+            <label class="label"><?= Lang::e('car.' . $field) ?></label>
+            <input class="input mono" name="<?= htmlspecialchars($field, ENT_QUOTES, 'UTF-8') ?>" type="number" step="0.01" min="0" value="<?= htmlspecialchars((string) ($c[$field] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
         </div>
-        <div class="field">
-            <label class="label"><?= Lang::e('car.monthly_toll') ?></label>
-            <input class="input mono" name="monthly_toll" type="number" step="0.01" min="0" value="<?= htmlspecialchars((string) ($c['monthly_toll'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="field">
-            <label class="label"><?= Lang::e('car.monthly_wash') ?></label>
-            <input class="input mono" name="monthly_wash" type="number" step="0.01" min="0" value="<?= htmlspecialchars((string) ($c['monthly_wash'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="field">
-            <label class="label"><?= Lang::e('car.monthly_maintenance') ?></label>
-            <input class="input mono" name="monthly_maintenance" type="number" step="0.01" min="0" value="<?= htmlspecialchars((string) ($c['monthly_maintenance'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
-        </div>
-        <div class="field">
-            <label class="label"><?= Lang::e('car.monthly_extra') ?></label>
-            <input class="input mono" name="monthly_extra" type="number" step="0.01" min="0" value="<?= htmlspecialchars((string) ($c['monthly_extra'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
-        </div>
+        <?php endforeach; ?>
     </div>
     <div class="monthly-total-row" aria-live="polite" aria-atomic="true">
         <span class="label monthly-total-label"><?= Lang::e('car.monthly_total_live') ?></span>

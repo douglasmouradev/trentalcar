@@ -34,11 +34,9 @@
     <div class="card">
         <?php if (Auth::isOwner()): ?>
         <h2 class="card-title"><?= Lang::e('car.monthly_expenses') ?></h2>        <dl class="dl">
-            <dt><?= Lang::e('car.monthly_fuel') ?></dt><dd class="mono"><?= Formatter::money((float) ($car['monthly_fuel'] ?? 0)) ?></dd>
-            <dt><?= Lang::e('car.monthly_toll') ?></dt><dd class="mono"><?= Formatter::money((float) ($car['monthly_toll'] ?? 0)) ?></dd>
-            <dt><?= Lang::e('car.monthly_wash') ?></dt><dd class="mono"><?= Formatter::money((float) ($car['monthly_wash'] ?? 0)) ?></dd>
-            <dt><?= Lang::e('car.monthly_maintenance') ?></dt><dd class="mono"><?= Formatter::money((float) ($car['monthly_maintenance'] ?? 0)) ?></dd>
-            <dt><?= Lang::e('car.monthly_extra') ?></dt><dd class="mono"><?= Formatter::money((float) ($car['monthly_extra'] ?? 0)) ?></dd>
+            <?php foreach (Car::monthlyExpenseFields() as $field): ?>
+            <dt><?= Lang::e('car.' . $field) ?></dt><dd class="mono"><?= Formatter::money((float) ($car[$field] ?? 0)) ?></dd>
+            <?php endforeach; ?>
             <dt><strong><?= Lang::e('car.monthly_total') ?></strong></dt><dd class="mono"><strong><?= Formatter::money(Car::monthlyExpensesTotal($car)) ?></strong></dd>
         </dl>
         <?php else: ?>

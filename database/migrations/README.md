@@ -21,7 +21,7 @@ Existem prefixos partilhados (`006_*`, `007_*`, `008_*`, `009_*`) de evoluções
 
 - **Não renomeie** migrations já aplicadas em produção (quebra `schema_migrations`).
 - **Não apague** ficheiros antigos — são idempotentes ou tratados como benignos em `bin/migrate.php`.
-- Novas alterações: use prefixo sequencial único a partir de **`018_`** (ex.: `018_nova_feature.sql`).
+- Novas alterações: use prefixo sequencial único a partir de **`021_`** (ex.: `021_nova_feature.sql`).
 
 ## Ordem de aplicação (SORT_STRING)
 

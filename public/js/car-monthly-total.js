@@ -1,5 +1,21 @@
 (() => {
-  const names = ['monthly_fuel', 'monthly_toll', 'monthly_wash', 'monthly_maintenance', 'monthly_extra'];
+  const names = [
+    'monthly_fuel',
+    'monthly_toll',
+    'monthly_wash',
+    'monthly_maintenance',
+    'monthly_extra',
+    'monthly_insurance',
+    'monthly_document',
+    'monthly_ipva',
+    'monthly_site_rent',
+    'monthly_internet',
+    'monthly_water',
+    'monthly_electricity',
+    'monthly_phone',
+    'monthly_staff',
+    'monthly_tag_annual',
+  ];
   const out = document.getElementById('monthlyTotalLive');
   if (!out) return;
 
