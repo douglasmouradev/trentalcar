@@ -302,7 +302,7 @@ return [
     'landing.tab_weekly' => 'Weekly / Monthly',
     'landing.tab_biz' => 'Business',
     'landing.hero_kicker' => 'Florida',
-    'landing.hero_title' => 'Rent your car in Florida with the comfort of Brazil',
+    'landing.hero_title' => 'Rent your car in Florida without the hassle',
     'landing.hero_lead' => 'Enter dates and location. We confirm group, price and pick-up point on WhatsApp — no surprise fees at collection.',
     'landing.form_title' => 'Where and when do you need the car?',
     'landing.form_local_label' => 'Pick-up location',

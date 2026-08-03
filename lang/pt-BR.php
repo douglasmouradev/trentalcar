@@ -299,7 +299,7 @@ return [
     'landing.nav_reservar' => 'Reservar',
     'landing.nav_main' => 'Navegação principal',
     'landing.hero_kicker' => 'Florida',
-    'landing.hero_title' => 'Alugue seu carro na Flórida com o conforto do Brasil',
+    'landing.hero_title' => 'Alugue seu carro na Florida sem burocracia',
     'landing.hero_lead' => 'Informe datas e local. Confirmamos grupo, valor e local de retirada por WhatsApp — sem taxa surpresa na hora de pegar o carro.',
     'landing.form_title' => 'Onde e quando você precisa do carro?',
     'landing.form_local_label' => 'Local de retirada',
