@@ -79,12 +79,6 @@ final class Contact
     /** Linha única para rodapé / aviso legal. */
     public static function footerLegalLine(): string
     {
-        $parts = [self::legalName()];
-        $ein = self::ein();
-        if ($ein !== '') {
-            $parts[] = 'EIN ' . $ein;
-        }
-        $parts[] = self::address();
-        return implode(' · ', $parts);
+        return implode(' · ', [self::legalName(), self::address()]);
     }
 }
