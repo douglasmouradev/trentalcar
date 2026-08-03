@@ -622,6 +622,9 @@ return [
     'consult.contact_hint' => 'Para alterações ou voucher, contacte a loja.',
 
     'contact.whatsapp_default' => 'Olá, gostaria de alugar um carro com a Titanium. Tenho as datas e o local de retirada.',
+    'contact.business_hours' => 'Domingo a domingo, 24 horas',
+    'contact.response_time' => '2 horas úteis',
+    'contact.min_daily_rate' => 'R$ 99,90',
 
     'search.type.lead' => 'Lead',
 

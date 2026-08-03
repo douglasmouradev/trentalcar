@@ -625,6 +625,9 @@ return [
     'consult.contact_hint' => 'For changes or voucher, contact the branch.',
 
     'contact.whatsapp_default' => 'Hello, I would like to rent a car with Titanium. I have the dates and pick-up location ready.',
+    'contact.business_hours' => 'Sunday to Sunday, 24 hours',
+    'contact.response_time' => '2 business hours',
+    'contact.min_daily_rate' => '$99.90',
 
     'search.type.lead' => 'Lead',
 

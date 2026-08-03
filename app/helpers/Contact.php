@@ -57,17 +57,38 @@ final class Contact
 
     public static function businessHours(): string
     {
-        return trim((string) ($_ENV['BUSINESS_HOURS'] ?? 'Domingo a domingo, 24 horas'));
+        return self::localizedEnv('BUSINESS_HOURS', 'contact.business_hours');
     }
 
     public static function minDailyRate(): string
     {
-        return trim((string) ($_ENV['BUSINESS_MIN_RATE'] ?? '$99.90'));
+        return self::localizedEnv('BUSINESS_MIN_RATE', 'contact.min_daily_rate');
     }
 
     public static function responseTime(): string
     {
-        return trim((string) ($_ENV['BUSINESS_RESPONSE_TIME'] ?? '2 horas úteis'));
+        return self::localizedEnv('BUSINESS_RESPONSE_TIME', 'contact.response_time');
+    }
+
+    /**
+     * Usa texto traduzido; override opcional via ENV_KEY ou ENV_KEY_EN conforme o idioma.
+     */
+    private static function localizedEnv(string $envKey, string $langKey): string
+    {
+        $isEn = Lang::locale() === 'en-US';
+        $specific = trim((string) ($_ENV[$envKey . ($isEn ? '_EN' : '')] ?? ''));
+        if ($specific !== '') {
+            return $specific;
+        }
+        // Não reutilizar o valor PT do .env quando o site está em inglês.
+        if (!$isEn) {
+            $fallback = trim((string) ($_ENV[$envKey] ?? ''));
+            if ($fallback !== '') {
+                return $fallback;
+            }
+        }
+
+        return Lang::get($langKey);
     }
 
     public static function whatsappUrl(string $message = ''): string
