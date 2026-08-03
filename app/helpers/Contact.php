@@ -36,7 +36,14 @@ final class Contact
 
     public static function ein(): string
     {
-        return trim((string) ($_ENV['BUSINESS_EIN'] ?? $_ENV['PRIVACY_CONTROLLER_EIN'] ?? '61-2244130'));
+        foreach (['BUSINESS_EIN', 'PRIVACY_CONTROLLER_EIN'] as $key) {
+            $value = trim((string) ($_ENV[$key] ?? ''));
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return '61-2244130';
     }
 
     public static function address(): string
