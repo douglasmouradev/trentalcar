@@ -223,19 +223,19 @@ final class CarController
 
         return [
             'license_plate' => strtoupper(trim((string) ($post['license_plate'] ?? ''))) ?: null,
-            'brand' => trim((string) ($post['brand'] ?? '')),
-            'model' => trim((string) ($post['model'] ?? '')),
-            'year' => (int) ($post['year'] ?? date('Y')),
-            'color' => trim((string) ($post['color'] ?? '')),
+            'brand' => trim((string) ($post['brand'] ?? '')) ?: '—',
+            'model' => trim((string) ($post['model'] ?? '')) ?: '—',
+            'year' => (int) ($post['year'] ?? date('Y')) ?: (int) date('Y'),
+            'color' => trim((string) ($post['color'] ?? '')) ?: '—',
             'color_hex' => $colorHex,
             'category' => $category,
-            'seats' => (int) ($post['seats'] ?? 5),
+            'seats' => max(1, (int) ($post['seats'] ?? 5)),
             'transmission' => $transmission,
             'fuel' => $fuel,
-            'daily_rate' => (float) ($post['daily_rate'] ?? 0),
+            'daily_rate' => max(0.0, (float) str_replace(',', '.', (string) ($post['daily_rate'] ?? '0'))),
             'status' => $status,
             'location_id' => (int) ($post['location_id'] ?? 0),
-            'mileage' => (int) ($post['mileage'] ?? 0),
+            'mileage' => max(0, (int) ($post['mileage'] ?? 0)),
             'monthly_fuel' => max(0.0, (float) str_replace(',', '.', (string) ($post['monthly_fuel'] ?? '0'))),
             'monthly_toll' => max(0.0, (float) str_replace(',', '.', (string) ($post['monthly_toll'] ?? '0'))),
             'monthly_wash' => max(0.0, (float) str_replace(',', '.', (string) ($post['monthly_wash'] ?? '0'))),
@@ -258,10 +258,12 @@ final class CarController
     /** @param array<string, mixed> $d */
     private function isValidCarData(array $d): bool
     {
-        return ($d['brand'] ?? '') !== ''
-            && ($d['model'] ?? '') !== ''
-            && (int) ($d['location_id'] ?? 0) > 0
-            && Location::isActive((int) $d['location_id']);
+        // Campos do formulário são opcionais; defaults cobrem NOT NULL no banco.
+        if ((int) ($d['location_id'] ?? 0) > 0 && !Location::isActive((int) $d['location_id'])) {
+            return false;
+        }
+
+        return true;
     }
 
     /** @return string|null file URL, null if no upload, false on validation failure */

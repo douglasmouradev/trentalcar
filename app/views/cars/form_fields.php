@@ -12,19 +12,19 @@ $hex = (string) ($c['color_hex'] ?? '#CCCCCC');
     </div>
     <div class="field">
         <label class="label" for="brand"><?= Lang::e('car.brand') ?></label>
-        <input class="input" id="brand" name="brand" required value="<?= htmlspecialchars((string) ($c['brand'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+        <input class="input" id="brand" name="brand" value="<?= htmlspecialchars((string) ($c['brand'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
     </div>
     <div class="field">
         <label class="label" for="model"><?= Lang::e('car.model') ?></label>
-        <input class="input" id="model" name="model" required value="<?= htmlspecialchars((string) ($c['model'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+        <input class="input" id="model" name="model" value="<?= htmlspecialchars((string) ($c['model'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
     </div>
     <div class="field">
         <label class="label" for="year"><?= Lang::e('car.year') ?></label>
-        <input class="input" id="year" name="year" type="number" required value="<?= (int) ($c['year'] ?? date('Y')) ?>">
+        <input class="input" id="year" name="year" type="number" value="<?= (int) ($c['year'] ?? date('Y')) ?>">
     </div>
     <div class="field">
         <label class="label" for="color"><?= Lang::e('car.color') ?></label>
-        <input class="input" id="color" name="color" required value="<?= htmlspecialchars((string) ($c['color'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+        <input class="input" id="color" name="color" value="<?= htmlspecialchars((string) ($c['color'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
     </div>
     <div class="field">
         <label class="label" for="color_hex"><?= Lang::e('car.color_hex') ?></label>
@@ -63,7 +63,11 @@ $hex = (string) ($c['color_hex'] ?? '#CCCCCC');
     </div>
     <div class="field">
         <label class="label" for="daily_rate"><?= Lang::e('car.daily_rate') ?></label>
-        <input class="input" id="daily_rate" name="daily_rate" type="number" step="0.01" required value="<?= htmlspecialchars((string) ($c['daily_rate'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
+        <?php
+            $dailyRate = (float) ($c['daily_rate'] ?? 0);
+            $dailyRateDisplay = $dailyRate > 0 ? (string) $dailyRate : '';
+        ?>
+        <input class="input" id="daily_rate" name="daily_rate" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0" value="<?= htmlspecialchars($dailyRateDisplay, ENT_QUOTES, 'UTF-8') ?>">
     </div>
     <div class="field">
         <label class="label" for="status"><?= Lang::e('car.status') ?></label>
