@@ -67,7 +67,7 @@ $hex = (string) ($c['color_hex'] ?? '#CCCCCC');
             $dailyRate = (float) ($c['daily_rate'] ?? 0);
             $dailyRateDisplay = $dailyRate > 0 ? (string) $dailyRate : '';
         ?>
-        <input class="input" id="daily_rate" name="daily_rate" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0" value="<?= htmlspecialchars($dailyRateDisplay, ENT_QUOTES, 'UTF-8') ?>" data-usd-convert>
+        <input class="input" id="daily_rate" name="daily_rate" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0" value="<?= htmlspecialchars($dailyRateDisplay, ENT_QUOTES, 'UTF-8') ?>" data-usd-convert autocomplete="off">
         <div class="field-fx muted mono" data-usd-convert-out aria-live="polite"><?= htmlspecialchars(Formatter::moneyWithBrl($dailyRate), ENT_QUOTES, 'UTF-8') ?></div>
     </div>
     <div class="field">
@@ -114,8 +114,8 @@ $hex = (string) ($c['color_hex'] ?? '#CCCCCC');
         <div id="monthlyTotalLive" class="monthly-total-live mono"><?= htmlspecialchars(Formatter::moneyWithBrl(Car::monthlyExpensesTotal($c)), ENT_QUOTES, 'UTF-8') ?></div>
     </div>
 </div>
-<script src="<?= htmlspecialchars(Router::url('/js/car-monthly-total.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
-<script src="<?= htmlspecialchars(Router::url('/js/car-form.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars(Asset::url('/js/car-monthly-total.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars(Asset::url('/js/car-form.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
 
 <div class="grid two">
     <div class="field">
