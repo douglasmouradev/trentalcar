@@ -78,9 +78,26 @@ final class Mail
         $user = trim((string) ($_ENV['MAIL_SMTP_USER'] ?? ''));
         $pass = (string) ($_ENV['MAIL_SMTP_PASS'] ?? '');
         $secure = strtolower(trim((string) ($_ENV['MAIL_SMTP_SECURE'] ?? 'tls')));
+        // aaPanel/self-hosted often uses cert that fails OpenSSL verify; set MAIL_SMTP_SSL_VERIFY=false
+        $verifySsl = filter_var($_ENV['MAIL_SMTP_SSL_VERIFY'] ?? 'true', FILTER_VALIDATE_BOOLEAN);
+
+        $sslOpts = [
+            'peer_name' => $host,
+            'verify_peer' => $verifySsl,
+            'verify_peer_name' => $verifySsl,
+            'allow_self_signed' => !$verifySsl,
+        ];
+        $ctx = stream_context_create(['ssl' => $sslOpts]);
 
         $remote = ($secure === 'ssl' ? 'ssl://' : '') . $host;
-        $fp = @stream_socket_client($remote . ':' . $port, $errno, $errstr, 15, STREAM_CLIENT_CONNECT);
+        $fp = @stream_socket_client(
+            $remote . ':' . $port,
+            $errno,
+            $errstr,
+            15,
+            STREAM_CLIENT_CONNECT,
+            $ctx
+        );
         if ($fp === false) {
             AppError::log(new RuntimeException("SMTP connect failed: {$errstr} ({$errno})"));
             return false;
@@ -103,7 +120,13 @@ final class Mail
                 fclose($fp);
                 return false;
             }
-            if (!stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+            foreach ($sslOpts as $k => $v) {
+                stream_context_set_option($fp, 'ssl', $k, $v);
+            }
+            if (!@stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+                AppError::log(new RuntimeException(
+                    'SMTP STARTTLS failed (certificate verify). Set MAIL_SMTP_SSL_VERIFY=false or fix the mail SSL cert.'
+                ));
                 fclose($fp);
                 return false;
             }
