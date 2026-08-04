@@ -1,24 +1,4 @@
 (() => {
-  const names = [
-    'monthly_insurance',
-    'monthly_document',
-    'monthly_ipva',
-    'monthly_wash',
-    'monthly_site_rent',
-    'monthly_internet',
-    'monthly_water',
-    'monthly_electricity',
-    'monthly_phone',
-    'monthly_staff',
-    'monthly_tag_annual',
-    'monthly_fuel',
-    'monthly_toll',
-    'monthly_maintenance',
-    'monthly_extra',
-  ];
-  const out = document.getElementById('monthlyTotalLive');
-  if (!out) return;
-
   const usdBrlRate = (() => {
     const raw = document.body?.dataset?.usdBrlRate;
     const n = raw ? parseFloat(raw) : NaN;
@@ -36,19 +16,33 @@
     n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
   const fmtBrl = (n) =>
     n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const fmtPair = (usd) => `${fmtUsd(usd)} ≈ ${fmtBrl(usd * usdBrlRate)}`;
 
-  const refresh = () => {
-    let total = 0;
-    names.forEach((n) => {
-      const el = document.querySelector(`input[name="${n}"]`);
-      total += parseVal(el);
-    });
-    const brl = total * usdBrlRate;
-    out.textContent = `${fmtUsd(total)} ≈ ${fmtBrl(brl)}`;
+  const convertInputs = document.querySelectorAll('input[data-usd-convert]');
+  const refreshField = (input) => {
+    const out = input.parentElement?.querySelector('[data-usd-convert-out]');
+    if (!out) return;
+    out.textContent = fmtPair(parseVal(input));
   };
 
-  names.forEach((n) => {
-    document.querySelector(`input[name="${n}"]`)?.addEventListener('input', refresh);
+  convertInputs.forEach((input) => {
+    input.addEventListener('input', () => refreshField(input));
+    refreshField(input);
   });
-  refresh();
+
+  const out = document.getElementById('monthlyTotalLive');
+  if (!out) return;
+
+  const refreshTotal = () => {
+    let total = 0;
+    document.querySelectorAll('input[data-monthly-expense]').forEach((el) => {
+      total += parseVal(el);
+    });
+    out.textContent = fmtPair(total);
+  };
+
+  document.querySelectorAll('input[data-monthly-expense]').forEach((el) => {
+    el.addEventListener('input', refreshTotal);
+  });
+  refreshTotal();
 })();
