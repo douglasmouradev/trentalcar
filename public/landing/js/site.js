@@ -127,16 +127,41 @@
   }
 
   document.querySelectorAll('[data-car-id]').forEach(function (link) {
-    link.addEventListener('click', function () {
+    link.addEventListener('click', function (ev) {
       var id = link.getAttribute('data-car-id');
-      var label = link.getAttribute('data-car-label') || link.closest('.lp-car')?.querySelector('h3')?.textContent || '';
-      setSelectedCar(id, label.trim());
+      var label =
+        link.getAttribute('data-car-label') ||
+        (link.closest('.lp-car') && link.closest('.lp-car').querySelector('h3')
+          ? link.closest('.lp-car').querySelector('h3').textContent
+          : '') ||
+        '';
+      setSelectedCar(id, String(label).trim());
       document.querySelectorAll('.lp-car--selected').forEach(function (c) {
         c.classList.remove('lp-car--selected');
       });
       var card = link.closest('.lp-car');
       if (card) {
         card.classList.add('lp-car--selected');
+      }
+      var target = document.getElementById('reserva') || document.getElementById('form-busca');
+      if (target) {
+        ev.preventDefault();
+        if (history.replaceState) {
+          history.replaceState(null, '', '#reserva');
+        } else {
+          window.location.hash = 'reserva';
+        }
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var focusEl = document.getElementById('lead-local') || target.querySelector('input, select, textarea, button');
+        if (focusEl && typeof focusEl.focus === 'function') {
+          setTimeout(function () {
+            try {
+              focusEl.focus({ preventScroll: true });
+            } catch (e) {
+              focusEl.focus();
+            }
+          }, 350);
+        }
       }
     });
   });

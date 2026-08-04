@@ -30,7 +30,7 @@ $asset = static fn (string $path): string => htmlspecialchars(Router::url($path)
                 </ul>
                 <p class="lp-car-price"><?= Lang::e('landing.car_price_from') ?> <strong><?= $rate ?></strong> <span><?= Lang::e('landing.car_per_day') ?></span></p>
                 <p class="lp-car-disclaimer"><?= Lang::e('landing.car_disclaimer') ?></p>
-                <a class="btn btn-block btn-primary" href="#reserva" data-car-id="<?= (int) $car['id'] ?>"><?= Lang::e('landing.car_cta') ?></a>
+                <a class="btn btn-block btn-primary" href="#reserva" data-car-id="<?= (int) $car['id'] ?>" data-car-label="<?= $title ?>"><?= Lang::e('landing.car_cta') ?></a>
             </div>
         </article>
     <?php endforeach; ?>

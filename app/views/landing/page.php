@@ -136,8 +136,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
           </div>
         </div>
       </div>
-      <div class="lp-booking-anchor" id="reserva"></div>
-      <div class="lp-booking-wrap">
+      <div class="lp-booking-wrap" id="reserva">
         <?php
         View::partial('partials/landing_lead_form', [
             'asset' => $asset,
