@@ -80,6 +80,7 @@ final class Mail
         $secure = strtolower(trim((string) ($_ENV['MAIL_SMTP_SECURE'] ?? 'tls')));
         // aaPanel/self-hosted often uses cert that fails OpenSSL verify; set MAIL_SMTP_SSL_VERIFY=false
         $verifySsl = filter_var($_ENV['MAIL_SMTP_SSL_VERIFY'] ?? 'true', FILTER_VALIDATE_BOOLEAN);
+        $ctxLabel = "{$host}:{$port}/{$secure}";
 
         $sslOpts = [
             'peer_name' => $host,
@@ -99,24 +100,27 @@ final class Mail
             $ctx
         );
         if ($fp === false) {
-            AppError::log(new RuntimeException("SMTP connect failed: {$errstr} ({$errno})"));
+            AppError::log(new RuntimeException("SMTP connect failed [{$ctxLabel}]: {$errstr} ({$errno})"));
             return false;
         }
 
         stream_set_timeout($fp, 15);
-        if (!self::smtpExpect($fp, [220])) {
+        if (!self::smtpExpect($fp, [220], $last)) {
+            self::logSmtpStep($ctxLabel, 'banner', $last);
             fclose($fp);
             return false;
         }
         $ehloHost = parse_url(Config::app()['url'] ?? 'http://localhost', PHP_URL_HOST) ?: 'localhost';
         fwrite($fp, "EHLO {$ehloHost}\r\n");
-        if (!self::smtpExpect($fp, [250])) {
+        if (!self::smtpExpect($fp, [250], $last)) {
+            self::logSmtpStep($ctxLabel, 'EHLO', $last);
             fclose($fp);
             return false;
         }
         if ($secure === 'tls') {
             fwrite($fp, "STARTTLS\r\n");
-            if (!self::smtpExpect($fp, [220])) {
+            if (!self::smtpExpect($fp, [220], $last)) {
+                self::logSmtpStep($ctxLabel, 'STARTTLS', $last);
                 fclose($fp);
                 return false;
             }
@@ -125,46 +129,54 @@ final class Mail
             }
             if (!@stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
                 AppError::log(new RuntimeException(
-                    'SMTP STARTTLS failed (certificate verify). Set MAIL_SMTP_SSL_VERIFY=false or fix the mail SSL cert.'
+                    "SMTP STARTTLS crypto failed [{$ctxLabel}] verify=" . ($verifySsl ? 'true' : 'false')
+                    . '. Set MAIL_SMTP_SSL_VERIFY=false or fix the mail SSL cert.'
                 ));
                 fclose($fp);
                 return false;
             }
             fwrite($fp, "EHLO {$ehloHost}\r\n");
-            if (!self::smtpExpect($fp, [250])) {
+            if (!self::smtpExpect($fp, [250], $last)) {
+                self::logSmtpStep($ctxLabel, 'EHLO after TLS', $last);
                 fclose($fp);
                 return false;
             }
         }
         if ($user !== '') {
             fwrite($fp, "AUTH LOGIN\r\n");
-            if (!self::smtpExpect($fp, [334])) {
+            if (!self::smtpExpect($fp, [334], $last)) {
+                self::logSmtpStep($ctxLabel, 'AUTH LOGIN', $last);
                 fclose($fp);
                 return false;
             }
             fwrite($fp, base64_encode($user) . "\r\n");
-            if (!self::smtpExpect($fp, [334])) {
+            if (!self::smtpExpect($fp, [334], $last)) {
+                self::logSmtpStep($ctxLabel, 'AUTH user', $last);
                 fclose($fp);
                 return false;
             }
             fwrite($fp, base64_encode($pass) . "\r\n");
-            if (!self::smtpExpect($fp, [235])) {
+            if (!self::smtpExpect($fp, [235], $last)) {
+                self::logSmtpStep($ctxLabel, 'AUTH password', $last);
                 fclose($fp);
                 return false;
             }
         }
         fwrite($fp, 'MAIL FROM:<' . $from . ">\r\n");
-        if (!self::smtpExpect($fp, [250])) {
+        if (!self::smtpExpect($fp, [250], $last)) {
+            self::logSmtpStep($ctxLabel, 'MAIL FROM', $last);
             fclose($fp);
             return false;
         }
         fwrite($fp, 'RCPT TO:<' . $to . ">\r\n");
-        if (!self::smtpExpect($fp, [250, 251])) {
+        if (!self::smtpExpect($fp, [250, 251], $last)) {
+            self::logSmtpStep($ctxLabel, 'RCPT TO', $last);
             fclose($fp);
             return false;
         }
         fwrite($fp, "DATA\r\n");
-        if (!self::smtpExpect($fp, [354])) {
+        if (!self::smtpExpect($fp, [354], $last)) {
+            self::logSmtpStep($ctxLabel, 'DATA', $last);
             fclose($fp);
             return false;
         }
@@ -177,7 +189,8 @@ final class Mail
             . "\r\n"
             . str_replace("\n.", "\n..", $mime['body']) . "\r\n.\r\n";
         fwrite($fp, $payload);
-        if (!self::smtpExpect($fp, [250])) {
+        if (!self::smtpExpect($fp, [250], $last)) {
+            self::logSmtpStep($ctxLabel, 'DATA body', $last);
             fclose($fp);
             return false;
         }
@@ -186,11 +199,17 @@ final class Mail
         return true;
     }
 
+    private static function logSmtpStep(string $ctx, string $step, string $response): void
+    {
+        $safe = preg_replace('/[^\x20-\x7E]/', '', mb_substr($response, 0, 200)) ?? '';
+        AppError::log(new RuntimeException("SMTP {$step} failed [{$ctx}]: {$safe}"));
+    }
+
     /**
      * @param resource $fp
      * @param list<int> $codes
      */
-    private static function smtpExpect($fp, array $codes): bool
+    private static function smtpExpect($fp, array $codes, ?string &$raw = null): bool
     {
         $line = '';
         while (($chunk = fgets($fp, 515)) !== false) {
@@ -199,6 +218,7 @@ final class Mail
                 break;
             }
         }
+        $raw = $line;
         $code = (int) substr(trim($line), 0, 3);
         return in_array($code, $codes, true);
     }
