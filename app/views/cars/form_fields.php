@@ -93,9 +93,13 @@ $hex = (string) ($c['color_hex'] ?? '#CCCCCC');
     <p class="muted form-section-hint"><?= Lang::e('car.monthly_expenses_hint') ?></p>
     <div class="grid three">
         <?php foreach (Car::monthlyExpenseFields() as $field): ?>
+        <?php
+            $monthlyVal = (float) ($c[$field] ?? 0);
+            $monthlyDisplay = $monthlyVal > 0 ? (string) $monthlyVal : '';
+        ?>
         <div class="field">
-            <label class="label"><?= Lang::e('car.' . $field) ?></label>
-            <input class="input mono" name="<?= htmlspecialchars($field, ENT_QUOTES, 'UTF-8') ?>" type="number" step="0.01" min="0" value="<?= htmlspecialchars((string) ($c[$field] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
+            <label class="label" for="<?= htmlspecialchars($field, ENT_QUOTES, 'UTF-8') ?>"><?= Lang::e('car.' . $field) ?></label>
+            <input class="input mono" id="<?= htmlspecialchars($field, ENT_QUOTES, 'UTF-8') ?>" name="<?= htmlspecialchars($field, ENT_QUOTES, 'UTF-8') ?>" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0" value="<?= htmlspecialchars($monthlyDisplay, ENT_QUOTES, 'UTF-8') ?>">
         </div>
         <?php endforeach; ?>
     </div>

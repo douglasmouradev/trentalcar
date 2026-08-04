@@ -85,7 +85,7 @@ return [
     'car.notes' => 'Notes',
     'car.image' => 'Photo',
     'car.monthly_expenses' => 'Monthly costs (estimated)',
-    'car.monthly_expenses_hint' => 'Typical monthly amounts in USD. BRL equivalent uses the daily exchange rate.',
+    'car.monthly_expenses_hint' => 'Optional. Typical monthly amounts in USD. Leave blank for zero. BRL equivalent uses the daily exchange rate.',
     'car.monthly_fuel' => 'Fuel',
     'car.monthly_toll' => 'Toll',
     'car.monthly_wash' => 'Car wash',

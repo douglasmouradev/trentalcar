@@ -85,7 +85,7 @@ return [
     'car.notes' => 'Observações',
     'car.image' => 'Foto',
     'car.monthly_expenses' => 'Gastos mensais (estimados)',
-    'car.monthly_expenses_hint' => 'Valores médios por mês em dólares (USD). O equivalente em reais usa a cotação do dia.',
+    'car.monthly_expenses_hint' => 'Opcional. Valores médios por mês em dólares (USD). Em branco = zero. O equivalente em reais usa a cotação do dia.',
     'car.monthly_fuel' => 'Combustível',
     'car.monthly_toll' => 'Pedágio',
     'car.monthly_wash' => 'Lavagem',
