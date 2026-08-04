@@ -9,13 +9,18 @@ $leadOld = $leadOld ?? [];
 $leadErrors = $leadErrors ?? [];
 $returnPath = $returnPath ?? '/';
 $carId = (int) ($leadOld['car_id'] ?? 0);
+$carLabel = '';
+$carRate = 0.0;
 if ($selectedCar !== null) {
     $carId = (int) ($selectedCar['id'] ?? $carId);
+    $carLabel = trim((string) ($selectedCar['brand'] ?? '') . ' ' . (string) ($selectedCar['model'] ?? ''));
+    $carRate = (float) ($selectedCar['daily_rate'] ?? 0);
 }
 $today = date('Y-m-d');
 $hotelSelected = LeadPickupOptions::isHotel((string) ($leadOld['local'] ?? ''));
 $mesmoChecked = !isset($leadOld['mesmo_local']) || (string) ($leadOld['mesmo_local'] ?? '1') === '1';
 $hotelReturnSelected = !$mesmoChecked && LeadPickupOptions::isHotel((string) ($leadOld['local_devolucao'] ?? ''));
+$hasCar = $carId > 0 && $carLabel !== '';
 ?>
 <div class="lp-form-errors" id="lead-form-errors" role="alert" <?= $leadErrors === [] ? 'hidden' : '' ?>>
   <?php if ($leadErrors !== []): ?>
@@ -26,20 +31,17 @@ $hotelReturnSelected = !$mesmoChecked && LeadPickupOptions::isHotel((string) ($l
     </ul>
   <?php endif; ?>
 </div>
-<?php if ($selectedCar !== null): ?>
-  <p class="lp-car-selected" id="lead-car-selected" role="status">
-    <?= Lang::e('landing.car_selected') ?>
-    <strong><?= htmlspecialchars((string) $selectedCar['brand'] . ' ' . (string) $selectedCar['model'], ENT_QUOTES, 'UTF-8') ?></strong>
-    <button type="button" class="lp-car-selected-clear" id="lead-car-clear" aria-label="<?= Lang::e('landing.car_clear') ?>">&times;</button>
-  </p>
-<?php endif; ?>
 <form class="lp-booking" id="form-busca" method="post" action="<?= $asset($formAction) ?>"
       aria-describedby="lp-booking-hint"
       data-error-date-order="<?= htmlspecialchars(Lang::get('landing.error_date_order'), ENT_QUOTES, 'UTF-8') ?>"
       data-error-date-required="<?= htmlspecialchars(Lang::get('landing.error_date_required'), ENT_QUOTES, 'UTF-8') ?>"
       data-error-hotel="<?= htmlspecialchars(Lang::get('landing.error_hotel'), ENT_QUOTES, 'UTF-8') ?>"
       data-hotel-value="<?= htmlspecialchars(LeadPickupOptions::HOTEL, ENT_QUOTES, 'UTF-8') ?>"
-      data-label-submitting="<?= htmlspecialchars(Lang::get('landing.form_submitting'), ENT_QUOTES, 'UTF-8') ?>">
+      data-label-submitting="<?= htmlspecialchars(Lang::get('landing.form_submitting'), ENT_QUOTES, 'UTF-8') ?>"
+      data-label-confirm="<?= htmlspecialchars(Lang::get('landing.form_confirm'), ENT_QUOTES, 'UTF-8') ?>"
+      data-label-submit="<?= htmlspecialchars(Lang::get('landing.form_submit'), ENT_QUOTES, 'UTF-8') ?>"
+      data-summary-days="<?= htmlspecialchars(Lang::get('landing.summary_days'), ENT_QUOTES, 'UTF-8') ?>"
+      data-summary-need-dates="<?= htmlspecialchars(Lang::get('landing.summary_need_dates'), ENT_QUOTES, 'UTF-8') ?>">
   <?= Csrf::field() ?>
   <input type="hidden" name="_return" value="<?= htmlspecialchars($returnPath, ENT_QUOTES, 'UTF-8') ?>">
   <input type="text" name="website" value="" tabindex="-1" autocomplete="off" class="hp-field" aria-hidden="true">
@@ -48,6 +50,32 @@ $hotelReturnSelected = !$mesmoChecked && LeadPickupOptions::isHotel((string) ($l
     <p id="lp-booking-hint" class="lp-booking-hint"><?= Lang::e('landing.lead_hint') ?></p>
   </div>
   <input type="hidden" name="car_id" id="lead-car-id" value="<?= $carId ?>">
+  <input type="hidden" id="lead-car-rate" value="<?= htmlspecialchars((string) $carRate, ENT_QUOTES, 'UTF-8') ?>" data-car-label="<?= htmlspecialchars($carLabel, ENT_QUOTES, 'UTF-8') ?>">
+
+  <aside class="lp-lead-summary" id="lead-summary" <?= $hasCar ? '' : 'hidden' ?> aria-live="polite">
+    <p class="lp-lead-summary-title"><?= Lang::e('landing.summary_title') ?></p>
+    <dl class="lp-lead-summary-grid">
+      <div>
+        <dt><?= Lang::e('reservation.car') ?></dt>
+        <dd id="lead-summary-car"><?= $hasCar ? htmlspecialchars($carLabel, ENT_QUOTES, 'UTF-8') : '—' ?></dd>
+      </div>
+      <div>
+        <dt><?= Lang::e('landing.summary_daily') ?></dt>
+        <dd class="mono" id="lead-summary-daily"><?= $hasCar ? htmlspecialchars(Formatter::moneyWithBrl($carRate), ENT_QUOTES, 'UTF-8') : '—' ?></dd>
+      </div>
+      <div>
+        <dt><?= Lang::e('landing.summary_days_label') ?></dt>
+        <dd id="lead-summary-days"><?= Lang::e('landing.summary_need_dates') ?></dd>
+      </div>
+      <div class="lp-lead-summary-total">
+        <dt><?= Lang::e('landing.summary_total') ?></dt>
+        <dd class="mono" id="lead-summary-total">—</dd>
+      </div>
+    </dl>
+    <p class="lp-lead-summary-note muted"><?= Lang::e('landing.car_disclaimer') ?></p>
+    <button type="button" class="lp-lead-summary-clear" id="lead-car-clear"<?= $hasCar ? '' : ' hidden' ?>><?= Lang::e('landing.car_clear') ?></button>
+  </aside>
+
   <fieldset class="lp-booking-section">
     <legend class="lp-booking-section-title"><?= Lang::e('leads.contact') ?></legend>
     <div class="lp-booking-grid lp-booking-grid--contact">
@@ -98,7 +126,7 @@ $hotelReturnSelected = !$mesmoChecked && LeadPickupOptions::isHotel((string) ($l
       </label>
       <div class="lp-field lp-field--btn">
         <span class="lp-label lp-label--ghost" aria-hidden="true">&nbsp;</span>
-        <button type="submit" class="btn btn-search"><?= Lang::e('landing.form_submit') ?></button>
+        <button type="submit" class="btn btn-search" id="lead-submit-btn"><?= $hasCar ? Lang::e('landing.form_confirm') : Lang::e('landing.form_submit') ?></button>
       </div>
     </div>
   </fieldset>

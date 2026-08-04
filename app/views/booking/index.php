@@ -103,7 +103,7 @@ $today = date('Y-m-d');
                             <p class="lp-car-group"><?= Lang::e('category.' . ($car['category'] ?? 'standard')) ?></p>
                             <h3><?= $alt ?></h3>
                             <p class="lp-car-price"><?= Lang::e('landing.car_price_from') ?> <strong><?= Formatter::moneyWithBrl((float) $car['daily_rate']) ?></strong> <span><?= Lang::e('landing.car_per_day') ?></span></p>
-                            <a class="btn btn-block btn-primary" href="#reserva" data-car-id="<?= (int) $car['id'] ?>" data-car-label="<?= $alt ?>"><?= Lang::e('booking.cta') ?></a>
+                            <a class="btn btn-block btn-primary" href="#reserva" data-car-id="<?= (int) $car['id'] ?>" data-car-label="<?= $alt ?>" data-daily-rate="<?= htmlspecialchars((string) (float) ($car['daily_rate'] ?? 0), ENT_QUOTES, 'UTF-8') ?>"><?= Lang::e('booking.cta') ?></a>
                         </div>
                     </article>
                 <?php endforeach; ?>

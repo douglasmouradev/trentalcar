@@ -135,7 +135,12 @@
           ? link.closest('.lp-car').querySelector('h3').textContent
           : '') ||
         '';
-      setSelectedCar(id, String(label).trim());
+      var rate = link.getAttribute('data-daily-rate') || '0';
+      if (typeof window.setLeadCarSelection === 'function') {
+        window.setLeadCarSelection(id, String(label).trim(), rate);
+      } else {
+        setSelectedCar(id, String(label).trim(), rate);
+      }
       document.querySelectorAll('.lp-car--selected').forEach(function (c) {
         c.classList.remove('lp-car--selected');
       });
@@ -166,56 +171,30 @@
     });
   });
 
-  function setSelectedCar(id, label) {
-    var input = document.getElementById('lead-car-id');
-    if (input && id) {
-      input.value = id;
-    }
-    var banner = document.getElementById('lead-car-selected');
-    if (!label) {
-      if (banner) {
-        banner.remove();
-      }
-      if (input) {
-        input.value = '0';
-      }
+  function setSelectedCar(id, label, rate) {
+    if (typeof window.setLeadCarSelection === 'function') {
+      window.setLeadCarSelection(id, label, rate);
       return;
     }
-    if (!banner) {
-      banner = document.createElement('p');
-      banner.className = 'lp-car-selected';
-      banner.id = 'lead-car-selected';
-      banner.setAttribute('role', 'status');
-      var form = document.getElementById('form-busca');
-      if (form) {
-        form.parentNode.insertBefore(banner, form);
-      }
+    var input = document.getElementById('lead-car-id');
+    var rateInput = document.getElementById('lead-car-rate');
+    if (input) {
+      input.value = label ? id || '0' : '0';
     }
-    var clearLabel = document.documentElement.lang.startsWith('en') ? 'Clear vehicle' : 'Remover veículo';
-    banner.innerHTML =
-      (document.documentElement.lang.startsWith('en') ? 'Selected vehicle: ' : 'Veículo selecionado: ') +
-      '<strong></strong> <button type="button" class="lp-car-selected-clear" id="lead-car-clear" aria-label="' +
-      clearLabel +
-      '">&times;</button>';
-    var strong = banner.querySelector('strong');
-    if (strong) {
-      strong.textContent = label;
+    if (rateInput) {
+      rateInput.value = label ? String(rate != null ? rate : '0') : '0';
+      rateInput.setAttribute('data-car-label', label || '');
     }
-    var clearBtn = banner.querySelector('#lead-car-clear');
-    if (clearBtn) {
-      clearBtn.addEventListener('click', function () {
-        setSelectedCar('', '');
-        document.querySelectorAll('.lp-car--selected').forEach(function (c) {
-          c.classList.remove('lp-car--selected');
-        });
-      });
+    if (typeof window.refreshLeadSummary === 'function') {
+      window.refreshLeadSummary();
     }
   }
 
   var existingClear = document.getElementById('lead-car-clear');
-  if (existingClear) {
+  if (existingClear && !existingClear.dataset.boundClear) {
+    existingClear.dataset.boundClear = '1';
     existingClear.addEventListener('click', function () {
-      setSelectedCar('', '');
+      setSelectedCar('', '', '0');
       document.querySelectorAll('.lp-car--selected').forEach(function (c) {
         c.classList.remove('lp-car--selected');
       });

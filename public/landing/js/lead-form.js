@@ -9,6 +9,10 @@
     dateRequired: form.dataset.errorDateRequired || 'Select pick-up and return dates.',
     hotelRequired: form.dataset.errorHotel || 'Enter the hotel name for delivery.',
     submitting: form.dataset.labelSubmitting || 'Sending…',
+    confirm: form.dataset.labelConfirm || 'Confirm request',
+    submit: form.dataset.labelSubmit || 'Search vehicles',
+    daysTpl: form.dataset.summaryDays || ':count day(s)',
+    needDates: form.dataset.summaryNeedDates || 'Enter the dates',
   };
 
   var inicio = form.querySelector('input[name="inicio"]');
@@ -22,14 +26,112 @@
   var sameReturn = form.querySelector('input[name="mesmo_local"]');
   var returnBox = document.getElementById('lp-return-location');
   var hotelValue = form.dataset.hotelValue || 'Entrega no hotel';
-  var submitBtn = form.querySelector('button[type="submit"]');
-  var submitLabel = submitBtn ? submitBtn.textContent : '';
+  var submitBtn = document.getElementById('lead-submit-btn') || form.querySelector('button[type="submit"]');
   var errorBox = document.getElementById('lead-form-errors');
+  var carIdInput = document.getElementById('lead-car-id');
+  var carRateInput = document.getElementById('lead-car-rate');
+  var summary = document.getElementById('lead-summary');
+  var summaryCar = document.getElementById('lead-summary-car');
+  var summaryDaily = document.getElementById('lead-summary-daily');
+  var summaryDays = document.getElementById('lead-summary-days');
+  var summaryTotal = document.getElementById('lead-summary-total');
+  var clearBtn = document.getElementById('lead-car-clear');
 
   var today = new Date();
   var minStr = today.toISOString().slice(0, 10);
   if (inicio) inicio.min = minStr;
   if (fim) fim.min = minStr;
+
+  function usdBrlRate() {
+    var raw = document.body && document.body.dataset ? document.body.dataset.usdBrlRate : null;
+    var n = raw ? parseFloat(raw) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : 5.5;
+  }
+
+  function fmtPair(usd) {
+    var rate = usdBrlRate();
+    var u = Number(usd) || 0;
+    var usdStr = u.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    var brlStr = (u * rate).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    return usdStr + ' ≈ ' + brlStr;
+  }
+
+  function daysInclusive(a, b) {
+    if (!a || !b) return 0;
+    var d1 = new Date(a + 'T00:00:00');
+    var d2 = new Date(b + 'T00:00:00');
+    if (Number.isNaN(d1.getTime()) || Number.isNaN(d2.getTime()) || d2 < d1) return 0;
+    return Math.max(1, Math.round((d2 - d1) / 86400000) + 1);
+  }
+
+  function selectedRate() {
+    if (!carRateInput) return 0;
+    var n = parseFloat(String(carRateInput.value || '0').replace(',', '.'));
+    return Number.isFinite(n) && n > 0 ? n : Math.max(0, n || 0);
+  }
+
+  function selectedLabel() {
+    return carRateInput ? String(carRateInput.getAttribute('data-car-label') || '').trim() : '';
+  }
+
+  function hasCar() {
+    return carIdInput && parseInt(carIdInput.value || '0', 10) > 0 && selectedLabel() !== '';
+  }
+
+  function refreshLeadSummary() {
+    var carOk = hasCar();
+    if (summary) {
+      summary.hidden = !carOk;
+    }
+    if (clearBtn) {
+      clearBtn.hidden = !carOk;
+    }
+    if (submitBtn && !submitBtn.classList.contains('is-loading')) {
+      submitBtn.textContent = carOk ? i18n.confirm : i18n.submit;
+    }
+    if (!carOk) {
+      if (summaryCar) summaryCar.textContent = '—';
+      if (summaryDaily) summaryDaily.textContent = '—';
+      if (summaryDays) summaryDays.textContent = i18n.needDates;
+      if (summaryTotal) summaryTotal.textContent = '—';
+      return;
+    }
+
+    var rate = selectedRate();
+    var label = selectedLabel();
+    if (summaryCar) summaryCar.textContent = label;
+    if (summaryDaily) summaryDaily.textContent = fmtPair(rate);
+
+    var days = daysInclusive(inicio && inicio.value, fim && fim.value);
+    if (!days) {
+      if (summaryDays) summaryDays.textContent = i18n.needDates;
+      if (summaryTotal) summaryTotal.textContent = '—';
+      return;
+    }
+    if (summaryDays) {
+      summaryDays.textContent = String(i18n.daysTpl).replace(':count', String(days));
+    }
+    if (summaryTotal) {
+      summaryTotal.textContent = fmtPair(rate * days);
+    }
+  }
+
+  function setLeadCarSelection(id, label, rate) {
+    var carId = id ? String(id) : '0';
+    var carLabel = label ? String(label).trim() : '';
+    var carRate = rate != null && rate !== '' ? String(rate) : '0';
+    if (carIdInput) {
+      carIdInput.value = carLabel ? carId : '0';
+    }
+    if (carRateInput) {
+      carRateInput.value = carLabel ? carRate : '0';
+      carRateInput.setAttribute('data-car-label', carLabel);
+    }
+    refreshLeadSummary();
+  }
+
+  window.refreshLeadSummary = refreshLeadSummary;
+  window.setLeadCarSelection = setLeadCarSelection;
 
   function syncHotelField(selectEl, boxEl, inputEl, forceHide) {
     if (!selectEl || !boxEl || !inputEl) return;
@@ -67,6 +169,7 @@
   if (sameReturn) {
     sameReturn.addEventListener('change', syncReturnVisibility);
   }
+  syncReturnVisibility();
 
   function showErrors(messages) {
     if (!errorBox) return;
@@ -120,11 +223,26 @@
           fim.value = inicio.value;
         }
       }
+      refreshLeadSummary();
       validateForm();
     });
+    inicio.addEventListener('input', refreshLeadSummary);
   }
   if (fim) {
-    fim.addEventListener('change', validateForm);
+    fim.addEventListener('change', function () {
+      refreshLeadSummary();
+      validateForm();
+    });
+    fim.addEventListener('input', refreshLeadSummary);
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function () {
+      setLeadCarSelection('', '', '0');
+      document.querySelectorAll('.lp-car--selected').forEach(function (c) {
+        c.classList.remove('lp-car--selected');
+      });
+    });
   }
 
   form.addEventListener('submit', function (ev) {
@@ -139,6 +257,8 @@
       submitBtn.textContent = i18n.submitting;
     }
   });
+
+  refreshLeadSummary();
 
   if (window.location.hash === '#reserva' || document.querySelector('.lp-lead-banner--ok')) {
     var anchor = document.getElementById('reserva');
