@@ -46,7 +46,7 @@
 
         <p><span class="swatch" style="background:<?= htmlspecialchars($r['color_hex'], ENT_QUOTES, 'UTF-8') ?>"></span>
 
-            <?= htmlspecialchars($r['brand'] . ' ' . $r['model'], ENT_QUOTES, 'UTF-8') ?> — <span class="mono"><?= htmlspecialchars($r['license_plate'], ENT_QUOTES, 'UTF-8') ?></span></p>
+            <?= htmlspecialchars($r['brand'] . ' ' . $r['model'], ENT_QUOTES, 'UTF-8') ?> — <span class="mono"><?= htmlspecialchars((string) ($r['license_plate'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span></p>
 
         <h2 class="card-title"><?= Lang::e('reservation.operator') ?></h2>
 

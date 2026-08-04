@@ -21,8 +21,8 @@
             <img class="car-photo" src="<?= htmlspecialchars($car['image_url'], ENT_QUOTES, 'UTF-8') ?>" alt="">
         <?php endif; ?>
         <dl class="dl">
-            <dt><?= Lang::e('car.plate') ?></dt><dd class="mono"><?= htmlspecialchars($car['license_plate'], ENT_QUOTES, 'UTF-8') ?></dd>
-            <dt><?= Lang::e('car.color') ?></dt><dd><span class="swatch" style="background:<?= htmlspecialchars($car['color_hex'], ENT_QUOTES, 'UTF-8') ?>"></span> <?= htmlspecialchars($car['color'], ENT_QUOTES, 'UTF-8') ?></dd>
+            <dt><?= Lang::e('car.plate') ?></dt><dd class="mono"><?= htmlspecialchars((string) ($car['license_plate'] ?? ''), ENT_QUOTES, 'UTF-8') ?></dd>
+            <dt><?= Lang::e('car.color') ?></dt><dd><span class="swatch" style="background:<?= htmlspecialchars((string) ($car['color_hex'] ?? '#CCCCCC'), ENT_QUOTES, 'UTF-8') ?>"></span> <?= htmlspecialchars((string) ($car['color'] ?? ''), ENT_QUOTES, 'UTF-8') ?></dd>
             <dt><?= Lang::e('car.year') ?></dt><dd><?= (int) $car['year'] ?></dd>
             <dt><?= Lang::e('car.daily_rate') ?></dt><dd class="mono"><?= Formatter::moneyWithBrl((float) $car['daily_rate']) ?></dd>
             <dt><?= Lang::e('car.status') ?></dt><dd><?= Ui::carStatusBadge((string) $car['status']) ?></dd>

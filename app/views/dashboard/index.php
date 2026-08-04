@@ -212,7 +212,7 @@ $todayLabel = date('d/m/Y');
 
                             <td data-label="<?= Lang::e('reservation.customer') ?>"><?= htmlspecialchars($row['customer_name'], ENT_QUOTES, 'UTF-8') ?></td>
 
-                            <td class="mono" data-label="<?= Lang::e('car.plate') ?>"><?= htmlspecialchars($row['license_plate'], ENT_QUOTES, 'UTF-8') ?></td>
+                            <td class="mono" data-label="<?= Lang::e('car.plate') ?>"><?= htmlspecialchars((string) ($row['license_plate'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
 
                             <td data-label="<?= Lang::e('reservation.return') ?>"><?= htmlspecialchars($row['return_date'] . ' ' . substr((string) $row['return_time'], 0, 5), ENT_QUOTES, 'UTF-8') ?></td>
 
@@ -250,7 +250,7 @@ $todayLabel = date('d/m/Y');
 
                             <td data-label="<?= Lang::e('car.model') ?>"><?= htmlspecialchars($car['brand'] . ' ' . $car['model'], ENT_QUOTES, 'UTF-8') ?></td>
 
-                            <td class="mono" data-label="<?= Lang::e('car.plate') ?>"><?= htmlspecialchars($car['license_plate'], ENT_QUOTES, 'UTF-8') ?></td>
+                            <td class="mono" data-label="<?= Lang::e('car.plate') ?>"><?= htmlspecialchars((string) ($car['license_plate'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
 
                             <td data-label="<?= Lang::e('car.color') ?>"><span class="swatch" style="background:<?= htmlspecialchars($car['color_hex'], ENT_QUOTES, 'UTF-8') ?>"></span> <?= htmlspecialchars($car['color'], ENT_QUOTES, 'UTF-8') ?></td>
 
