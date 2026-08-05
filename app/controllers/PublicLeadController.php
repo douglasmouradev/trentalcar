@@ -23,7 +23,8 @@ final class PublicLeadController
 
         $name = trim((string) ($old['nome'] ?? ''));
         $email = trim((string) ($old['email'] ?? ''));
-        $phone = trim((string) ($old['telefone'] ?? ''));
+        $phoneCountry = trim((string) ($old['phone_country'] ?? ''));
+        $phoneNational = trim((string) ($old['telefone'] ?? ''));
         $local = trim((string) ($old['local'] ?? ''));
         $hotelNome = trim((string) ($old['hotel_nome'] ?? ''));
         $hotelNomeDevolucao = trim((string) ($old['hotel_nome_devolucao'] ?? ''));
@@ -35,6 +36,7 @@ final class PublicLeadController
         $old['mesmo_local'] = $mesmo;
         $old['hotel_nome'] = $hotelNome;
         $old['hotel_nome_devolucao'] = $hotelNomeDevolucao;
+        $old['phone_country'] = $phoneCountry;
 
         if ($name === '' || strlen($name) > 150) {
             $errors[] = Lang::get('landing.error_name');
@@ -42,7 +44,8 @@ final class PublicLeadController
         if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = Lang::get('landing.error_email');
         }
-        if ($phone === '' || strlen($phone) > 30) {
+        $phone = LeadPhoneCountries::compose($phoneCountry, $phoneNational) ?? '';
+        if ($phone === '') {
             $errors[] = Lang::get('landing.error_phone');
         }
         if ($local === '' || !LeadPickupOptions::isValid($local)) {
@@ -148,6 +151,7 @@ final class PublicLeadController
         return [
             'nome' => trim((string) ($_POST['nome'] ?? $_POST['full_name'] ?? '')),
             'email' => trim((string) ($_POST['email'] ?? '')),
+            'phone_country' => trim((string) ($_POST['phone_country'] ?? LeadPhoneCountries::defaultIso())),
             'telefone' => trim((string) ($_POST['telefone'] ?? $_POST['phone'] ?? '')),
             'local' => trim((string) ($_POST['local'] ?? '')),
             'hotel_nome' => trim((string) ($_POST['hotel_nome'] ?? '')),

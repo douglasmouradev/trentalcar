@@ -761,6 +761,31 @@ a:hover {
   box-shadow: 0 0 0 4px var(--chrome-glow);
 }
 
+.lp-phone-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.lp-phone-country {
+  flex: 0 0 auto;
+  width: min(44%, 10rem);
+  min-width: 7.5rem;
+}
+
+.lp-phone-number {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.lp-input--country {
+  padding-left: 0.65rem;
+  padding-right: 1.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
 .lp-same-return {
   display: flex;
   align-items: center;

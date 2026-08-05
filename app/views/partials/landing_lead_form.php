@@ -21,6 +21,10 @@ $hotelSelected = LeadPickupOptions::isHotel((string) ($leadOld['local'] ?? ''));
 $mesmoChecked = !isset($leadOld['mesmo_local']) || (string) ($leadOld['mesmo_local'] ?? '1') === '1';
 $hotelReturnSelected = !$mesmoChecked && LeadPickupOptions::isHotel((string) ($leadOld['local_devolucao'] ?? ''));
 $hasCar = $carId > 0 && $carLabel !== '';
+$phoneCountry = (string) ($leadOld['phone_country'] ?? LeadPhoneCountries::defaultIso());
+if (!LeadPhoneCountries::isValid($phoneCountry)) {
+    $phoneCountry = LeadPhoneCountries::defaultIso();
+}
 ?>
 <div class="lp-form-errors" id="lead-form-errors" role="alert" <?= $leadErrors === [] ? 'hidden' : '' ?>>
   <?php if ($leadErrors !== []): ?>
@@ -87,10 +91,27 @@ $hasCar = $carId > 0 && $carLabel !== '';
         <span class="lp-label"><?= Lang::e('landing.form_email') ?></span>
         <input class="lp-input" type="email" name="email" maxlength="180" autocomplete="email" required value="<?= htmlspecialchars((string) ($leadOld['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
       </label>
-      <label class="lp-field">
-        <span class="lp-label"><?= Lang::e('landing.form_phone') ?></span>
-        <input class="lp-input" type="tel" name="telefone" maxlength="30" autocomplete="tel" required value="<?= htmlspecialchars((string) ($leadOld['telefone'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-      </label>
+      <div class="lp-field">
+        <span class="lp-label" id="lead-phone-label"><?= Lang::e('landing.form_phone') ?></span>
+        <div class="lp-phone-row" role="group" aria-labelledby="lead-phone-label">
+          <label class="lp-phone-country" for="lead-phone-country">
+            <span class="visually-hidden"><?= Lang::e('landing.form_phone_country') ?></span>
+            <select class="lp-input lp-input--country" name="phone_country" id="lead-phone-country" required>
+              <?php foreach (LeadPhoneCountries::choices() as $c): ?>
+                <option value="<?= htmlspecialchars($c['iso'], ENT_QUOTES, 'UTF-8') ?>"
+                        data-dial="<?= htmlspecialchars($c['dial'], ENT_QUOTES, 'UTF-8') ?>"
+                        <?= $phoneCountry === $c['iso'] ? 'selected' : '' ?>><?= htmlspecialchars($c['label'], ENT_QUOTES, 'UTF-8') ?></option>
+              <?php endforeach; ?>
+            </select>
+          </label>
+          <label class="lp-phone-number" for="lead-telefone">
+            <span class="visually-hidden"><?= Lang::e('landing.form_phone') ?></span>
+            <input class="lp-input" type="tel" name="telefone" id="lead-telefone" maxlength="20" inputmode="tel" autocomplete="tel-national" required
+                   placeholder="<?= Lang::e('landing.form_phone_ph') ?>"
+                   value="<?= htmlspecialchars((string) ($leadOld['telefone'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+          </label>
+        </div>
+      </div>
     </div>
   </fieldset>
   <fieldset class="lp-booking-section">
