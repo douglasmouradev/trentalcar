@@ -417,7 +417,7 @@ return [
     'landing.diff_5' => 'SunPass included',
     'landing.diff_6' => '100% Portuguese-speaking support',
     'landing.diff_7' => 'Flexible hours',
-    'landing.diff_8' => 'We serve Miami, Orlando and FLL',
+    'landing.diff_8' => 'We serve Miami and Orlando',
     'landing.diff_9' => 'Video call support',
     'landing.diff_10' => 'WhatsApp support',
     'landing.diff_11' => 'In-house workshop',

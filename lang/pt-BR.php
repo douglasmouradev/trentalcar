@@ -414,7 +414,7 @@ return [
     'landing.diff_5' => 'SunPass incluso',
     'landing.diff_6' => 'Atendimento 100% em português',
     'landing.diff_7' => 'Flexibilidade nos horários',
-    'landing.diff_8' => 'Atendemos em Miami, Orlando e FLL',
+    'landing.diff_8' => 'Atendemos em Miami e Orlando',
     'landing.diff_9' => 'Atendimento por videochamada',
     'landing.diff_10' => 'Suporte via WhatsApp',
     'landing.diff_11' => 'Oficina própria',
