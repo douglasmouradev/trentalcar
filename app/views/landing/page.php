@@ -93,13 +93,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
   </div>
 
   <main id="conteudo">
-    <?php if (($lead_banner ?? null) === 'ok'): ?>
-      <p class="lp-lead-banner lp-lead-banner--ok" role="status"><?= Lang::e('landing.lead_ok', ['response' => Contact::responseTime()]) ?>
-        <?php if (!empty($leadWhatsappUrl)): ?>
-          <a class="btn btn-sm btn-secondary" href="<?= htmlspecialchars((string) $leadWhatsappUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener"><?= Lang::e('landing.lead_whatsapp') ?></a>
-        <?php endif; ?>
-      </p>
-    <?php elseif (($lead_banner ?? null) === 'limite'): ?>
+    <?php if (($lead_banner ?? null) === 'limite'): ?>
       <p class="lp-lead-banner lp-lead-banner--warn" role="alert"><?= Lang::e('landing.lead_limite', ['phone' => Contact::phoneDisplay()]) ?></p>
     <?php elseif (($lead_banner ?? null) === 'erro'): ?>
       <p class="lp-lead-banner lp-lead-banner--warn" role="alert"><?= Lang::e('landing.lead_erro') ?></p>
@@ -137,16 +131,25 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
         </div>
       </div>
       <div class="lp-booking-wrap" id="reserva">
-        <?php
-        View::partial('partials/landing_lead_form', [
-            'asset' => $asset,
-            'leadOld' => $leadOld ?? [],
-            'leadErrors' => $leadErrors ?? [],
-            'selectedCar' => $selectedCar ?? null,
-            'formAction' => '/lead',
-            'returnPath' => '/',
-        ]);
-        ?>
+        <?php if (($lead_banner ?? null) === 'ok'): ?>
+          <?php
+          View::partial('partials/landing_lead_success', [
+              'asset' => $asset,
+              'leadWhatsappUrl' => $leadWhatsappUrl ?? null,
+          ]);
+          ?>
+        <?php else: ?>
+          <?php
+          View::partial('partials/landing_lead_form', [
+              'asset' => $asset,
+              'leadOld' => $leadOld ?? [],
+              'leadErrors' => $leadErrors ?? [],
+              'selectedCar' => $selectedCar ?? null,
+              'formAction' => '/lead',
+              'returnPath' => '/',
+          ]);
+          ?>
+        <?php endif; ?>
       </div>
     </section>
 

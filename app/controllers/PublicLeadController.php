@@ -142,7 +142,7 @@ final class PublicLeadController
         );
 
         LeadRateLimiter::hit();
-        Redirect::toUrl($returnUrl . '?lead=1#reserva');
+        Redirect::toUrl($returnUrl . '?lead=1#lead-success');
     }
 
     /** @return array<string, mixed> */

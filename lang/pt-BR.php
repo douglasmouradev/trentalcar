@@ -283,6 +283,9 @@ return [
 
     'landing.lead_hint' => 'Envie o pedido — nossa equipe confirma disponibilidade e valor antes de fechar. Isto não garante reserva automática.',
     'landing.lead_ok' => 'Pedido recebido. Respondemos em até :response por WhatsApp ou e-mail com disponibilidade e valor.',
+    'landing.lead_success_title' => 'Solicitação enviada',
+    'landing.lead_success_text' => 'Recebemos o seu pedido. Nossa equipe responde em até :response por WhatsApp ou e-mail com disponibilidade e valor.',
+    'landing.lead_success_home' => 'Voltar ao início',
     'landing.lead_limite' => 'Muitos pedidos desta rede. Ligue :phone ou use o WhatsApp.',
     'landing.lead_erro' => 'Não foi possível enviar. Confira os campos e tente de novo.',
 

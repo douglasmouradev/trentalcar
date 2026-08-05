@@ -61,6 +61,8 @@ final class BookingController
 
         $selectedCarId = (int) ($leadOld['car_id'] ?? $carId);
         $selectedCar = $selectedCarId > 0 ? Car::find($selectedCarId) : null;
+        $leadWhatsappUrl = $_SESSION['lead_whatsapp_url'] ?? null;
+        unset($_SESSION['lead_whatsapp_url']);
 
         View::render('booking/index', [
             'title' => Lang::get('booking.title'),
@@ -74,5 +76,7 @@ final class BookingController
             'lead_banner' => $leadBanner,
             'leadOld' => $leadOld,
             'leadErrors' => $leadErrors,
-        ], 'bare');    }
+            'leadWhatsappUrl' => $leadWhatsappUrl,
+        ], 'bare');
+    }
 }

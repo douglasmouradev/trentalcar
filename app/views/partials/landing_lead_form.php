@@ -110,6 +110,7 @@ if (!LeadPhoneCountries::isValid($phoneCountry)) {
                     aria-haspopup="listbox" aria-expanded="false" aria-controls="lead-phone-menu"
                     aria-label="<?= Lang::e('landing.form_phone_country') ?>">
               <span class="lp-phone-flag" id="lead-phone-flag" aria-hidden="true"><?= htmlspecialchars($phoneFlag, ENT_QUOTES, 'UTF-8') ?></span>
+              <span class="lp-phone-dial" id="lead-phone-dial" aria-hidden="true">+<?= htmlspecialchars((string) (($phoneSelected['dial'] ?? null) ?: '55'), ENT_QUOTES, 'UTF-8') ?></span>
               <span class="lp-phone-caret" aria-hidden="true"></span>
             </button>
             <input class="lp-input lp-phone-input" type="tel" name="telefone" id="lead-telefone" maxlength="22"

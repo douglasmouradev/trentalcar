@@ -146,8 +146,10 @@
         var opt = form.querySelector('.lp-phone-option[data-iso="' + draft.phone_country + '"]');
         if (opt) {
           var flagEl = form.querySelector('#lead-phone-flag');
+          var dialEl = form.querySelector('#lead-phone-dial');
           var phoneInput = form.querySelector('#lead-telefone');
           if (flagEl) flagEl.textContent = opt.getAttribute('data-flag') || '';
+          if (dialEl) dialEl.textContent = '+' + (opt.getAttribute('data-dial') || '');
           if (phoneInput) {
             var mask = opt.getAttribute('data-mask') || '';
             phoneInput.setAttribute('data-mask', mask);
@@ -457,7 +459,14 @@
   syncFilterHotel();
   refreshLeadSummary();
 
-  if (window.location.hash === '#reserva' || document.querySelector('.lp-lead-banner--ok')) {
+  if (window.location.hash === '#lead-success' || document.getElementById('lead-success')) {
+    var success = document.getElementById('lead-success') || document.getElementById('reserva');
+    if (success) {
+      setTimeout(function () {
+        success.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 120);
+    }
+  } else if (window.location.hash === '#reserva') {
     var anchor = document.getElementById('reserva');
     if (anchor) {
       setTimeout(function () {

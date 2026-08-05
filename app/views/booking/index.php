@@ -37,13 +37,24 @@ $hotelFilterSelected = LeadPickupOptions::isHotel($local);
 <?php View::partial('partials/public_header', ['asset' => $asset, 'locale' => $locale, 'activeNav' => 'booking']); ?>
 
 <main id="conteudo" class="lp-booking-page">
-    <?php if (($lead_banner ?? null) === 'ok'): ?>
-        <p class="lp-lead-banner lp-lead-banner--ok" role="status"><?= Lang::e('landing.lead_ok', ['response' => Contact::responseTime()]) ?></p>
-    <?php elseif (($lead_banner ?? null) === 'limite'): ?>
+    <?php if (($lead_banner ?? null) === 'limite'): ?>
         <p class="lp-lead-banner lp-lead-banner--warn" role="alert"><?= Lang::e('landing.lead_limite', ['phone' => Contact::phoneDisplay()]) ?></p>
     <?php elseif (($lead_banner ?? null) === 'erro'): ?>
         <p class="lp-lead-banner lp-lead-banner--warn" role="alert"><?= Lang::e('landing.lead_erro') ?></p>
     <?php endif; ?>
+
+    <?php if (($lead_banner ?? null) === 'ok'): ?>
+    <section class="lp-section lp-section--wide lp-booking-form-section" id="reserva" aria-labelledby="lead-success-title">
+        <div class="lp-booking-wrap lp-booking-wrap--page">
+            <?php
+            View::partial('partials/landing_lead_success', [
+                'asset' => $asset,
+                'leadWhatsappUrl' => $leadWhatsappUrl ?? null,
+            ]);
+            ?>
+        </div>
+    </section>
+    <?php else: ?>
 
     <section class="lp-section lp-section--wide">
         <header class="lp-section-head">
@@ -154,6 +165,7 @@ $hotelFilterSelected = LeadPickupOptions::isHotel($local);
             ?>
         </div>
     </section>
+    <?php endif; ?>
 </main>
 
 <?php View::partial('partials/public_footer', ['asset' => $asset]); ?>

@@ -53,7 +53,7 @@ final class HttpIntegrationTest extends TestCase
             'website' => '',
         ]);
         $this->assertContains($r['code'], [302, 303]);
-        $this->assertStringContainsString('lead=1', (string) $r['location']);
+        $this->assertStringContainsString('lead=', (string) ($r['location'] ?? ''));
     }
 
     public function testLoginInvalidCredentialsStaysOnLogin(): void

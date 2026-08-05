@@ -24,6 +24,7 @@
     var hidden = root.querySelector('#lead-phone-country') || root.querySelector('input[name="phone_country"]');
     var btn = root.querySelector('#lead-phone-flag-btn');
     var flagEl = root.querySelector('#lead-phone-flag');
+    var dialEl = root.querySelector('#lead-phone-dial');
     var menu = root.querySelector('#lead-phone-menu');
     var list = root.querySelector('#lead-phone-list');
     var search = root.querySelector('#lead-phone-search');
@@ -66,6 +67,7 @@
       });
       hidden.value = opt.getAttribute('data-iso') || '';
       if (flagEl) flagEl.textContent = opt.getAttribute('data-flag') || '';
+      if (dialEl) dialEl.textContent = '+' + (opt.getAttribute('data-dial') || '');
       var mask = opt.getAttribute('data-mask') || '';
       input.setAttribute('data-mask', mask);
       input.placeholder = mask;
