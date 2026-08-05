@@ -695,6 +695,18 @@ a:hover {
   margin: 0 auto;
 }
 
+.lp-lead-success-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1rem;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+}
+
 .lp-lead-success-text {
   margin: 0 0 1.25rem;
   font-size: 1.05rem;
