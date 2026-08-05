@@ -290,7 +290,8 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
   <?php View::partial('partials/cookie_notice'); ?>
   <script src="<?= htmlspecialchars(Asset::url('/js/lang-switcher.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
   <script src="<?= htmlspecialchars(Asset::url('/js/cookie-notice.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
-  <script src="<?= htmlspecialchars(Asset::url('/landing/js/site.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
-  <script src="<?= htmlspecialchars(Asset::url('/landing/js/lead-form.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars(Asset::url('/landing/js/phone-country.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars(Asset::url('/landing/js/site.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars(Asset::url('/landing/js/lead-form.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
 </body>
 </html>

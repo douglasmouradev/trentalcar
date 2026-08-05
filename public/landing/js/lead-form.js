@@ -116,7 +116,7 @@
         nome: fieldValue('input[name="nome"]'),
         email: fieldValue('input[name="email"]'),
         telefone: fieldValue('input[name="telefone"]'),
-        phone_country: fieldValue('select[name="phone_country"]'),
+        phone_country: fieldValue('#lead-phone-country') || fieldValue('input[name="phone_country"]'),
         local: fieldValue('#lead-local'),
         hotel_nome: fieldValue('#lead-hotel-nome'),
         inicio: fieldValue('input[name="inicio"]'),
@@ -140,7 +140,24 @@
       setFieldValue('input[name="nome"]', draft.nome);
       setFieldValue('input[name="email"]', draft.email);
       setFieldValue('input[name="telefone"]', draft.telefone);
-      setFieldValue('select[name="phone_country"]', draft.phone_country);
+      setFieldValue('#lead-phone-country', draft.phone_country);
+      setFieldValue('input[name="phone_country"]', draft.phone_country);
+      if (draft.phone_country) {
+        var opt = form.querySelector('.lp-phone-option[data-iso="' + draft.phone_country + '"]');
+        if (opt) {
+          var flagEl = form.querySelector('#lead-phone-flag');
+          var phoneInput = form.querySelector('#lead-telefone');
+          if (flagEl) flagEl.textContent = opt.getAttribute('data-flag') || '';
+          if (phoneInput) {
+            var mask = opt.getAttribute('data-mask') || '';
+            phoneInput.setAttribute('data-mask', mask);
+            phoneInput.placeholder = mask;
+          }
+          form.querySelectorAll('.lp-phone-option').forEach(function (o) {
+            o.classList.toggle('is-selected', o === opt);
+          });
+        }
+      }
       setFieldValue('#lead-local', draft.local);
       setFieldValue('#lead-hotel-nome', draft.hotel_nome);
       setFieldValue('input[name="inicio"]', draft.inicio);

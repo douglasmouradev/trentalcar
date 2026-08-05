@@ -95,23 +95,52 @@ if (!LeadPhoneCountries::isValid($phoneCountry)) {
       </label>
       <div class="lp-field">
         <span class="lp-label" id="lead-phone-label"><?= Lang::e('landing.form_phone') ?></span>
-        <div class="lp-phone-row" role="group" aria-labelledby="lead-phone-label">
-          <label class="lp-phone-country" for="lead-phone-country">
-            <span class="visually-hidden"><?= Lang::e('landing.form_phone_country') ?></span>
-            <select class="lp-input lp-input--country" name="phone_country" id="lead-phone-country" required>
-              <?php foreach (LeadPhoneCountries::choices() as $c): ?>
-                <option value="<?= htmlspecialchars($c['iso'], ENT_QUOTES, 'UTF-8') ?>"
-                        data-dial="<?= htmlspecialchars($c['dial'], ENT_QUOTES, 'UTF-8') ?>"
-                        <?= $phoneCountry === $c['iso'] ? 'selected' : '' ?>><?= htmlspecialchars($c['label'], ENT_QUOTES, 'UTF-8') ?></option>
-              <?php endforeach; ?>
-            </select>
-          </label>
-          <label class="lp-phone-number" for="lead-telefone">
-            <span class="visually-hidden"><?= Lang::e('landing.form_phone') ?></span>
-            <input class="lp-input" type="tel" name="telefone" id="lead-telefone" maxlength="20" inputmode="tel" autocomplete="tel-national" required
-                   placeholder="<?= Lang::e('landing.form_phone_ph') ?>"
+        <?php
+        $phoneChoices = LeadPhoneCountries::choices();
+        $phoneSelected = LeadPhoneCountries::find($phoneCountry) ?? LeadPhoneCountries::find(LeadPhoneCountries::defaultIso());
+        $phoneFlag = LeadPhoneCountries::flag($phoneCountry);
+        $phoneMask = (string) (($phoneSelected['mask'] ?? null) ?: '(00) 00000-0000');
+        ?>
+        <div class="lp-phone" data-phone-widget
+             data-search-ph="<?= htmlspecialchars(Lang::get('landing.form_phone_search'), ENT_QUOTES, 'UTF-8') ?>"
+             data-empty-ph="<?= htmlspecialchars(Lang::get('landing.form_phone_empty'), ENT_QUOTES, 'UTF-8') ?>">
+          <input type="hidden" name="phone_country" id="lead-phone-country" value="<?= htmlspecialchars($phoneCountry, ENT_QUOTES, 'UTF-8') ?>" required>
+          <div class="lp-phone-control">
+            <button type="button" class="lp-phone-flag-btn" id="lead-phone-flag-btn"
+                    aria-haspopup="listbox" aria-expanded="false" aria-controls="lead-phone-menu"
+                    aria-label="<?= Lang::e('landing.form_phone_country') ?>">
+              <span class="lp-phone-flag" id="lead-phone-flag" aria-hidden="true"><?= htmlspecialchars($phoneFlag, ENT_QUOTES, 'UTF-8') ?></span>
+              <span class="lp-phone-caret" aria-hidden="true"></span>
+            </button>
+            <input class="lp-input lp-phone-input" type="tel" name="telefone" id="lead-telefone" maxlength="22"
+                   inputmode="tel" autocomplete="tel-national" required
+                   data-mask="<?= htmlspecialchars($phoneMask, ENT_QUOTES, 'UTF-8') ?>"
+                   placeholder="<?= htmlspecialchars($phoneMask, ENT_QUOTES, 'UTF-8') ?>"
                    value="<?= htmlspecialchars((string) ($leadOld['telefone'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-          </label>
+          </div>
+          <div class="lp-phone-menu" id="lead-phone-menu" hidden role="listbox" aria-label="<?= Lang::e('landing.form_phone_country') ?>">
+            <div class="lp-phone-search-wrap">
+              <input type="search" class="lp-phone-search" id="lead-phone-search" autocomplete="off"
+                     placeholder="<?= Lang::e('landing.form_phone_search') ?>" aria-label="<?= Lang::e('landing.form_phone_search') ?>">
+            </div>
+            <ul class="lp-phone-list" id="lead-phone-list">
+              <?php foreach ($phoneChoices as $c): ?>
+                <li role="option"
+                    class="lp-phone-option<?= $phoneCountry === $c['iso'] ? ' is-selected' : '' ?>"
+                    data-iso="<?= htmlspecialchars($c['iso'], ENT_QUOTES, 'UTF-8') ?>"
+                    data-dial="<?= htmlspecialchars($c['dial'], ENT_QUOTES, 'UTF-8') ?>"
+                    data-mask="<?= htmlspecialchars($c['mask'], ENT_QUOTES, 'UTF-8') ?>"
+                    data-flag="<?= htmlspecialchars($c['flag'], ENT_QUOTES, 'UTF-8') ?>"
+                    data-search="<?= htmlspecialchars(mb_strtolower($c['name'] . ' +' . $c['dial'] . ' ' . $c['iso'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
+                    aria-selected="<?= $phoneCountry === $c['iso'] ? 'true' : 'false' ?>">
+                  <span class="lp-phone-option-flag" aria-hidden="true"><?= htmlspecialchars($c['flag'], ENT_QUOTES, 'UTF-8') ?></span>
+                  <span class="lp-phone-option-name"><?= htmlspecialchars($c['name'], ENT_QUOTES, 'UTF-8') ?></span>
+                  <span class="lp-phone-option-dial">+<?= htmlspecialchars($c['dial'], ENT_QUOTES, 'UTF-8') ?></span>
+                </li>
+              <?php endforeach; ?>
+            </ul>
+            <p class="lp-phone-empty" id="lead-phone-empty" hidden><?= Lang::e('landing.form_phone_empty') ?></p>
+          </div>
         </div>
       </div>
     </div>
