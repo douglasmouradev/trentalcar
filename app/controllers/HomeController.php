@@ -41,6 +41,14 @@ final class HomeController
         if (!empty($_GET['fim']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $_GET['fim'])) {
             $leadOld['fim'] = (string) $_GET['fim'];
         }
+        $localGet = trim((string) ($_GET['local'] ?? ''));
+        if ($localGet !== '' && LeadPickupOptions::isValid($localGet)) {
+            $leadOld['local'] = $localGet;
+        }
+        $hotelGet = trim((string) ($_GET['hotel_nome'] ?? ''));
+        if ($hotelGet !== '' && strlen($hotelGet) <= 120) {
+            $leadOld['hotel_nome'] = $hotelGet;
+        }
         if (!empty($_GET['car_id'])) {
             $leadOld['car_id'] = (int) $_GET['car_id'];
         }

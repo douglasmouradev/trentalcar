@@ -14,6 +14,8 @@ final class BookingController
         $carId = (int) ($_GET['car'] ?? 0);
         $inicio = trim((string) ($_GET['inicio'] ?? ''));
         $fim = trim((string) ($_GET['fim'] ?? ''));
+        $local = trim((string) ($_GET['local'] ?? ''));
+        $hotelNome = trim((string) ($_GET['hotel_nome'] ?? ''));
 
         $lead = (string) ($_GET['lead'] ?? '');
         $leadBanner = match ($lead) {
@@ -40,6 +42,12 @@ final class BookingController
         if ($fim !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $fim)) {
             $leadOld['fim'] = $fim;
         }
+        if ($local !== '' && LeadPickupOptions::isValid($local)) {
+            $leadOld['local'] = $local;
+        }
+        if ($hotelNome !== '' && strlen($hotelNome) <= 120) {
+            $leadOld['hotel_nome'] = $hotelNome;
+        }
         if ($carId > 0) {
             $leadOld['car_id'] = $carId;
         }
@@ -61,9 +69,10 @@ final class BookingController
             'selectedCar' => $selectedCar,
             'inicio' => $inicio,
             'fim' => $fim,
+            'local' => (string) ($leadOld['local'] ?? $local),
+            'hotelNome' => (string) ($leadOld['hotel_nome'] ?? $hotelNome),
             'lead_banner' => $leadBanner,
             'leadOld' => $leadOld,
             'leadErrors' => $leadErrors,
-        ], 'bare');
-    }
+        ], 'bare');    }
 }

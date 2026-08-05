@@ -141,6 +141,9 @@
       } else {
         setSelectedCar(id, String(label).trim(), rate);
       }
+      if (typeof window.syncLeadFilterToForm === 'function') {
+        window.syncLeadFilterToForm();
+      }
       document.querySelectorAll('.lp-car--selected').forEach(function (c) {
         c.classList.remove('lp-car--selected');
       });

@@ -1833,6 +1833,32 @@ a:hover {
   align-items: end;
 }
 
+/* No /reservar o filtro já pede local/datas — evita pedir de novo no formulário. */
+.lp-body--booking .lp-booking-grid--trip > :not(.lp-field--btn) {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.lp-body--booking .lp-booking-section:has(.lp-booking-grid--trip) > .lp-booking-section-title {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+}
+
+.lp-body--booking .lp-same-return,
+.lp-body--booking .lp-return-location {
+  display: none !important;
+}
+
 .lp-car--selected {
   outline: 2px solid var(--chrome);
   outline-offset: 2px;

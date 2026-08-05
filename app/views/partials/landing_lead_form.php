@@ -40,12 +40,14 @@ if (!LeadPhoneCountries::isValid($phoneCountry)) {
       data-error-date-order="<?= htmlspecialchars(Lang::get('landing.error_date_order'), ENT_QUOTES, 'UTF-8') ?>"
       data-error-date-required="<?= htmlspecialchars(Lang::get('landing.error_date_required'), ENT_QUOTES, 'UTF-8') ?>"
       data-error-hotel="<?= htmlspecialchars(Lang::get('landing.error_hotel'), ENT_QUOTES, 'UTF-8') ?>"
+      data-error-local="<?= htmlspecialchars(Lang::get('landing.error_local'), ENT_QUOTES, 'UTF-8') ?>"
       data-hotel-value="<?= htmlspecialchars(LeadPickupOptions::HOTEL, ENT_QUOTES, 'UTF-8') ?>"
       data-label-submitting="<?= htmlspecialchars(Lang::get('landing.form_submitting'), ENT_QUOTES, 'UTF-8') ?>"
       data-label-confirm="<?= htmlspecialchars(Lang::get('landing.form_confirm'), ENT_QUOTES, 'UTF-8') ?>"
       data-label-submit="<?= htmlspecialchars(Lang::get('landing.form_submit'), ENT_QUOTES, 'UTF-8') ?>"
       data-summary-days="<?= htmlspecialchars(Lang::get('landing.summary_days'), ENT_QUOTES, 'UTF-8') ?>"
-      data-summary-need-dates="<?= htmlspecialchars(Lang::get('landing.summary_need_dates'), ENT_QUOTES, 'UTF-8') ?>">
+      data-summary-need-dates="<?= htmlspecialchars(Lang::get('landing.summary_need_dates'), ENT_QUOTES, 'UTF-8') ?>"
+      data-search-url="<?= htmlspecialchars(Router::url('/reservar'), ENT_QUOTES, 'UTF-8') ?>">
   <?= Csrf::field() ?>
   <input type="hidden" name="_return" value="<?= htmlspecialchars($returnPath, ENT_QUOTES, 'UTF-8') ?>">
   <input type="text" name="website" value="" tabindex="-1" autocomplete="off" class="hp-field" aria-hidden="true">
@@ -116,7 +118,7 @@ if (!LeadPhoneCountries::isValid($phoneCountry)) {
   </fieldset>
   <fieldset class="lp-booking-section">
     <legend class="lp-booking-section-title"><?= Lang::e('landing.form_trip') ?></legend>
-    <div class="lp-booking-grid">
+    <div class="lp-booking-grid lp-booking-grid--trip">
       <div class="lp-field lp-field--grow lp-pickup-wrap">
         <label class="lp-field-inner" for="lead-local">
           <span class="lp-label"><?= Lang::e('landing.form_local_label') ?></span>

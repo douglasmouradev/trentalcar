@@ -4,6 +4,8 @@
 /** @var array<string,mixed>|null $selectedCar */
 /** @var string $inicio */
 /** @var string $fim */
+/** @var string $local */
+/** @var string $hotelNome */
 /** @var string|null $lead_banner */
 /** @var array<string,mixed> $leadOld */
 /** @var array<int,string> $leadErrors */
@@ -12,6 +14,9 @@ $appRoot = rtrim(Router::url('/'), '/');
 $locale = Lang::locale();
 $htmlLang = str_replace('_', '-', $locale);
 $today = date('Y-m-d');
+$local = $local ?? (string) ($leadOld['local'] ?? '');
+$hotelNome = $hotelNome ?? (string) ($leadOld['hotel_nome'] ?? '');
+$hotelFilterSelected = LeadPickupOptions::isHotel($local);
 ?>
 <!DOCTYPE html>
 <html lang="<?= htmlspecialchars($htmlLang, ENT_QUOTES, 'UTF-8') ?>" data-app-origin="<?= htmlspecialchars($appRoot, ENT_QUOTES, 'UTF-8') ?>">
@@ -49,6 +54,26 @@ $today = date('Y-m-d');
 
         <form class="lp-date-filter card" method="get" action="<?= $asset('/reservar') ?>" id="booking-date-filter">
             <div class="lp-booking-grid lp-booking-grid--filter">
+                <div class="lp-field lp-field--grow lp-pickup-wrap">
+                    <label class="lp-field-inner" for="filter-local">
+                        <span class="lp-label"><?= Lang::e('landing.form_local_label') ?></span>
+                        <select class="lp-input" name="local" id="filter-local" required>
+                            <option value="" disabled <?= $local === '' ? 'selected' : '' ?>><?= Lang::e('landing.form_local_ph') ?></option>
+                            <?php foreach (LeadPickupOptions::choices() as $opt): ?>
+                                <option value="<?= htmlspecialchars($opt['value'], ENT_QUOTES, 'UTF-8') ?>" <?= $local === $opt['value'] ? 'selected' : '' ?>><?= htmlspecialchars($opt['label'], ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                    <div class="lp-hotel-name<?= $hotelFilterSelected ? ' lp-hotel-name--visible' : '' ?>" id="lp-filter-hotel-name">
+                        <label class="lp-field-inner" for="filter-hotel-nome">
+                            <span class="lp-label"><?= Lang::e('landing.form_hotel_label') ?></span>
+                            <input class="lp-input" type="text" name="hotel_nome" id="filter-hotel-nome" maxlength="120"
+                                   placeholder="<?= Lang::e('landing.form_hotel_ph') ?>"
+                                   <?= $hotelFilterSelected ? '' : 'disabled' ?>
+                                   value="<?= htmlspecialchars($hotelNome, ENT_QUOTES, 'UTF-8') ?>">
+                        </label>
+                    </div>
+                </div>
                 <label class="lp-field">
                     <span class="lp-label"><?= Lang::e('landing.form_pickup') ?></span>
                     <input class="lp-input" type="date" name="inicio" value="<?= htmlspecialchars($inicio, ENT_QUOTES, 'UTF-8') ?>" min="<?= $today ?>" required>
