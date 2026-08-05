@@ -215,21 +215,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
       <p class="lp-fleet-empty muted" id="lp-fleet-filter-empty" hidden><?= Lang::e('landing.fleet_filter_empty') ?></p>
     </section>
 
-    <section class="lp-section lp-section--muted" id="vantagens" data-reveal>
-      <div class="lp-section--wide lp-split">
-        <header class="lp-section-head">
-          <span class="lp-section-eyebrow"><?= Lang::e('landing.nav_vantagens') ?></span>
-          <h2><?= Lang::e('landing.adv_title') ?></h2>
-          <p><?= Lang::e('landing.adv_lead') ?></p>
-        </header>
-        <ul class="lp-benefits">
-          <li><strong><?= Lang::e('landing.adv_1_title') ?></strong> — <?= Lang::e('landing.adv_1_desc') ?></li>
-          <li><strong><?= Lang::e('landing.adv_2_title') ?></strong> — <?= Lang::e('landing.adv_2_desc') ?></li>
-          <li><strong><?= Lang::e('landing.adv_3_title') ?></strong> — <?= Lang::e('landing.adv_3_desc') ?></li>
-          <li><strong><?= Lang::e('landing.adv_4_title') ?></strong> — <?= Lang::e('landing.adv_4_desc') ?></li>
-        </ul>
-      </div>
-    </section>
+    <?php View::partial('partials/landing_differentials'); ?>
 
     <section class="lp-section lp-section--wide" id="como-funciona" data-reveal>
       <header class="lp-section-head">
