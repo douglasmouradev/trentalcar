@@ -284,7 +284,7 @@ return [
     'landing.lead_hint' => 'We store this so the team can reply. It is not an automatic booking confirmation.',
     'landing.lead_ok' => 'Request received. We reply within :response via WhatsApp or email with availability and pricing.',
     'landing.lead_success_title' => 'Request sent',
-    'landing.lead_success_text' => 'We received your request. Our team replies within :response via WhatsApp or email with availability and pricing.',
+    'landing.lead_success_text' => 'We received your request. Questions? Here is our support channel:',
     'landing.lead_success_home' => 'Back to home',
     'landing.lead_limite' => 'Too many requests from this network. Call :phone or use WhatsApp.',
     'landing.lead_erro' => 'We could not save your request. Check the fields and try again.',

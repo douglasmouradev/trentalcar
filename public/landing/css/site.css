@@ -695,32 +695,12 @@ a:hover {
   margin: 0 auto;
 }
 
-.lp-lead-success-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 4rem;
-  height: 4rem;
-  margin: 0 auto 1rem;
-  border-radius: 999px;
-  background: #ecfdf5;
-  color: #047857;
-}
-
-.lp-lead-success-title {
-  margin: 0 0 0.65rem;
-  font-family: var(--font-sans);
-  font-size: clamp(1.5rem, 3vw, 1.85rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-}
-
 .lp-lead-success-text {
-  margin: 0 0 1.5rem;
-  font-size: 1rem;
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
   line-height: 1.55;
-  color: var(--ink-soft);
+  color: var(--ink);
+  font-weight: 500;
 }
 
 .lp-lead-success-actions {
