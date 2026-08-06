@@ -52,7 +52,7 @@ final class BookingController
             $leadOld['car_id'] = $carId;
         }
 
-        $cars = Car::forPublicLanding(24);
+        $cars = Car::forPublicLanding();
         if ($inicio !== '' && $fim !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $inicio) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $fim)) {
             $cars = array_values(array_filter($cars, static fn (array $c): bool =>
                 Car::isAvailableForDates((int) $c['id'], $inicio, $fim) || (int) $c['id'] === $carId

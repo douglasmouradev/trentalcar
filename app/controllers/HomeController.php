@@ -59,7 +59,7 @@ final class HomeController
         View::render('landing.page', [
             'title' => Lang::get('landing.meta_title'),
             'lead_banner' => $leadBanner,
-            'fleetCars' => Car::forPublicLanding(12),
+            'fleetCars' => Car::forPublicLanding(),
             'leadOld' => $leadOld,
             'leadErrors' => $leadErrors,
             'selectedCar' => $selectedCar,

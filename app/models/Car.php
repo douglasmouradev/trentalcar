@@ -210,14 +210,16 @@ final class Car
     }
 
     /** @return array<int, array<string, mixed>> */
-    public static function forPublicLanding(int $limit = 12): array
+    public static function forPublicLanding(?int $limit = null): array
     {
         $deleted = self::supportsSoftDelete() ? ' AND c.deleted_at IS NULL' : '';
         $sql = "SELECT c.*, l.name AS location_name FROM cars c
                 LEFT JOIN locations l ON l.id = c.location_id
                 WHERE c.status IN ('available','rented'){$deleted}
-                ORDER BY c.daily_rate ASC, c.brand, c.model
-                LIMIT " . (int) $limit;
+                ORDER BY c.daily_rate ASC, c.brand, c.model";
+        if ($limit !== null && $limit > 0) {
+            $sql .= ' LIMIT ' . (int) $limit;
+        }
         return Database::query($sql)->fetchAll();
     }
 
