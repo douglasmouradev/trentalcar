@@ -194,7 +194,7 @@ $ogLocale = $locale === 'en-US' ? 'en_US' : 'pt_BR';
       </div>
     </section>
 
-    <section class="lp-section lp-section--wide" id="frota" data-reveal>
+    <section class="lp-section lp-section--wide" id="frota">
       <header class="lp-section-head">
         <span class="lp-section-eyebrow"><?= Lang::e('landing.nav_frota') ?></span>
         <h2><?= Lang::e('landing.fleet_title') ?></h2>

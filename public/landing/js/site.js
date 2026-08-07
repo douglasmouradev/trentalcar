@@ -205,19 +205,33 @@
   }
 
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    var io = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (e) {
-          if (e.isIntersecting) {
-            e.target.classList.add('is-inview');
-          }
+    var revealEls = document.querySelectorAll('[data-reveal]');
+    if ('IntersectionObserver' in window && revealEls.length) {
+      var io = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) {
+              e.target.classList.add('is-inview');
+              io.unobserve(e.target);
+            }
+          });
+        },
+        { rootMargin: '0px 0px -5% 0px', threshold: 0.05 }
+      );
+      revealEls.forEach(function (el) {
+        io.observe(el);
+      });
+      // Fallback: se o observer não disparar (iOS / viewport estranho), mostra tudo.
+      setTimeout(function () {
+        revealEls.forEach(function (el) {
+          el.classList.add('is-inview');
         });
-      },
-      { rootMargin: '0px 0px -8% 0px', threshold: 0.08 }
-    );
-    document.querySelectorAll('[data-reveal]').forEach(function (el) {
-      io.observe(el);
-    });
+      }, 1200);
+    } else {
+      revealEls.forEach(function (el) {
+        el.classList.add('is-inview');
+      });
+    }
   } else {
     document.querySelectorAll('[data-reveal]').forEach(function (el) {
       el.classList.add('is-inview');
