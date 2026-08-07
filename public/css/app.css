@@ -1676,6 +1676,12 @@ select.input {
   display: none !important;
 }
 
+/* Fallback: mostra nome do hotel sem depender do JS em cache */
+.field:has(#pickup_location_id option:checked[data-is-hotel="1"]) #pickup_hotel_wrap,
+.field:has(#return_location_id option:checked[data-is-hotel="1"]) #return_hotel_wrap {
+  display: block !important;
+}
+
 .actions {
   white-space: nowrap;
 }

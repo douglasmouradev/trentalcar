@@ -34,10 +34,16 @@
 
   const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
+  function isHotelOption(opt) {
+    if (!opt) return false;
+    if (opt.getAttribute('data-is-hotel') === '1') return true;
+    return /hotel/i.test(String(opt.textContent || '').trim());
+  }
+
   function toggleHotelField(selectEl, wrapEl, inputEl) {
     if (!selectEl || !wrapEl || !inputEl) return;
-    const opt = selectEl.selectedOptions?.[0];
-    const isHotel = opt?.getAttribute('data-is-hotel') === '1';
+    const opt = selectEl.options[selectEl.selectedIndex] || selectEl.selectedOptions?.[0];
+    const isHotel = isHotelOption(opt);
     wrapEl.classList.toggle('hidden', !isHotel);
     inputEl.disabled = !isHotel;
     inputEl.required = isHotel;
@@ -49,6 +55,11 @@
   function syncHotelFields() {
     toggleHotelField(pickupLoc, pickupHotelWrap, pickupHotel);
     toggleHotelField(returnLoc, returnHotelWrap, returnHotel);
+  }
+
+  function parseNum(v) {
+    const n = parseFloat(String(v ?? '0').trim().replace(/\s/g, '').replace(',', '.'));
+    return Number.isFinite(n) ? n : 0;
   }
 
   function fmtMoney(n) {
@@ -65,8 +76,7 @@
     const wrap = input.closest('.field') || input.parentElement;
     const out = wrap ? wrap.querySelector('[data-usd-convert-out]') : null;
     if (!out) return;
-    const n = parseFloat(String(input.value || '0').replace(',', '.'));
-    out.textContent = fmtMoney(Number.isFinite(n) && n > 0 ? n : 0);
+    out.textContent = fmtMoney(Math.max(0, parseNum(input.value)));
   }
 
   /** Diárias por períodos de 24h (mínimo 1). */
@@ -82,8 +92,8 @@
   }
 
   function recalc() {
-    const rate = parseFloat(daily?.value || '0') || 0;
-    const disc = parseFloat(discount?.value || '0') || 0;
+    const rate = Math.max(0, parseNum(daily?.value));
+    const disc = Math.max(0, parseNum(discount?.value));
     const days = rentalDays(
       pickupD?.value || '',
       pickupT?.value || '',
@@ -100,10 +110,11 @@
   }
 
   function syncCar() {
-    const opt = carSel?.selectedOptions?.[0];
+    const opt = carSel?.options?.[carSel.selectedIndex] || carSel?.selectedOptions?.[0];
     if (!opt || !daily) return;
     const rate = opt.getAttribute('data-rate');
-    if (rate && !form.dataset.rateTouched) {
+    const touched = form.dataset.rateTouched === '1';
+    if (rate != null && rate !== '' && !touched) {
       daily.value = rate;
     }
     if (preview) {
@@ -175,13 +186,17 @@
     scheduleConflict();
   });
   discount?.addEventListener('input', recalc);
-  [pickupD, returnD, pickupT, returnT].forEach((el) => el?.addEventListener('change', () => {
+  [pickupD, returnD, pickupT, returnT].forEach((el) => {
+    el?.addEventListener('change', onPeriodChange);
+    el?.addEventListener('input', onPeriodChange);
+  });
+  function onPeriodChange() {
     if (pickupD && returnD && pickupD.value && returnD.value && returnD.value < pickupD.value) {
       returnD.value = pickupD.value;
     }
     recalc();
     scheduleConflict();
-  }));
+  }
   pickupLoc?.addEventListener('change', syncHotelFields);
   returnLoc?.addEventListener('change', syncHotelFields);
 

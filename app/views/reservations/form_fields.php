@@ -104,18 +104,24 @@ $defaultRate = $rv['daily_rate'] ?? ($cars[0]['daily_rate'] ?? 0);
                     <option value="" disabled selected><?= Lang::e('reservation.location_empty') ?></option>
                 <?php else: ?>
                     <?php foreach ($locations as $loc): ?>
-                        <?php $isHotel = LeadPickupOptions::isHotel((string) ($loc['name'] ?? '')); ?>
+                        <?php
+                        $locName = (string) ($loc['name'] ?? '');
+                        $isHotel = LeadPickupOptions::isHotel($locName)
+                            || str_contains(mb_strtolower($locName, 'UTF-8'), 'hotel');
+                        ?>
                         <option value="<?= (int) $loc['id'] ?>"
                             data-is-hotel="<?= $isHotel ? '1' : '0' ?>"
-                            <?= ((int) ($rv['pickup_location_id'] ?? 0) === (int) $loc['id']) ? 'selected' : '' ?>><?= htmlspecialchars($loc['name'], ENT_QUOTES, 'UTF-8') ?></option>
+                            <?= ((int) ($rv['pickup_location_id'] ?? 0) === (int) $loc['id']) ? 'selected' : '' ?>><?= htmlspecialchars($locName, ENT_QUOTES, 'UTF-8') ?></option>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </select>
             <?php
             $pickupHotelVisible = false;
             foreach ($locations as $loc) {
-                if ((int) ($rv['pickup_location_id'] ?? 0) === (int) ($loc['id'] ?? 0)
-                    && LeadPickupOptions::isHotel((string) ($loc['name'] ?? ''))) {
+                $locName = (string) ($loc['name'] ?? '');
+                $isHotelLoc = LeadPickupOptions::isHotel($locName)
+                    || str_contains(mb_strtolower($locName, 'UTF-8'), 'hotel');
+                if ((int) ($rv['pickup_location_id'] ?? 0) === (int) ($loc['id'] ?? 0) && $isHotelLoc) {
                     $pickupHotelVisible = true;
                     break;
                 }
@@ -136,18 +142,24 @@ $defaultRate = $rv['daily_rate'] ?? ($cars[0]['daily_rate'] ?? 0);
                     <option value="" disabled selected><?= Lang::e('reservation.location_empty') ?></option>
                 <?php else: ?>
                     <?php foreach ($locations as $loc): ?>
-                        <?php $isHotel = LeadPickupOptions::isHotel((string) ($loc['name'] ?? '')); ?>
+                        <?php
+                        $locName = (string) ($loc['name'] ?? '');
+                        $isHotel = LeadPickupOptions::isHotel($locName)
+                            || str_contains(mb_strtolower($locName, 'UTF-8'), 'hotel');
+                        ?>
                         <option value="<?= (int) $loc['id'] ?>"
                             data-is-hotel="<?= $isHotel ? '1' : '0' ?>"
-                            <?= ((int) ($rv['return_location_id'] ?? 0) === (int) $loc['id']) ? 'selected' : '' ?>><?= htmlspecialchars($loc['name'], ENT_QUOTES, 'UTF-8') ?></option>
+                            <?= ((int) ($rv['return_location_id'] ?? 0) === (int) $loc['id']) ? 'selected' : '' ?>><?= htmlspecialchars($locName, ENT_QUOTES, 'UTF-8') ?></option>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </select>
             <?php
             $returnHotelVisible = false;
             foreach ($locations as $loc) {
-                if ((int) ($rv['return_location_id'] ?? 0) === (int) ($loc['id'] ?? 0)
-                    && LeadPickupOptions::isHotel((string) ($loc['name'] ?? ''))) {
+                $locName = (string) ($loc['name'] ?? '');
+                $isHotelLoc = LeadPickupOptions::isHotel($locName)
+                    || str_contains(mb_strtolower($locName, 'UTF-8'), 'hotel');
+                if ((int) ($rv['return_location_id'] ?? 0) === (int) ($loc['id'] ?? 0) && $isHotelLoc) {
                     $returnHotelVisible = true;
                     break;
                 }
@@ -166,6 +178,34 @@ $defaultRate = $rv['daily_rate'] ?? ($cars[0]['daily_rate'] ?? 0);
         <p class="muted form-section-hint mt"><?= Lang::e('reservation.location_empty_hint') ?> <a href="<?= Router::url('/locations/create') ?>"><?= Lang::e('location.create') ?></a></p>
     <?php endif; ?>
 </fieldset>
+<script>
+(() => {
+  const isHotelOpt = (opt) => {
+    if (!opt) return false;
+    if (opt.getAttribute('data-is-hotel') === '1') return true;
+    return /hotel/i.test(String(opt.textContent || '').trim());
+  };
+  const toggle = (selId, wrapId, inputId) => {
+    const sel = document.getElementById(selId);
+    const wrap = document.getElementById(wrapId);
+    const input = document.getElementById(inputId);
+    if (!sel || !wrap || !input) return;
+    const opt = sel.options[sel.selectedIndex];
+    const on = isHotelOpt(opt);
+    wrap.classList.toggle('hidden', !on);
+    input.disabled = !on;
+    input.required = on;
+    if (!on) input.value = '';
+  };
+  const sync = () => {
+    toggle('pickup_location_id', 'pickup_hotel_wrap', 'pickup_hotel_name');
+    toggle('return_location_id', 'return_hotel_wrap', 'return_hotel_name');
+  };
+  document.getElementById('pickup_location_id')?.addEventListener('change', sync);
+  document.getElementById('return_location_id')?.addEventListener('change', sync);
+  sync();
+})();
+</script>
 
 <fieldset class="form-section">
     <legend class="form-section-title"><?= Lang::e('reservation.section_payment') ?></legend>

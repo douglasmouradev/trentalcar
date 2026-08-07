@@ -54,4 +54,4 @@
     ]); ?>
     <button class="btn btn-primary" type="submit" id="resSubmitBtn"><?= Lang::e('actions.save') ?></button>
 </form>
-<script src="<?= htmlspecialchars(Router::url('/js/reservation-form.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars(Asset::url('/js/reservation-form.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>

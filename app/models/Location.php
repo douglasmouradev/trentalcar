@@ -103,7 +103,12 @@ final class Location
     public static function isHotelLocation(int $id): bool
     {
         $loc = self::find($id);
-        return $loc !== null && LeadPickupOptions::isHotel((string) ($loc['name'] ?? ''));
+        if ($loc === null) {
+            return false;
+        }
+        $name = (string) ($loc['name'] ?? '');
+        return LeadPickupOptions::isHotel($name)
+            || str_contains(mb_strtolower($name, 'UTF-8'), 'hotel');
     }
 
     public static function findActive(int $id): bool
