@@ -32,7 +32,21 @@
   const pickupHotel = document.getElementById('pickup_hotel_name');
   const returnHotel = document.getElementById('return_hotel_name');
 
+  const dailyHint = document.getElementById('daily_rate_hint');
+
   const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+  function loadCarRates() {
+    const el = document.getElementById('carRatesJson');
+    if (!el) return {};
+    try {
+      const data = JSON.parse(el.textContent || '{}');
+      return data && typeof data === 'object' ? data : {};
+    } catch {
+      return {};
+    }
+  }
+  const carRates = loadCarRates();
 
   function isHotelOption(opt) {
     if (!opt) return false;
@@ -92,9 +106,13 @@
   }
 
   function carRateFromSelect() {
+    const id = String(carSel?.value || '');
+    if (id && Object.prototype.hasOwnProperty.call(carRates, id)) {
+      return Math.max(0, parseNum(carRates[id]));
+    }
     const opt = carSel?.options?.[carSel.selectedIndex] || carSel?.selectedOptions?.[0];
     if (!opt) return null;
-    const raw = opt.getAttribute('data-rate');
+    const raw = opt.getAttribute('data-rate') ?? opt.dataset?.rate;
     if (raw == null || raw === '') return null;
     return Math.max(0, parseNum(raw));
   }
@@ -105,17 +123,19 @@
     if (rate == null) return;
     const touched = form.dataset.rateTouched === '1';
     const current = parseNum(daily.value);
-    // Preenche diária do veículo se vazia/zero, ou ao trocar o carro / forçar
+    // No calendário / troca de carro: aplica diária do veículo (exceto se o usuário digitou valor > 0)
     if (force || !touched || daily.value === '' || current <= 0) {
       daily.value = rate.toFixed(2);
-      if (force || current <= 0 || daily.value === '') {
+      if (force || current <= 0) {
         form.dataset.rateTouched = '';
       }
+    }
+    if (dailyHint) {
+      dailyHint.classList.toggle('hidden', parseNum(daily.value) > 0);
     }
   }
 
   function recalc() {
-    applyCarRate(false);
     const rate = Math.max(0, parseNum(daily?.value));
     const disc = Math.max(0, parseNum(discount?.value));
     const days = rentalDays(
@@ -131,10 +151,14 @@
     }
     if (totalEl) totalEl.textContent = fmtMoney(total);
     refreshUsdConvert(daily);
+    if (dailyHint) {
+      dailyHint.classList.toggle('hidden', rate > 0);
+    }
   }
 
   function syncCar() {
     const opt = carSel?.options?.[carSel.selectedIndex] || carSel?.selectedOptions?.[0];
+    form.dataset.rateTouched = '';
     applyCarRate(true);
     if (preview && opt) {
       preview.textContent = opt.getAttribute('data-label') || '';
@@ -216,8 +240,8 @@
     if (pickupD && returnD && pickupD.value && returnD.value && returnD.value < pickupD.value) {
       returnD.value = pickupD.value;
     }
-    // Ao mudar datas no calendário: garante diária do veículo e recalcula total
-    applyCarRate(false);
+    // Ao mudar datas: reaplica diária do veículo e recalcula total
+    applyCarRate(true);
     recalc();
     scheduleConflict();
   }

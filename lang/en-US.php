@@ -178,6 +178,7 @@ return [
     'reservation.car_unavailable' => 'Vehicle unavailable for booking.',
     'reservation.invalid_location' => 'Invalid pickup/return location.',
     'reservation.hotel_required' => 'Enter the hotel name for hotel pickup/delivery.',
+    'reservation.daily_rate_missing' => 'This vehicle has a $0 daily rate. Edit the vehicle and set the daily rate so the total calculates automatically.',
     'reservation.cancel_btn' => 'Cancel reservation',
     'reservation.timeline' => 'Reservation progress',
     'reservation.voucher' => 'Voucher',

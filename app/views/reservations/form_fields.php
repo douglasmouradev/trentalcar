@@ -21,21 +21,25 @@ $locations = $locations ?? [];
 <?php
 $slots = TimeHelper::slots30();
 $today = date('Y-m-d');
-$selectedCarRate = null;
+$carRatesMap = [];
 foreach ($cars as $car) {
-    if ((int) ($rv['car_id'] ?? 0) === (int) ($car['id'] ?? 0)) {
-        $selectedCarRate = (float) ($car['daily_rate'] ?? 0);
-        break;
-    }
+    $carRatesMap[(string) (int) ($car['id'] ?? 0)] = round((float) ($car['daily_rate'] ?? 0), 2);
 }
-if ($selectedCarRate === null && $cars !== []) {
-    $selectedCarRate = (float) ($cars[0]['daily_rate'] ?? 0);
-}
+$selectedCarId = (int) ($rv['car_id'] ?? ($cars[0]['id'] ?? 0));
+$carRate = (float) ($carRatesMap[(string) $selectedCarId] ?? 0);
 $rawRate = $rv['daily_rate'] ?? null;
-$defaultRate = ($rawRate !== null && $rawRate !== '')
+$fromDraft = ($rawRate !== null && $rawRate !== '')
     ? (float) str_replace(',', '.', (string) $rawRate)
-    : (float) ($selectedCarRate ?? 0);
+    : null;
+// Prefer diária do veículo quando rascunho/zero; só mantém valor do draft se > 0
+$defaultRate = ($fromDraft !== null && $fromDraft > 0) ? $fromDraft : $carRate;
 $defaultRateDisplay = number_format($defaultRate, 2, '.', '');
+$pickupDateInit = (string) ($rv['pickup_date'] ?? $today);
+$returnDateInit = (string) ($rv['return_date'] ?? $today);
+$pickupTimeInit = (string) ($rv['pickup_time'] ?? '09:00:00');
+$returnTimeInit = (string) ($rv['return_time'] ?? '18:00:00');
+$daysInit = PricingHelper::rentalDays($pickupDateInit, $pickupTimeInit, $returnDateInit, $returnTimeInit);
+$totalInit = max(0.0, round($defaultRate * $daysInit - (float) ($rv['discount'] ?? 0), 2));
 ?>
 
 <fieldset class="form-section">
@@ -66,18 +70,23 @@ $defaultRateDisplay = number_format($defaultRate, 2, '.', '');
                     <?php
                     $plate = trim((string) ($car['license_plate'] ?? ''));
                     $carLabel = trim((string) ($car['brand'] ?? '') . ' ' . (string) ($car['model'] ?? ''));
-                    $carOption = $plate !== '' ? ($carLabel . ' — ' . $plate) : $carLabel;
-                    $carPreview = $plate !== '' ? ($carLabel . ' (' . $plate . ')') : $carLabel;
+                    $rate = round((float) ($car['daily_rate'] ?? 0), 2);
+                    $rateLabel = Formatter::money($rate);
+                    $carOption = $plate !== ''
+                        ? ($carLabel . ' — ' . $plate . ' · ' . $rateLabel)
+                        : ($carLabel . ' · ' . $rateLabel);
+                    $carPreview = ($plate !== '' ? ($carLabel . ' (' . $plate . ')') : $carLabel) . ' · ' . Lang::get('car.daily_rate') . ' ' . $rateLabel;
                     ?>
                     <option value="<?= (int) $car['id'] ?>"
-                        data-rate="<?= htmlspecialchars(number_format((float) ($car['daily_rate'] ?? 0), 2, '.', ''), ENT_QUOTES, 'UTF-8') ?>"
+                        data-rate="<?= htmlspecialchars(number_format($rate, 2, '.', ''), ENT_QUOTES, 'UTF-8') ?>"
                         data-label="<?= htmlspecialchars($carPreview, ENT_QUOTES, 'UTF-8') ?>"
-                        <?= ((int) ($rv['car_id'] ?? 0) === (int) $car['id']) ? 'selected' : '' ?>>
+                        <?= $selectedCarId === (int) $car['id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($carOption, ENT_QUOTES, 'UTF-8') ?>
                     </option>
                 <?php endforeach; ?>
             </select>
             <div id="carPreview" class="car-preview muted"></div>
+            <script type="application/json" id="carRatesJson"><?= json_encode($carRatesMap, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE) ?></script>
         </div>
     </div>
 </fieldset>
@@ -226,22 +235,25 @@ $defaultRateDisplay = number_format($defaultRate, 2, '.', '');
     <div class="grid three">
         <div class="field">
             <label class="label" for="daily_rate"><?= Lang::e('car.daily_rate') ?></label>
-            <input class="input mono" name="daily_rate" id="daily_rate" type="number" step="0.01" min="0" inputmode="decimal" required
-                   value="<?= htmlspecialchars($defaultRateDisplay, ENT_QUOTES, 'UTF-8') ?>" data-usd-convert>
+            <input class="input mono" name="daily_rate" id="daily_rate" type="text" inputmode="decimal" required
+                   value="<?= htmlspecialchars($defaultRateDisplay, ENT_QUOTES, 'UTF-8') ?>" data-usd-convert autocomplete="off">
             <div class="field-fx muted mono" data-usd-convert-out aria-live="polite"><?= htmlspecialchars(Formatter::moneyWithBrl($defaultRate), ENT_QUOTES, 'UTF-8') ?></div>
+            <p id="daily_rate_hint" class="muted form-section-hint<?= $defaultRate > 0 ? ' hidden' : '' ?>" style="margin-top:0.35rem">
+                <?= Lang::e('reservation.daily_rate_missing') ?>
+            </p>
         </div>
         <?php if (Auth::isOwner()): ?>
             <div class="field">
                 <label class="label" for="discount"><?= Lang::e('reservation.discount') ?></label>
-                <input class="input mono" name="discount" id="discount" type="number" step="0.01" min="0" value="<?= htmlspecialchars((string) ($rv['discount'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
+                <input class="input mono" name="discount" id="discount" type="text" inputmode="decimal" value="<?= htmlspecialchars(number_format((float) ($rv['discount'] ?? 0), 2, '.', ''), ENT_QUOTES, 'UTF-8') ?>">
             </div>
         <?php else: ?>
             <input type="hidden" name="discount" id="discount" value="0">
         <?php endif; ?>
         <div class="field">
             <label class="label"><?= Lang::e('reservation.total') ?></label>
-            <div id="days_preview" class="muted" style="font-size:0.8125rem"><?= Lang::e('reservation.days_hint') ?></div>
-            <div id="total_preview" class="kpi-inline mono"><?= htmlspecialchars(Formatter::moneyWithBrl(0), ENT_QUOTES, 'UTF-8') ?></div>
+            <div id="days_preview" class="muted" style="font-size:0.8125rem"><?= htmlspecialchars(Lang::get('landing.summary_days', ['count' => (string) $daysInit]), ENT_QUOTES, 'UTF-8') ?></div>
+            <div id="total_preview" class="kpi-inline mono"><?= htmlspecialchars(Formatter::moneyWithBrl($totalInit), ENT_QUOTES, 'UTF-8') ?></div>
             <div id="conflict_msg" class="toast toast-error hidden" role="alert"></div>
         </div>
     </div>

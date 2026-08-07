@@ -178,6 +178,7 @@ return [
     'reservation.car_unavailable' => 'Veículo indisponível para reserva.',
     'reservation.invalid_location' => 'Local de retirada/devolução inválido.',
     'reservation.hotel_required' => 'Informe o nome do hotel para entrega/retirada no hotel.',
+    'reservation.daily_rate_missing' => 'Este veículo está com diária zerada. Edite o veículo e cadastre a diária para o total calcular automaticamente.',
     'reservation.cancel_btn' => 'Cancelar reserva',
     'reservation.timeline' => 'Progresso da reserva',
     'reservation.voucher' => 'Voucher',
