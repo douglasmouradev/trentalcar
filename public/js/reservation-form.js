@@ -25,8 +25,31 @@
   const custSuggest = document.getElementById('custSuggest');
   const custSel = document.getElementById('customer_id');
   const modal = document.getElementById('quickCustModal');
+  const pickupLoc = document.getElementById('pickup_location_id');
+  const returnLoc = document.getElementById('return_location_id');
+  const pickupHotelWrap = document.getElementById('pickup_hotel_wrap');
+  const returnHotelWrap = document.getElementById('return_hotel_wrap');
+  const pickupHotel = document.getElementById('pickup_hotel_name');
+  const returnHotel = document.getElementById('return_hotel_name');
 
   const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+  function toggleHotelField(selectEl, wrapEl, inputEl) {
+    if (!selectEl || !wrapEl || !inputEl) return;
+    const opt = selectEl.selectedOptions?.[0];
+    const isHotel = opt?.getAttribute('data-is-hotel') === '1';
+    wrapEl.classList.toggle('hidden', !isHotel);
+    inputEl.disabled = !isHotel;
+    inputEl.required = isHotel;
+    if (!isHotel) {
+      inputEl.value = '';
+    }
+  }
+
+  function syncHotelFields() {
+    toggleHotelField(pickupLoc, pickupHotelWrap, pickupHotel);
+    toggleHotelField(returnLoc, returnHotelWrap, returnHotel);
+  }
 
   function fmtMoney(n) {
     const rateRaw = document.body?.dataset?.usdBrlRate;
@@ -159,6 +182,8 @@
     recalc();
     scheduleConflict();
   }));
+  pickupLoc?.addEventListener('change', syncHotelFields);
+  returnLoc?.addEventListener('change', syncHotelFields);
 
   let stmr;
   custSearch?.addEventListener('input', () => {
@@ -258,6 +283,7 @@
     closeModal();
   });
 
+  syncHotelFields();
   syncCar();
   recalc();
   checkConflict();

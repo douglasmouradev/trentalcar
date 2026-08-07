@@ -177,6 +177,7 @@ return [
     'reservation.invalid_car' => 'Invalid vehicle.',
     'reservation.car_unavailable' => 'Vehicle unavailable for booking.',
     'reservation.invalid_location' => 'Invalid pickup/return location.',
+    'reservation.hotel_required' => 'Enter the hotel name for hotel pickup/delivery.',
     'reservation.cancel_btn' => 'Cancel reservation',
     'reservation.timeline' => 'Reservation progress',
     'reservation.voucher' => 'Voucher',

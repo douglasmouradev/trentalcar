@@ -177,6 +177,7 @@ return [
     'reservation.invalid_car' => 'Veículo inválido.',
     'reservation.car_unavailable' => 'Veículo indisponível para reserva.',
     'reservation.invalid_location' => 'Local de retirada/devolução inválido.',
+    'reservation.hotel_required' => 'Informe o nome do hotel para entrega/retirada no hotel.',
     'reservation.cancel_btn' => 'Cancelar reserva',
     'reservation.timeline' => 'Progresso da reserva',
     'reservation.voucher' => 'Voucher',

@@ -30,9 +30,9 @@
         <dt><?= Lang::e('reservation.car') ?></dt>
         <dd><?= htmlspecialchars($r['brand'] . ' ' . $r['model'], ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) $r['license_plate'], ENT_QUOTES, 'UTF-8') ?></dd>
         <dt><?= Lang::e('reservation.pickup') ?></dt>
-        <dd><?= htmlspecialchars($r['pickup_date'] . ' ' . substr((string) $r['pickup_time'], 0, 5), ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars((string) $r['pickup_location_name'], ENT_QUOTES, 'UTF-8') ?></dd>
+        <dd><?= htmlspecialchars($r['pickup_date'] . ' ' . substr((string) $r['pickup_time'], 0, 5), ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars(LeadPickupOptions::withHotelName((string) $r['pickup_location_name'], (string) ($r['pickup_hotel_name'] ?? '')), ENT_QUOTES, 'UTF-8') ?></dd>
         <dt><?= Lang::e('reservation.return') ?></dt>
-        <dd><?= htmlspecialchars($r['return_date'] . ' ' . substr((string) $r['return_time'], 0, 5), ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars((string) $r['return_location_name'], ENT_QUOTES, 'UTF-8') ?></dd>
+        <dd><?= htmlspecialchars($r['return_date'] . ' ' . substr((string) $r['return_time'], 0, 5), ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars(LeadPickupOptions::withHotelName((string) $r['return_location_name'], (string) ($r['return_hotel_name'] ?? '')), ENT_QUOTES, 'UTF-8') ?></dd>
         <dt><?= Lang::e('reservation.status') ?></dt>
         <dd><?= Lang::e('status.' . $r['status']) ?></dd>
         <dt><?= Lang::e('reservation.total') ?></dt>

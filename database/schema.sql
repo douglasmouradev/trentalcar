@@ -108,6 +108,8 @@ CREATE TABLE reservations (
   operator_id         INT UNSIGNED  NOT NULL,
   pickup_location_id  INT UNSIGNED  NOT NULL,
   return_location_id  INT UNSIGNED  NOT NULL,
+  pickup_hotel_name   VARCHAR(120)  NULL,
+  return_hotel_name   VARCHAR(120)  NULL,
   pickup_date         DATE          NOT NULL,
   pickup_time         TIME          NOT NULL,
   return_date         DATE          NOT NULL,

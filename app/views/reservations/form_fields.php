@@ -104,10 +104,30 @@ $defaultRate = $rv['daily_rate'] ?? ($cars[0]['daily_rate'] ?? 0);
                     <option value="" disabled selected><?= Lang::e('reservation.location_empty') ?></option>
                 <?php else: ?>
                     <?php foreach ($locations as $loc): ?>
-                        <option value="<?= (int) $loc['id'] ?>" <?= ((int) ($rv['pickup_location_id'] ?? 0) === (int) $loc['id']) ? 'selected' : '' ?>><?= htmlspecialchars($loc['name'], ENT_QUOTES, 'UTF-8') ?></option>
+                        <?php $isHotel = LeadPickupOptions::isHotel((string) ($loc['name'] ?? '')); ?>
+                        <option value="<?= (int) $loc['id'] ?>"
+                            data-is-hotel="<?= $isHotel ? '1' : '0' ?>"
+                            <?= ((int) ($rv['pickup_location_id'] ?? 0) === (int) $loc['id']) ? 'selected' : '' ?>><?= htmlspecialchars($loc['name'], ENT_QUOTES, 'UTF-8') ?></option>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </select>
+            <?php
+            $pickupHotelVisible = false;
+            foreach ($locations as $loc) {
+                if ((int) ($rv['pickup_location_id'] ?? 0) === (int) ($loc['id'] ?? 0)
+                    && LeadPickupOptions::isHotel((string) ($loc['name'] ?? ''))) {
+                    $pickupHotelVisible = true;
+                    break;
+                }
+            }
+            ?>
+            <div class="hotel-name-field<?= $pickupHotelVisible ? '' : ' hidden' ?>" id="pickup_hotel_wrap" style="margin-top:0.75rem">
+                <label class="label" for="pickup_hotel_name"><?= Lang::e('landing.form_hotel_label') ?></label>
+                <input class="input" type="text" id="pickup_hotel_name" name="pickup_hotel_name" maxlength="120" autocomplete="organization"
+                       placeholder="<?= Lang::e('landing.form_hotel_ph') ?>"
+                       value="<?= htmlspecialchars((string) ($rv['pickup_hotel_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                       <?= $pickupHotelVisible ? 'required' : 'disabled' ?>>
+            </div>
         </div>
         <div class="field">
             <label class="label" for="return_location_id"><?= Lang::e('reservation.return') ?> — <?= Lang::e('reservation.location') ?></label>
@@ -116,10 +136,30 @@ $defaultRate = $rv['daily_rate'] ?? ($cars[0]['daily_rate'] ?? 0);
                     <option value="" disabled selected><?= Lang::e('reservation.location_empty') ?></option>
                 <?php else: ?>
                     <?php foreach ($locations as $loc): ?>
-                        <option value="<?= (int) $loc['id'] ?>" <?= ((int) ($rv['return_location_id'] ?? 0) === (int) $loc['id']) ? 'selected' : '' ?>><?= htmlspecialchars($loc['name'], ENT_QUOTES, 'UTF-8') ?></option>
+                        <?php $isHotel = LeadPickupOptions::isHotel((string) ($loc['name'] ?? '')); ?>
+                        <option value="<?= (int) $loc['id'] ?>"
+                            data-is-hotel="<?= $isHotel ? '1' : '0' ?>"
+                            <?= ((int) ($rv['return_location_id'] ?? 0) === (int) $loc['id']) ? 'selected' : '' ?>><?= htmlspecialchars($loc['name'], ENT_QUOTES, 'UTF-8') ?></option>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </select>
+            <?php
+            $returnHotelVisible = false;
+            foreach ($locations as $loc) {
+                if ((int) ($rv['return_location_id'] ?? 0) === (int) ($loc['id'] ?? 0)
+                    && LeadPickupOptions::isHotel((string) ($loc['name'] ?? ''))) {
+                    $returnHotelVisible = true;
+                    break;
+                }
+            }
+            ?>
+            <div class="hotel-name-field<?= $returnHotelVisible ? '' : ' hidden' ?>" id="return_hotel_wrap" style="margin-top:0.75rem">
+                <label class="label" for="return_hotel_name"><?= Lang::e('landing.form_hotel_return_label') ?></label>
+                <input class="input" type="text" id="return_hotel_name" name="return_hotel_name" maxlength="120" autocomplete="organization"
+                       placeholder="<?= Lang::e('landing.form_hotel_ph') ?>"
+                       value="<?= htmlspecialchars((string) ($rv['return_hotel_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                       <?= $returnHotelVisible ? 'required' : 'disabled' ?>>
+            </div>
         </div>
     </div>
     <?php if ($locations === []): ?>

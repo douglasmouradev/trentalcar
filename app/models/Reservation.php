@@ -349,12 +349,14 @@ final class Reservation
     {
         $stmt = Database::prepare(
             'INSERT INTO reservations (code, customer_id, car_id, operator_id, pickup_location_id, return_location_id,
+             pickup_hotel_name, return_hotel_name,
              pickup_date, pickup_time, return_date, return_time, daily_rate, total_days, total_amount, discount, final_amount,
              status, payment_status, payment_method, notes)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
         );
         $stmt->execute([
             $d['code'], $d['customer_id'], $d['car_id'], $d['operator_id'], $d['pickup_location_id'], $d['return_location_id'],
+            $d['pickup_hotel_name'] ?? null, $d['return_hotel_name'] ?? null,
             $d['pickup_date'], $d['pickup_time'], $d['return_date'], $d['return_time'],
             $d['daily_rate'], $d['total_days'], $d['total_amount'], $d['discount'], $d['final_amount'],
             $d['status'], $d['payment_status'], $d['payment_method'] ?? null, $d['notes'] ?? null,
@@ -369,11 +371,13 @@ final class Reservation
     {
         $stmt = Database::prepare(
             'UPDATE reservations SET customer_id=?, car_id=?, pickup_location_id=?, return_location_id=?,
+             pickup_hotel_name=?, return_hotel_name=?,
              pickup_date=?, pickup_time=?, return_date=?, return_time=?, daily_rate=?, total_days=?, total_amount=?, discount=?, final_amount=?,
              status=?, payment_status=?, payment_method=?, notes=? WHERE id=?'
         );
         $stmt->execute([
             $d['customer_id'], $d['car_id'], $d['pickup_location_id'], $d['return_location_id'],
+            $d['pickup_hotel_name'] ?? null, $d['return_hotel_name'] ?? null,
             $d['pickup_date'], $d['pickup_time'], $d['return_date'], $d['return_time'],
             $d['daily_rate'], $d['total_days'], $d['total_amount'], $d['discount'], $d['final_amount'],
             $d['status'], $d['payment_status'], $d['payment_method'] ?? null, $d['notes'] ?? null, $id,

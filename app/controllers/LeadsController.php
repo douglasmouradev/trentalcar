@@ -116,6 +116,8 @@ final class LeadsController
             'car_id' => !empty($lead['car_id']) ? (int) $lead['car_id'] : null,
             'pickup_location_id' => $pickupLocId,
             'return_location_id' => $returnLocId,
+            'pickup_hotel_name' => LeadPickupOptions::hotelNameFromStored((string) ($lead['local'] ?? '')),
+            'return_hotel_name' => LeadPickupOptions::hotelNameFromStored((string) ($lead['local_devolucao'] ?? $lead['local'] ?? '')),
             'notes' => Lang::get('leads.convert_note', [
                 'local' => (string) $lead['local'],
                 'return' => (string) ($lead['local_devolucao'] ?? $lead['local']),

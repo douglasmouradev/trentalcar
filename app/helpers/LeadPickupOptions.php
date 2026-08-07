@@ -37,6 +37,20 @@ final class LeadPickupOptions
         return $option . ' — ' . $hotelName;
     }
 
+    /** Extrai o nome do hotel de um valor armazenado (ex.: "Entrega no hotel — Hilton"). */
+    public static function hotelNameFromStored(string $stored): string
+    {
+        $stored = trim($stored);
+        if ($stored === '' || !str_starts_with($stored, self::HOTEL)) {
+            return '';
+        }
+        if (preg_match('/^' . preg_quote(self::HOTEL, '/') . '\s+[—\-]\s+(.+)$/u', $stored, $m) === 1) {
+            return trim($m[1]);
+        }
+
+        return '';
+    }
+
     /** @return list<array{value:string,label:string}> */
     public static function choices(): array
     {

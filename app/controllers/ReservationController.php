@@ -55,6 +55,8 @@ final class ReservationController
                 'car_id' => $leadPrefill['car_id'] ?? null,
                 'pickup_location_id' => $leadPrefill['pickup_location_id'] ?? null,
                 'return_location_id' => $leadPrefill['return_location_id'] ?? null,
+                'pickup_hotel_name' => $leadPrefill['pickup_hotel_name'] ?? '',
+                'return_hotel_name' => $leadPrefill['return_hotel_name'] ?? '',
                 'notes' => $leadPrefill['notes'] ?? '',
             ];
         }
@@ -412,6 +414,7 @@ final class ReservationController
     {
         $keys = [
             'customer_id', 'car_id', 'pickup_location_id', 'return_location_id',
+            'pickup_hotel_name', 'return_hotel_name',
             'pickup_date', 'pickup_time', 'return_date', 'return_time',
             'daily_rate', 'discount', 'status', 'payment_status', 'payment_method', 'notes',
         ];

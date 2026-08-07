@@ -50,6 +50,25 @@ final class ReservationValidator
             return self::fail('reservation.invalid_location');
         }
 
+        $pickupHotel = trim((string) ($post['pickup_hotel_name'] ?? ''));
+        $returnHotel = trim((string) ($post['return_hotel_name'] ?? ''));
+        if (Location::isHotelLocation($pickupLoc)) {
+            if ($pickupHotel === '') {
+                return self::fail('reservation.hotel_required');
+            }
+            $pickupHotel = mb_substr($pickupHotel, 0, 120);
+        } else {
+            $pickupHotel = null;
+        }
+        if (Location::isHotelLocation($returnLoc)) {
+            if ($returnHotel === '') {
+                return self::fail('reservation.hotel_required');
+            }
+            $returnHotel = mb_substr($returnHotel, 0, 120);
+        } else {
+            $returnHotel = null;
+        }
+
         $status = (string) ($post['status'] ?? 'pending');
         if (!in_array($status, self::STATUSES, true) || $status === 'cancelled') {
             $status = 'pending';
@@ -92,6 +111,8 @@ final class ReservationValidator
                 'car_id' => $carId,
                 'pickup_location_id' => $pickupLoc,
                 'return_location_id' => $returnLoc,
+                'pickup_hotel_name' => $pickupHotel,
+                'return_hotel_name' => $returnHotel,
                 'pickup_date' => $pickupDate,
                 'pickup_time' => $pickupTime,
                 'return_date' => $returnDate,
