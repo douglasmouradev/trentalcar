@@ -147,6 +147,51 @@ final class Car
         return $total;
     }
 
+    /**
+     * Frota ativa com campos de custo mensal, ordenada pelo total estimado (desc).
+     * @return list<array<string, mixed>>
+     */
+    public static function allWithMonthlyExpenses(): array
+    {
+        $deleted = self::supportsSoftDelete() ? ' AND c.deleted_at IS NULL' : '';
+        $sql = "SELECT c.*, l.name AS location_name FROM cars c
+                LEFT JOIN locations l ON l.id = c.location_id
+                WHERE 1=1{$deleted}
+                ORDER BY c.brand, c.model, c.license_plate";
+        $rows = Database::query($sql)->fetchAll();
+        usort($rows, static function (array $a, array $b): int {
+            $tb = self::monthlyExpensesTotal($b);
+            $ta = self::monthlyExpensesTotal($a);
+            if ($tb === $ta) {
+                return strcasecmp(
+                    trim((string) ($a['brand'] ?? '') . ' ' . (string) ($a['model'] ?? '')),
+                    trim((string) ($b['brand'] ?? '') . ' ' . (string) ($b['model'] ?? ''))
+                );
+            }
+            return $tb <=> $ta;
+        });
+        return $rows;
+    }
+
+    /**
+     * Soma por categoria de gasto mensal na frota.
+     * @param list<array<string, mixed>> $cars
+     * @return array<string, float>
+     */
+    public static function monthlyExpenseCategoryTotals(array $cars): array
+    {
+        $totals = [];
+        foreach (self::monthlyExpenseFields() as $field) {
+            $totals[$field] = 0.0;
+        }
+        foreach ($cars as $car) {
+            foreach (self::monthlyExpenseFields() as $field) {
+                $totals[$field] += max(0.0, (float) ($car[$field] ?? 0));
+            }
+        }
+        return $totals;
+    }
+
     /** @param array<string, mixed> $d */
     public static function create(array $d): int
     {

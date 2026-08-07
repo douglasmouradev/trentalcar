@@ -49,6 +49,8 @@ return [
     'POST:/cars/{id}/update' => ['CarController', 'update', 'auth' => true, 'role' => 'owner'],
     'POST:/cars/{id}/delete' => ['CarController', 'delete', 'auth' => true, 'role' => 'owner'],
 
+    'GET:/monthly-costs' => ['MonthlyCostController', 'index', 'auth' => true],
+
     'GET:/customers' => ['CustomerController', 'index', 'auth' => true],
     'GET:/customers/create' => ['CustomerController', 'createForm', 'auth' => true],
     'POST:/customers' => ['CustomerController', 'create', 'auth' => true],

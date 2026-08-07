@@ -50,6 +50,7 @@ if ($userName !== '') {
             <?php else: ?>
             <a class="nav-link" href="<?= Router::url('/dashboard') ?>"><?= Lang::e('nav.dashboard') ?></a>
             <a class="nav-link" href="<?= Router::url('/cars') ?>"><?= Lang::e('nav.cars') ?></a>
+            <a class="nav-link" href="<?= Router::url('/monthly-costs') ?>"><?= Lang::e('nav.monthly_costs') ?></a>
             <a class="nav-link" href="<?= Router::url('/reservations') ?>"><?= Lang::e('nav.reservations') ?></a>
             <a class="nav-link" href="<?= Router::url('/reservations/calendar') ?>"><?= Lang::e('nav.calendar') ?></a>
             <a class="nav-link" href="<?= Router::url('/customers') ?>"><?= Lang::e('nav.customers') ?></a>
