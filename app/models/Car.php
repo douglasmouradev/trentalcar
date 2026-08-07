@@ -240,6 +240,22 @@ final class Car
         $stmt->execute($params);
     }
 
+    /**
+     * Atualiza apenas os gastos mensais estimados do veículo.
+     * @param array<string, float|int|string> $amounts
+     */
+    public static function updateMonthlyExpenses(int $id, array $amounts): void
+    {
+        $monthlySet = implode(', ', array_map(static fn (string $f): string => "{$f}=?", self::monthlyExpenseFields()));
+        $stmt = Database::prepare("UPDATE cars SET {$monthlySet} WHERE id=?");
+        $params = [];
+        foreach (self::monthlyExpenseFields() as $field) {
+            $params[] = max(0.0, (float) str_replace(',', '.', (string) ($amounts[$field] ?? '0')));
+        }
+        $params[] = $id;
+        $stmt->execute($params);
+    }
+
     public static function delete(int $id): void
     {
         if (self::activeReservationCount($id) > 0) {

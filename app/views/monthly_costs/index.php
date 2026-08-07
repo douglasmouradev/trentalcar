@@ -3,7 +3,13 @@
 /** @var array<string,float> $categoryTotals */
 /** @var float $fleetTotal */
 /** @var list<string> $fields */
+/** @var array<string,mixed>|null $selectedCar */
+/** @var int $selectedId */
+/** @var bool $canEdit */
 $isOwner = Auth::isOwner();
+$canEdit = $canEdit ?? $isOwner;
+$selectedCar = $selectedCar ?? null;
+$selectedId = (int) ($selectedId ?? 0);
 ?>
 <div class="page-head">
     <h1 class="page-title"><?= Lang::e('nav.monthly_costs') ?></h1>
@@ -19,8 +25,48 @@ $isOwner = Auth::isOwner();
 </div>
 
 <div class="card mt">
+    <h2 class="card-title"><?= Lang::e('monthly_costs.fill_title') ?></h2>
+    <?php if ($cars === []): ?>
+        <p class="muted"><?= Lang::e('table.empty') ?></p>
+    <?php else: ?>
+        <form class="filters-row" method="get" action="<?= Router::url('/monthly-costs') ?>" style="margin-bottom: 1rem;">
+            <label class="label" for="monthly-car-select"><?= Lang::e('monthly_costs.select_car') ?></label>
+            <select class="input" id="monthly-car-select" name="car_id" onchange="this.form.submit()">
+                <?php foreach ($cars as $car): ?>
+                    <?php
+                    $id = (int) ($car['id'] ?? 0);
+                    $label = trim((string) ($car['brand'] ?? '') . ' ' . (string) ($car['model'] ?? ''));
+                    $plate = trim((string) ($car['license_plate'] ?? ''));
+                    if ($plate !== '') {
+                        $label .= ' · ' . $plate;
+                    }
+                    ?>
+                    <option value="<?= $id ?>" <?= $selectedId === $id ? 'selected' : '' ?>><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
+                <?php endforeach; ?>
+            </select>
+        </form>
+
+        <?php if ($selectedCar !== null): ?>
+            <?php if ($canEdit): ?>
+                <form class="form-stack" method="post" action="<?= Router::url('/monthly-costs/update') ?>">
+                    <?= Csrf::field() ?>
+                    <input type="hidden" name="car_id" value="<?= $selectedId ?>">
+                    <?php View::partial('partials/monthly_expenses_fields', ['c' => $selectedCar]); ?>
+                    <button class="btn btn-primary" type="submit"><?= Lang::e('actions.save') ?></button>
+                </form>
+            <?php else: ?>
+                <?php View::partial('partials/monthly_expenses_fields', ['c' => $selectedCar]); ?>
+                <p class="muted mt"><?= Lang::e('monthly_costs.readonly') ?></p>
+                <script>
+                  document.querySelectorAll('.monthly-costs-block input').forEach(function (el) { el.disabled = true; });
+                </script>
+            <?php endif; ?>
+        <?php endif; ?>
+    <?php endif; ?>
+</div>
+
+<div class="card mt">
     <h2 class="card-title"><?= Lang::e('monthly_costs.by_category') ?></h2>
-    <p class="muted form-section-hint"><?= Lang::e('car.monthly_expenses_hint') ?></p>
     <div class="grid three">
         <?php foreach ($fields as $field): ?>
             <?php $amount = (float) ($categoryTotals[$field] ?? 0); ?>
@@ -58,10 +104,7 @@ $isOwner = Auth::isOwner();
                     <td data-label="<?= Lang::e('car.status') ?>"><?= Ui::carStatusBadge((string) ($car['status'] ?? '')) ?></td>
                     <td class="mono" data-label="<?= Lang::e('car.monthly_total') ?>"><?= htmlspecialchars(Formatter::moneyWithBrl($total), ENT_QUOTES, 'UTF-8') ?></td>
                     <td data-label="">
-                        <a class="btn btn-sm btn-secondary" href="<?= Router::url('/cars/' . $carId) ?>"><?= Lang::e('actions.view') ?></a>
-                        <?php if ($isOwner): ?>
-                            <a class="btn btn-sm btn-primary" href="<?= Router::url('/cars/' . $carId . '/edit') ?>"><?= Lang::e('actions.edit') ?></a>
-                        <?php endif; ?>
+                        <a class="btn btn-sm btn-secondary" href="<?= Router::url('/monthly-costs?car_id=' . $carId) ?>"><?= Lang::e('actions.edit') ?></a>
                     </td>
                 </tr>
             <?php endforeach; ?>
