@@ -51,6 +51,8 @@ return [
 
     'GET:/monthly-costs' => ['MonthlyCostController', 'index', 'auth' => true],
     'POST:/monthly-costs/update' => ['MonthlyCostController', 'update', 'auth' => true, 'role' => 'owner'],
+    'GET:/fixed-costs' => ['FixedCostController', 'index', 'auth' => true],
+    'POST:/fixed-costs/update' => ['FixedCostController', 'update', 'auth' => true, 'role' => 'owner'],
 
     'GET:/customers' => ['CustomerController', 'index', 'auth' => true],
     'GET:/customers/create' => ['CustomerController', 'createForm', 'auth' => true],

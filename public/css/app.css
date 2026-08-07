@@ -1483,6 +1483,12 @@ select.input {
   background: rgba(26, 58, 108, 0.08);
 }
 
+a.tab {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
 .calendar-toolbar {
   display: flex;
   flex-direction: column;

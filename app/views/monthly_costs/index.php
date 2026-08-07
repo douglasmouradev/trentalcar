@@ -15,6 +15,8 @@ $selectedId = (int) ($selectedId ?? 0);
     <h1 class="page-title"><?= Lang::e('nav.monthly_costs') ?></h1>
 </div>
 
+<?php View::partial('partials/costs_tabs', ['activeTab' => 'monthly']); ?>
+
 <p class="muted page-lead"><?= Lang::e('monthly_costs.hint') ?></p>
 
 <div class="card mt">
