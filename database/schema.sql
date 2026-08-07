@@ -119,6 +119,7 @@ CREATE TABLE reservations (
   total_days          SMALLINT      NOT NULL,
   total_amount        DECIMAL(10,2) NOT NULL,
   discount            DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  extra_charges       DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   final_amount        DECIMAL(10,2) NOT NULL,
   status              ENUM('pending','confirmed','active','completed','cancelled') NOT NULL DEFAULT 'pending',
   payment_status      ENUM('unpaid','partial','paid') NOT NULL DEFAULT 'unpaid',

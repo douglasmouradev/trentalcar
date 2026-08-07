@@ -39,7 +39,7 @@ $returnDateInit = (string) ($rv['return_date'] ?? $today);
 $pickupTimeInit = (string) ($rv['pickup_time'] ?? '09:00:00');
 $returnTimeInit = (string) ($rv['return_time'] ?? '18:00:00');
 $daysInit = PricingHelper::rentalDays($pickupDateInit, $pickupTimeInit, $returnDateInit, $returnTimeInit);
-$totalInit = max(0.0, round($defaultRate * $daysInit - (float) ($rv['discount'] ?? 0), 2));
+$totalInit = max(0.0, round($defaultRate * $daysInit - (float) ($rv['discount'] ?? 0) + (float) ($rv['extra_charges'] ?? 0), 2));
 ?>
 
 <fieldset class="form-section">
@@ -290,6 +290,12 @@ $totalInit = max(0.0, round($defaultRate * $daysInit - (float) ($rv['discount'] 
             <input type="hidden" name="payment_status" value="<?= htmlspecialchars((string) ($rv['payment_status'] ?? 'unpaid'), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="payment_method" value="<?= htmlspecialchars((string) ($rv['payment_method'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
         <?php endif; ?>
+    </div>
+    <div class="field mt">
+        <label class="label" for="extra_charges"><?= Lang::e('reservation.extra_expenses') ?></label>
+        <input class="input mono" type="text" name="extra_charges" id="extra_charges" inputmode="decimal" autocomplete="off"
+               value="<?= htmlspecialchars(number_format((float) ($rv['extra_charges'] ?? 0), 2, '.', ''), ENT_QUOTES, 'UTF-8') ?>" data-usd-convert>
+        <div class="field-fx muted mono" data-usd-convert-out aria-live="polite"><?= htmlspecialchars(Formatter::moneyWithBrl((float) ($rv['extra_charges'] ?? 0)), ENT_QUOTES, 'UTF-8') ?></div>
     </div>
     <div class="field mt">
         <label class="label" for="notes"><?= Lang::e('reservation.notes') ?></label>

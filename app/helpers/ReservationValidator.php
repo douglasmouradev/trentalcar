@@ -98,10 +98,17 @@ final class ReservationValidator
         }
 
         $totalDays = PricingHelper::rentalDays($pickupDate, $pickupTime, $returnDate, $returnTime);
-        $daily = max(0.0, (float) ($post['daily_rate'] ?? 0));
-        $discount = $isOwner ? max(0.0, (float) ($post['discount'] ?? 0)) : 0.0;
+        $daily = max(0.0, (float) str_replace(',', '.', (string) ($post['daily_rate'] ?? '0')));
+        $discount = $isOwner ? max(0.0, (float) str_replace(',', '.', (string) ($post['discount'] ?? '0'))) : 0.0;
+        $extraCharges = max(0.0, (float) str_replace(',', '.', (string) ($post['extra_charges'] ?? '0')));
+        if (!$isOwner && is_array($old)) {
+            // Operador pode informar gastos extras; se não enviar, mantém o valor anterior
+            if (!array_key_exists('extra_charges', $post)) {
+                $extraCharges = max(0.0, (float) ($old['extra_charges'] ?? 0));
+            }
+        }
         $totalAmount = round($daily * $totalDays, 2);
-        $final = max(0.0, round($totalAmount - $discount, 2));
+        $final = max(0.0, round($totalAmount - $discount + $extraCharges, 2));
 
         return [
             'ok' => true,
@@ -121,6 +128,7 @@ final class ReservationValidator
                 'total_days' => $totalDays,
                 'total_amount' => $totalAmount,
                 'discount' => $discount,
+                'extra_charges' => $extraCharges,
                 'final_amount' => $final,
                 'status' => $status,
                 'payment_status' => $paymentStatus,

@@ -381,13 +381,15 @@ final class ReservationController
             (float) $d['discount']
         );
         $d['discount'] = $promo['discount_applied'];
-        $d['final_amount'] = max(0, round((float) $d['total_amount'] - (float) $d['discount'], 2));
+        $extras = max(0.0, (float) ($d['extra_charges'] ?? 0));
+        $d['extra_charges'] = $extras;
+        $d['final_amount'] = max(0, round((float) $d['total_amount'] - (float) $d['discount'] + $extras, 2));
 
         if (!Auth::isOwner()) {
             $d['daily_rate'] = (float) ($car['daily_rate'] ?? 0);
             $totalDays = $d['total_days'];
             $d['total_amount'] = round($d['daily_rate'] * $totalDays, 2);
-            $d['final_amount'] = max(0, round($d['total_amount'] - $d['discount'], 2));
+            $d['final_amount'] = max(0, round($d['total_amount'] - $d['discount'] + $extras, 2));
         }
 
         return $d;
@@ -416,7 +418,7 @@ final class ReservationController
             'customer_id', 'car_id', 'pickup_location_id', 'return_location_id',
             'pickup_hotel_name', 'return_hotel_name',
             'pickup_date', 'pickup_time', 'return_date', 'return_time',
-            'daily_rate', 'discount', 'status', 'payment_status', 'payment_method', 'notes',
+            'daily_rate', 'discount', 'extra_charges', 'status', 'payment_status', 'payment_method', 'notes',
         ];
         $out = [];
         foreach ($keys as $key) {

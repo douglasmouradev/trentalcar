@@ -13,6 +13,7 @@
   const carSel = document.getElementById('car_id');
   const daily = document.getElementById('daily_rate');
   const discount = document.getElementById('discount');
+  const extras = document.getElementById('extra_charges');
   const pickupD = document.getElementById('pickup_date');
   const returnD = document.getElementById('return_date');
   const pickupT = document.getElementById('pickup_time');
@@ -138,19 +139,21 @@
   function recalc() {
     const rate = Math.max(0, parseNum(daily?.value));
     const disc = Math.max(0, parseNum(discount?.value));
+    const extra = Math.max(0, parseNum(extras?.value));
     const days = rentalDays(
       pickupD?.value || '',
       pickupT?.value || '',
       returnD?.value || '',
       returnT?.value || ''
     );
-    const total = Math.max(0, rate * days - disc);
+    const total = Math.max(0, rate * days - disc + extra);
     if (daysEl) {
       const tpl = form.dataset.daysLabel || ':count diária(s)';
       daysEl.textContent = String(tpl).replace(':count', String(days));
     }
     if (totalEl) totalEl.textContent = fmtMoney(total);
     refreshUsdConvert(daily);
+    refreshUsdConvert(extras);
     if (dailyHint) {
       dailyHint.classList.toggle('hidden', rate > 0);
     }
@@ -232,6 +235,7 @@
     scheduleConflict();
   });
   discount?.addEventListener('input', recalc);
+  extras?.addEventListener('input', recalc);
   [pickupD, returnD, pickupT, returnT].forEach((el) => {
     el?.addEventListener('change', onPeriodChange);
     el?.addEventListener('input', onPeriodChange);

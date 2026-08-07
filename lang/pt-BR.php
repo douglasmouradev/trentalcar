@@ -680,7 +680,8 @@ return [
     'filters.today' => 'Hoje',
 
     'reservation.damage_notes' => 'Avarias / observações',
-    'reservation.extra_charges' => 'Taxas extras (R$)',
+    'reservation.extra_charges' => 'Gastos extras',
+    'reservation.extra_expenses' => 'Gastos Extras',
     'reservation.inspection_photo' => 'Foto da vistoria',
     'reservation.inspection_history' => 'Histórico de vistorias',
     'reservation.inspection_kind' => 'Tipo',

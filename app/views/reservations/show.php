@@ -78,6 +78,10 @@
 
             <dd><?= (int) $r['total_days'] ?></dd>
 
+            <dt><?= Lang::e('reservation.extra_expenses') ?></dt>
+
+            <dd class="mono"><?= Formatter::moneyWithBrl((float) ($r['extra_charges'] ?? 0)) ?></dd>
+
             <dt><?= Lang::e('reservation.total') ?></dt>
 
             <dd class="mono"><?= Formatter::moneyWithBrl((float) $r['final_amount']) ?></dd>

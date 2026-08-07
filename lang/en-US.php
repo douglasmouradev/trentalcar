@@ -683,7 +683,8 @@ return [
     'filters.today' => 'Today',
 
     'reservation.damage_notes' => 'Damage / notes',
-    'reservation.extra_charges' => 'Extra charges',
+    'reservation.extra_charges' => 'Extra expenses',
+    'reservation.extra_expenses' => 'Extra expenses',
     'reservation.inspection_photo' => 'Inspection photo',
     'reservation.inspection_history' => 'Inspection history',
     'reservation.inspection_kind' => 'Type',
