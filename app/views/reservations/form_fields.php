@@ -21,7 +21,21 @@ $locations = $locations ?? [];
 <?php
 $slots = TimeHelper::slots30();
 $today = date('Y-m-d');
-$defaultRate = $rv['daily_rate'] ?? ($cars[0]['daily_rate'] ?? 0);
+$selectedCarRate = null;
+foreach ($cars as $car) {
+    if ((int) ($rv['car_id'] ?? 0) === (int) ($car['id'] ?? 0)) {
+        $selectedCarRate = (float) ($car['daily_rate'] ?? 0);
+        break;
+    }
+}
+if ($selectedCarRate === null && $cars !== []) {
+    $selectedCarRate = (float) ($cars[0]['daily_rate'] ?? 0);
+}
+$rawRate = $rv['daily_rate'] ?? null;
+$defaultRate = ($rawRate !== null && $rawRate !== '')
+    ? (float) str_replace(',', '.', (string) $rawRate)
+    : (float) ($selectedCarRate ?? 0);
+$defaultRateDisplay = number_format($defaultRate, 2, '.', '');
 ?>
 
 <fieldset class="form-section">
@@ -56,7 +70,7 @@ $defaultRate = $rv['daily_rate'] ?? ($cars[0]['daily_rate'] ?? 0);
                     $carPreview = $plate !== '' ? ($carLabel . ' (' . $plate . ')') : $carLabel;
                     ?>
                     <option value="<?= (int) $car['id'] ?>"
-                        data-rate="<?= htmlspecialchars((string) $car['daily_rate'], ENT_QUOTES, 'UTF-8') ?>"
+                        data-rate="<?= htmlspecialchars(number_format((float) ($car['daily_rate'] ?? 0), 2, '.', ''), ENT_QUOTES, 'UTF-8') ?>"
                         data-label="<?= htmlspecialchars($carPreview, ENT_QUOTES, 'UTF-8') ?>"
                         <?= ((int) ($rv['car_id'] ?? 0) === (int) $car['id']) ? 'selected' : '' ?>>
                         <?= htmlspecialchars($carOption, ENT_QUOTES, 'UTF-8') ?>
@@ -213,8 +227,8 @@ $defaultRate = $rv['daily_rate'] ?? ($cars[0]['daily_rate'] ?? 0);
         <div class="field">
             <label class="label" for="daily_rate"><?= Lang::e('car.daily_rate') ?></label>
             <input class="input mono" name="daily_rate" id="daily_rate" type="number" step="0.01" min="0" inputmode="decimal" required
-                   value="<?= htmlspecialchars((string) $defaultRate, ENT_QUOTES, 'UTF-8') ?>" data-usd-convert>
-            <div class="field-fx muted mono" data-usd-convert-out aria-live="polite"><?= htmlspecialchars(Formatter::moneyWithBrl((float) $defaultRate), ENT_QUOTES, 'UTF-8') ?></div>
+                   value="<?= htmlspecialchars($defaultRateDisplay, ENT_QUOTES, 'UTF-8') ?>" data-usd-convert>
+            <div class="field-fx muted mono" data-usd-convert-out aria-live="polite"><?= htmlspecialchars(Formatter::moneyWithBrl($defaultRate), ENT_QUOTES, 'UTF-8') ?></div>
         </div>
         <?php if (Auth::isOwner()): ?>
             <div class="field">

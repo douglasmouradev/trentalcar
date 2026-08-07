@@ -91,7 +91,31 @@
     return Math.max(1, Math.ceil(hours / 24));
   }
 
+  function carRateFromSelect() {
+    const opt = carSel?.options?.[carSel.selectedIndex] || carSel?.selectedOptions?.[0];
+    if (!opt) return null;
+    const raw = opt.getAttribute('data-rate');
+    if (raw == null || raw === '') return null;
+    return Math.max(0, parseNum(raw));
+  }
+
+  function applyCarRate(force = false) {
+    if (!daily) return;
+    const rate = carRateFromSelect();
+    if (rate == null) return;
+    const touched = form.dataset.rateTouched === '1';
+    const current = parseNum(daily.value);
+    // Preenche diária do veículo se vazia/zero, ou ao trocar o carro / forçar
+    if (force || !touched || daily.value === '' || current <= 0) {
+      daily.value = rate.toFixed(2);
+      if (force || current <= 0 || daily.value === '') {
+        form.dataset.rateTouched = '';
+      }
+    }
+  }
+
   function recalc() {
+    applyCarRate(false);
     const rate = Math.max(0, parseNum(daily?.value));
     const disc = Math.max(0, parseNum(discount?.value));
     const days = rentalDays(
@@ -111,13 +135,8 @@
 
   function syncCar() {
     const opt = carSel?.options?.[carSel.selectedIndex] || carSel?.selectedOptions?.[0];
-    if (!opt || !daily) return;
-    const rate = opt.getAttribute('data-rate');
-    const touched = form.dataset.rateTouched === '1';
-    if (rate != null && rate !== '' && !touched) {
-      daily.value = rate;
-    }
-    if (preview) {
+    applyCarRate(true);
+    if (preview && opt) {
       preview.textContent = opt.getAttribute('data-label') || '';
     }
     recalc();
@@ -181,7 +200,10 @@
     syncCar();
   });
   daily?.addEventListener('input', () => {
-    form.dataset.rateTouched = '1';
+    // Só marca como editado manualmente se houver valor > 0 digitado
+    if (parseNum(daily.value) > 0) {
+      form.dataset.rateTouched = '1';
+    }
     recalc();
     scheduleConflict();
   });
@@ -194,6 +216,8 @@
     if (pickupD && returnD && pickupD.value && returnD.value && returnD.value < pickupD.value) {
       returnD.value = pickupD.value;
     }
+    // Ao mudar datas no calendário: garante diária do veículo e recalcula total
+    applyCarRate(false);
     recalc();
     scheduleConflict();
   }
