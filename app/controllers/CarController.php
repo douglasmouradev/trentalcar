@@ -63,6 +63,7 @@ final class CarController
 
     public function createForm(): void
     {
+        Location::ensurePickupDefaults();
         $locations = Location::allActive();
         View::render('cars/create', ['title' => Lang::get('car.create'), 'locations' => $locations, 'car' => null], 'main');
     }
@@ -108,6 +109,7 @@ final class CarController
             View::render('errors/404', ['title' => Lang::get('error.404_title')], 'main');
             return;
         }
+        Location::ensurePickupDefaults();
         View::render('cars/edit', [
             'title' => Lang::get('car.edit'),
             'car' => $car,

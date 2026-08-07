@@ -78,9 +78,7 @@ final class ReservationValidator
             $paymentMethod = is_array($old) && !empty($old['payment_method']) ? (string) $old['payment_method'] : null;
         }
 
-        $d1 = new DateTimeImmutable($pickupDate);
-        $d2 = new DateTimeImmutable($returnDate);
-        $totalDays = max(1, (int) $d1->diff($d2)->format('%a') + 1);
+        $totalDays = PricingHelper::rentalDays($pickupDate, $pickupTime, $returnDate, $returnTime);
         $daily = max(0.0, (float) ($post['daily_rate'] ?? 0));
         $discount = $isOwner ? max(0.0, (float) ($post['discount'] ?? 0)) : 0.0;
         $totalAmount = round($daily * $totalDays, 2);

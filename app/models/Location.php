@@ -26,6 +26,74 @@ final class Location
         return $row ?: null;
     }
 
+    /** @return array<string, mixed>|null */
+    public static function findByName(string $name): ?array
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return null;
+        }
+        $stmt = Database::prepare('SELECT * FROM locations WHERE name = ? LIMIT 1');
+        $stmt->execute([$name]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    /**
+     * Garante os locais do site (MIA / MCO / hotel) ativos no cadastro.
+     * Resolve dropdown vazio em Nova reserva quando a tabela ainda não foi populada.
+     */
+    public static function ensurePickupDefaults(): void
+    {
+        $defaults = [
+            'Aeroporto MIA' => ['address' => 'Miami International Airport', 'city' => 'Miami', 'state' => 'FL', 'zip_code' => '33126'],
+            'Aeroporto MCO' => ['address' => 'Orlando International Airport', 'city' => 'Orlando', 'state' => 'FL', 'zip_code' => '32827'],
+            'Entrega no hotel' => ['address' => 'Entrega sob demanda (hotel)', 'city' => 'Orlando', 'state' => 'FL', 'zip_code' => null],
+        ];
+        foreach ($defaults as $name => $meta) {
+            $existing = self::findByName($name);
+            if ($existing === null) {
+                self::create([
+                    'name' => $name,
+                    'address' => $meta['address'],
+                    'city' => $meta['city'],
+                    'state' => $meta['state'],
+                    'zip_code' => $meta['zip_code'],
+                    'phone' => null,
+                    'is_active' => 1,
+                ]);
+                continue;
+            }
+            if ((int) ($existing['is_active'] ?? 0) !== 1) {
+                self::update((int) $existing['id'], [
+                    'name' => $name,
+                    'address' => (string) ($existing['address'] ?? $meta['address']),
+                    'city' => (string) ($existing['city'] ?? $meta['city']),
+                    'state' => (string) ($existing['state'] ?? $meta['state']),
+                    'zip_code' => $existing['zip_code'] ?? $meta['zip_code'],
+                    'phone' => $existing['phone'] ?? null,
+                    'is_active' => 1,
+                ]);
+            }
+        }
+    }
+
+    /** Resolve texto do lead (ex.: "Entrega no hotel — Hilton") para id de local ativo. */
+    public static function resolveIdFromLeadLocal(?string $local): ?int
+    {
+        $local = trim((string) $local);
+        if ($local === '') {
+            return null;
+        }
+        $base = preg_replace('/\s+[—\-]\s+.+$/u', '', $local) ?? $local;
+        $base = trim($base);
+        $row = self::findByName($base);
+        if ($row !== null && (int) ($row['is_active'] ?? 0) === 1) {
+            return (int) $row['id'];
+        }
+        return null;
+    }
+
     public static function isActive(int $id): bool
     {
         $loc = self::find($id);

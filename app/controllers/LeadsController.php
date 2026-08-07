@@ -103,6 +103,9 @@ final class LeadsController
             Flash::error(Lang::get('error.404_title'));
             Redirect::to('/leads');
         }
+        Location::ensurePickupDefaults();
+        $pickupLocId = Location::resolveIdFromLeadLocal((string) ($lead['local'] ?? ''));
+        $returnLocId = Location::resolveIdFromLeadLocal((string) ($lead['local_devolucao'] ?? $lead['local'] ?? ''));
         $_SESSION['lead_convert'] = [
             'lead_id' => (int) $lead['id'],
             'customer_name' => (string) $lead['full_name'],
@@ -111,6 +114,8 @@ final class LeadsController
             'pickup_date' => (string) $lead['inicio'],
             'return_date' => (string) $lead['fim'],
             'car_id' => !empty($lead['car_id']) ? (int) $lead['car_id'] : null,
+            'pickup_location_id' => $pickupLocId,
+            'return_location_id' => $returnLocId,
             'notes' => Lang::get('leads.convert_note', [
                 'local' => (string) $lead['local'],
                 'return' => (string) ($lead['local_devolucao'] ?? $lead['local']),

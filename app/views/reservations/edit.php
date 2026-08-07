@@ -8,7 +8,8 @@
       data-conflict-text="<?= htmlspecialchars(Lang::get('reservation.conflict'), ENT_QUOTES, 'UTF-8') ?>"
       data-conflict-url="<?= htmlspecialchars(Router::url('/api/reservations/conflict'), ENT_QUOTES, 'UTF-8') ?>"
       data-search-url="<?= htmlspecialchars(Router::url('/api/customers/search'), ENT_QUOTES, 'UTF-8') ?>"
-      data-quick-url="<?= htmlspecialchars(Router::url('/api/customers/quick'), ENT_QUOTES, 'UTF-8') ?>">
+      data-quick-url="<?= htmlspecialchars(Router::url('/api/customers/quick'), ENT_QUOTES, 'UTF-8') ?>"
+      data-days-label="<?= htmlspecialchars(Lang::get('landing.summary_days'), ENT_QUOTES, 'UTF-8') ?>">
     <?= Csrf::field() ?>
     <?php View::partial('reservations/form_fields', ['cars' => $cars, 'locations' => $locations, 'customers' => $customers, 'r' => $r]); ?>
     <button class="btn btn-primary" type="submit"><?= Lang::e('actions.save') ?></button>

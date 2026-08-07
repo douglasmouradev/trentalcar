@@ -18,6 +18,7 @@
   const pickupT = document.getElementById('pickup_time');
   const returnT = document.getElementById('return_time');
   const totalEl = document.getElementById('total_preview');
+  const daysEl = document.getElementById('days_preview');
   const conflictEl = document.getElementById('conflict_msg');
   const preview = document.getElementById('carPreview');
   const custSearch = document.getElementById('custSearch');
@@ -36,20 +37,43 @@
     return `${usd} ≈ ${brl}`;
   }
 
-  function daysInclusive(a, b) {
-    const d1 = new Date(a + 'T00:00:00');
-    const d2 = new Date(b + 'T00:00:00');
-    if (Number.isNaN(d1.getTime()) || Number.isNaN(d2.getTime())) return 1;
-    const diff = Math.round((d2 - d1) / 86400000);
-    return Math.max(1, diff + 1);
+  function refreshUsdConvert(input) {
+    if (!input || !input.matches || !input.matches('[data-usd-convert]')) return;
+    const wrap = input.closest('.field') || input.parentElement;
+    const out = wrap ? wrap.querySelector('[data-usd-convert-out]') : null;
+    if (!out) return;
+    const n = parseFloat(String(input.value || '0').replace(',', '.'));
+    out.textContent = fmtMoney(Number.isFinite(n) && n > 0 ? n : 0);
+  }
+
+  /** Diárias por períodos de 24h (mínimo 1). */
+  function rentalDays(dateA, timeA, dateB, timeB) {
+    if (!dateA || !dateB) return 1;
+    const t1 = (timeA || '12:00').slice(0, 5);
+    const t2 = (timeB || '12:00').slice(0, 5);
+    const d1 = new Date(`${dateA}T${t1}:00`);
+    const d2 = new Date(`${dateB}T${t2}:00`);
+    if (Number.isNaN(d1.getTime()) || Number.isNaN(d2.getTime()) || d2 <= d1) return 1;
+    const hours = (d2.getTime() - d1.getTime()) / 3600000;
+    return Math.max(1, Math.ceil(hours / 24));
   }
 
   function recalc() {
     const rate = parseFloat(daily?.value || '0') || 0;
     const disc = parseFloat(discount?.value || '0') || 0;
-    const days = daysInclusive(pickupD?.value || '', returnD?.value || '');
+    const days = rentalDays(
+      pickupD?.value || '',
+      pickupT?.value || '',
+      returnD?.value || '',
+      returnT?.value || ''
+    );
     const total = Math.max(0, rate * days - disc);
+    if (daysEl) {
+      const tpl = form.dataset.daysLabel || ':count diária(s)';
+      daysEl.textContent = String(tpl).replace(':count', String(days));
+    }
     if (totalEl) totalEl.textContent = fmtMoney(total);
+    refreshUsdConvert(daily);
   }
 
   function syncCar() {

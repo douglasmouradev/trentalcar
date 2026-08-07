@@ -38,6 +38,7 @@
       data-search-url="<?= htmlspecialchars(Router::url('/api/customers/search'), ENT_QUOTES, 'UTF-8') ?>"
       data-quick-url="<?= htmlspecialchars(Router::url('/api/customers/quick'), ENT_QUOTES, 'UTF-8') ?>"
       data-label-submitting="<?= htmlspecialchars(Lang::get('reservation.submitting'), ENT_QUOTES, 'UTF-8') ?>"
+      data-days-label="<?= htmlspecialchars(Lang::get('landing.summary_days'), ENT_QUOTES, 'UTF-8') ?>"
       <?php if (!empty($leadPrefill['customer_name'])): ?>
       data-lead-name="<?= htmlspecialchars((string) $leadPrefill['customer_name'], ENT_QUOTES, 'UTF-8') ?>"
       data-lead-email="<?= htmlspecialchars((string) ($leadPrefill['customer_email'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"

@@ -53,6 +53,8 @@ final class ReservationController
                 'pickup_date' => $leadPrefill['pickup_date'] ?? '',
                 'return_date' => $leadPrefill['return_date'] ?? '',
                 'car_id' => $leadPrefill['car_id'] ?? null,
+                'pickup_location_id' => $leadPrefill['pickup_location_id'] ?? null,
+                'return_location_id' => $leadPrefill['return_location_id'] ?? null,
                 'notes' => $leadPrefill['notes'] ?? '',
             ];
         }
@@ -67,6 +69,7 @@ final class ReservationController
                 ];
             }
         }
+        Location::ensurePickupDefaults();
         View::render('reservations/create', [
             'title' => Lang::get('reservation.create'),
             'cars' => $cars,
@@ -154,6 +157,7 @@ final class ReservationController
                 }
             }
         }
+        Location::ensurePickupDefaults();
         View::render('reservations/edit', [
             'title' => Lang::get('reservation.edit'),
             'r' => $r,

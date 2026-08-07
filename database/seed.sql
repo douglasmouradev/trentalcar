@@ -30,7 +30,7 @@ INSERT INTO customers (type, full_name, document, email, phone, address, city, s
 INSERT INTO reservations (code, customer_id, car_id, operator_id, pickup_location_id, return_location_id, pickup_date, pickup_time, return_date, return_time, daily_rate, total_days, total_amount, discount, final_amount, status, payment_status, payment_method, notes) VALUES
 ('TRC-2026-0001', 1, 3, 2, 1, 1, CURDATE(), '10:00:00', DATE_ADD(CURDATE(), INTERVAL 3 DAY), '18:00:00', 199.00, 4, 796.00, 0.00, 796.00, 'active', 'partial', 'pix', 'Cliente VIP'),
 ('TRC-2026-0002', 2, 1, 1, 2, 3, DATE_ADD(CURDATE(), INTERVAL 5 DAY), '09:30:00', DATE_ADD(CURDATE(), INTERVAL 8 DAY), '17:30:00', 189.90, 4, 759.60, 50.00, 709.60, 'confirmed', 'paid', 'credit_card', NULL),
-('TRC-2026-0003', 3, 2, 2, 1, 1, DATE_ADD(CURDATE(), INTERVAL 10 DAY), '14:00:00', DATE_ADD(CURDATE(), INTERVAL 12 DAY), '14:00:00', 289.00, 3, 867.00, 0.00, 867.00, 'pending', 'unpaid', NULL, NULL);
+('TRC-2026-0003', 3, 2, 2, 1, 1, DATE_ADD(CURDATE(), INTERVAL 10 DAY), '14:00:00', DATE_ADD(CURDATE(), INTERVAL 12 DAY), '14:00:00', 289.00, 2, 578.00, 0.00, 578.00, 'pending', 'unpaid', NULL, NULL);
 
 INSERT INTO audit_logs (user_id, action, entity, entity_id, old_data, new_data, ip_address) VALUES
 (1, 'seed', 'system', NULL, NULL, JSON_OBJECT('note', 'initial seed'), '127.0.0.1');

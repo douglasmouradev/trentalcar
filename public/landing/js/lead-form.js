@@ -60,12 +60,15 @@
     return usdStr + ' ≈ ' + brlStr;
   }
 
+  /** Diárias por 24h (site só tem datas → assume mesma hora nos dois dias). */
   function daysInclusive(a, b) {
     if (!a || !b) return 0;
-    var d1 = new Date(a + 'T00:00:00');
-    var d2 = new Date(b + 'T00:00:00');
+    var d1 = new Date(a + 'T12:00:00');
+    var d2 = new Date(b + 'T12:00:00');
     if (Number.isNaN(d1.getTime()) || Number.isNaN(d2.getTime()) || d2 < d1) return 0;
-    return Math.max(1, Math.round((d2 - d1) / 86400000) + 1);
+    if (d2.getTime() === d1.getTime()) return 1;
+    var hours = (d2.getTime() - d1.getTime()) / 3600000;
+    return Math.max(1, Math.ceil(hours / 24));
   }
 
   function selectedRate() {
