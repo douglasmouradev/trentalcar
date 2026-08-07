@@ -10,7 +10,7 @@ final class FixedCostController
         View::render('fixed_costs/index', [
             'title' => Lang::get('nav.fixed_costs'),
             'costs' => $costs,
-            'fields' => FixedCost::fields(),
+            'fields' => FixedCost::availableFields(),
             'total' => FixedCost::total($costs),
             'canEdit' => Auth::isOwner(),
         ], 'main');
@@ -33,7 +33,7 @@ final class FixedCostController
         }
 
         $amounts = [];
-        foreach (FixedCost::fields() as $field) {
+        foreach (FixedCost::availableFields() as $field) {
             $amounts[$field] = max(0.0, (float) str_replace(',', '.', (string) ($_POST[$field] ?? '0')));
         }
         FixedCost::update($amounts);

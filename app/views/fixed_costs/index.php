@@ -37,7 +37,7 @@ $total = $total ?? 0.0;
                     $display = $val > 0 ? (string) $val : '';
                     ?>
                     <div class="field">
-                        <label class="label" for="fixed_<?= htmlspecialchars($field, ENT_QUOTES, 'UTF-8') ?>"><?= Lang::e('fixed_costs.' . $field) ?></label>
+                        <label class="label" for="fixed_<?= htmlspecialchars($field, ENT_QUOTES, 'UTF-8') ?>"><?= Lang::e(FixedCost::langKey($field)) ?></label>
                         <input class="input mono" id="fixed_<?= htmlspecialchars($field, ENT_QUOTES, 'UTF-8') ?>" name="<?= htmlspecialchars($field, ENT_QUOTES, 'UTF-8') ?>" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0" value="<?= htmlspecialchars($display, ENT_QUOTES, 'UTF-8') ?>" data-usd-convert data-monthly-expense>
                         <div class="field-fx muted mono" data-usd-convert-out aria-live="polite"><?= htmlspecialchars(Formatter::moneyWithBrl($val), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
@@ -55,7 +55,7 @@ $total = $total ?? 0.0;
             <?php foreach ($fields as $field): ?>
                 <?php $val = (float) ($costs[$field] ?? 0); ?>
                 <div class="field">
-                    <span class="label"><?= Lang::e('fixed_costs.' . $field) ?></span>
+                    <span class="label"><?= Lang::e(FixedCost::langKey($field)) ?></span>
                     <div class="mono"><?= htmlspecialchars(Formatter::moneyWithBrl($val), ENT_QUOTES, 'UTF-8') ?></div>
                 </div>
             <?php endforeach; ?>
