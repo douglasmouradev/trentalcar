@@ -107,7 +107,12 @@ final class ReservationController
             exit;
         } catch (Throwable $e) {
             AppLog::error('reservation.create_failed', ['error' => $e->getMessage()]);
-            Flash::error(Lang::get('flash.error'));
+            if (Auth::isOwner()) {
+                $hint = mb_substr(preg_replace('/\s+/', ' ', $e->getMessage()) ?? '', 0, 180);
+                Flash::error(Lang::get('flash.error') . ($hint !== '' ? ' (' . $hint . ')' : ''));
+            } else {
+                Flash::error(Lang::get('flash.error'));
+            }
             $_SESSION['reservation_draft'] = $_POST;
             header('Location: ' . Router::url('/reservations/create'));
             exit;

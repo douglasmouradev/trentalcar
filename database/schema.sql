@@ -102,7 +102,7 @@ CREATE TABLE customers (
 
 CREATE TABLE reservations (
   id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  code                VARCHAR(16)   NOT NULL UNIQUE,
+  code                VARCHAR(24)   NOT NULL UNIQUE,
   customer_id         INT UNSIGNED  NOT NULL,
   car_id              INT UNSIGNED  NOT NULL,
   operator_id         INT UNSIGNED  NOT NULL,

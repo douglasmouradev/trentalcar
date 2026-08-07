@@ -322,6 +322,7 @@ final class Reservation
 
     private static function nextCodeLocked(PDO $pdo): string
     {
+        unset($pdo);
         $lock = Database::query("SELECT GET_LOCK('titanium_res_code', 10)")->fetchColumn();
         if ((int) $lock !== 1) {
             throw new RuntimeException('Could not acquire code lock');
@@ -338,29 +339,79 @@ final class Reservation
             if (is_string($last) && preg_match('/TRC-\d+-(\d+)/', $last, $m)) {
                 $n = (int) $m[1] + 1;
             }
-            return $prefix . str_pad((string) $n, 4, '0', STR_PAD_LEFT) . bin2hex(random_bytes(2));
+            // TRC-YYYY-NNNN = 13 chars (coluna code ≥ VARCHAR(16); lock já serializa)
+            return $prefix . str_pad((string) $n, 4, '0', STR_PAD_LEFT);
         } finally {
             Database::query("SELECT RELEASE_LOCK('titanium_res_code')");
         }
     }
 
+    /**
+     * Monta INSERT/UPDATE adaptando-se a colunas opcionais (hotel / extra_charges).
+     * @param array<string, mixed> $d
+     * @return array{cols: list<string>, vals: list<mixed>}
+     */
+    private static function writableReservationFields(array $d, bool $forInsert): array
+    {
+        $cols = [];
+        $vals = [];
+        $map = [
+            'code' => $d['code'] ?? null,
+            'customer_id' => $d['customer_id'],
+            'car_id' => $d['car_id'],
+            'operator_id' => $d['operator_id'] ?? null,
+            'pickup_location_id' => $d['pickup_location_id'],
+            'return_location_id' => $d['return_location_id'],
+            'pickup_hotel_name' => $d['pickup_hotel_name'] ?? null,
+            'return_hotel_name' => $d['return_hotel_name'] ?? null,
+            'pickup_date' => $d['pickup_date'],
+            'pickup_time' => $d['pickup_time'],
+            'return_date' => $d['return_date'],
+            'return_time' => $d['return_time'],
+            'daily_rate' => $d['daily_rate'],
+            'total_days' => $d['total_days'],
+            'total_amount' => $d['total_amount'],
+            'discount' => $d['discount'],
+            'extra_charges' => $d['extra_charges'] ?? 0,
+            'final_amount' => $d['final_amount'],
+            'status' => $d['status'],
+            'payment_status' => $d['payment_status'],
+            'payment_method' => $d['payment_method'] ?? null,
+            'notes' => $d['notes'] ?? null,
+        ];
+        $optional = ['pickup_hotel_name', 'return_hotel_name', 'extra_charges'];
+        $hotelNotes = [];
+        if (!Schema::hasColumn('reservations', 'pickup_hotel_name') && !empty($d['pickup_hotel_name'])) {
+            $hotelNotes[] = 'Hotel retirada: ' . (string) $d['pickup_hotel_name'];
+        }
+        if (!Schema::hasColumn('reservations', 'return_hotel_name') && !empty($d['return_hotel_name'])) {
+            $hotelNotes[] = 'Hotel devolução: ' . (string) $d['return_hotel_name'];
+        }
+        if ($hotelNotes !== []) {
+            $extra = implode(' | ', $hotelNotes);
+            $map['notes'] = trim((string) ($map['notes'] ?? '') . ($map['notes'] ? "\n" : '') . $extra) ?: null;
+        }
+        foreach ($map as $col => $val) {
+            if (!$forInsert && ($col === 'code' || $col === 'operator_id')) {
+                continue;
+            }
+            if (in_array($col, $optional, true) && !Schema::hasColumn('reservations', $col)) {
+                continue;
+            }
+            $cols[] = $col;
+            $vals[] = $val;
+        }
+        return ['cols' => $cols, 'vals' => $vals];
+    }
+
     /** @param array<string, mixed> $d */
     private static function insertWithPdo(PDO $pdo, array $d): int
     {
-        $stmt = Database::prepare(
-            'INSERT INTO reservations (code, customer_id, car_id, operator_id, pickup_location_id, return_location_id,
-             pickup_hotel_name, return_hotel_name,
-             pickup_date, pickup_time, return_date, return_time, daily_rate, total_days, total_amount, discount, extra_charges, final_amount,
-             status, payment_status, payment_method, notes)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
-        );
-        $stmt->execute([
-            $d['code'], $d['customer_id'], $d['car_id'], $d['operator_id'], $d['pickup_location_id'], $d['return_location_id'],
-            $d['pickup_hotel_name'] ?? null, $d['return_hotel_name'] ?? null,
-            $d['pickup_date'], $d['pickup_time'], $d['return_date'], $d['return_time'],
-            $d['daily_rate'], $d['total_days'], $d['total_amount'], $d['discount'], $d['extra_charges'] ?? 0, $d['final_amount'],
-            $d['status'], $d['payment_status'], $d['payment_method'] ?? null, $d['notes'] ?? null,
-        ]);
+        $built = self::writableReservationFields($d, true);
+        $placeholders = implode(',', array_fill(0, count($built['cols']), '?'));
+        $colList = implode(', ', $built['cols']);
+        $stmt = Database::prepare("INSERT INTO reservations ({$colList}) VALUES ({$placeholders})");
+        $stmt->execute($built['vals']);
         $newId = (int) $pdo->lastInsertId();
         self::reconcileCarStatus((int) $d['car_id']);
         return $newId;
@@ -369,19 +420,13 @@ final class Reservation
     /** @param array<string, mixed> $d */
     private static function updateWithPdo(PDO $pdo, int $id, array $d): void
     {
-        $stmt = Database::prepare(
-            'UPDATE reservations SET customer_id=?, car_id=?, pickup_location_id=?, return_location_id=?,
-             pickup_hotel_name=?, return_hotel_name=?,
-             pickup_date=?, pickup_time=?, return_date=?, return_time=?, daily_rate=?, total_days=?, total_amount=?, discount=?, extra_charges=?, final_amount=?,
-             status=?, payment_status=?, payment_method=?, notes=? WHERE id=?'
-        );
-        $stmt->execute([
-            $d['customer_id'], $d['car_id'], $d['pickup_location_id'], $d['return_location_id'],
-            $d['pickup_hotel_name'] ?? null, $d['return_hotel_name'] ?? null,
-            $d['pickup_date'], $d['pickup_time'], $d['return_date'], $d['return_time'],
-            $d['daily_rate'], $d['total_days'], $d['total_amount'], $d['discount'], $d['extra_charges'] ?? 0, $d['final_amount'],
-            $d['status'], $d['payment_status'], $d['payment_method'] ?? null, $d['notes'] ?? null, $id,
-        ]);
+        unset($pdo);
+        $built = self::writableReservationFields($d, false);
+        $set = implode(', ', array_map(static fn (string $c): string => "{$c}=?", $built['cols']));
+        $params = $built['vals'];
+        $params[] = $id;
+        $stmt = Database::prepare("UPDATE reservations SET {$set} WHERE id=?");
+        $stmt->execute($params);
         self::reconcileCarStatus((int) $d['car_id']);
     }
 
