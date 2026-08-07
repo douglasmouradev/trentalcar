@@ -26,6 +26,7 @@ try {
     $ratePurged = DbMaintenance::purgeExpiredRateLimits();
     $tokenPurged = DbMaintenance::purgePasswordResetTokens();
     $leadPurged = LeadJsonlFallback::purgeExpired();
+    // Força refresh quando o cache horário expirou (APIs USD→BRL)
     $fxOk = ExchangeRate::refresh(false);
 } catch (Throwable $e) {
     AppLog::error('cron.cleanup_failed', ['error' => $e->getMessage()]);

@@ -80,7 +80,7 @@
   function fmtMoney(n) {
     const rateRaw = document.body?.dataset?.usdBrlRate;
     const rate = rateRaw ? parseFloat(rateRaw) : NaN;
-    const usdBrl = Number.isFinite(rate) && rate > 0 ? rate : 5.5;
+    const usdBrl = Number.isFinite(rate) && rate > 0 ? rate : 5.1;
     const usd = n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
     const brl = (n * usdBrl).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     return `${usd} ≈ ${brl}`;

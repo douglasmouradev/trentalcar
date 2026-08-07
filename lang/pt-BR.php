@@ -55,6 +55,7 @@ return [
     'flash.reservation_updated' => 'Reserva :code atualizada.',
     'flash.reservation_cancelled' => 'Reserva :code cancelada.',
     'flash.error' => 'Não foi possível concluir a operação.',
+    'fx.updated_hint' => 'Cotação USD→BRL atualizada automaticamente (aprox. a cada hora).',
     'flash.validation_error' => 'Verifique os campos obrigatórios e tente novamente.',
     'actions.new' => 'Novo',
     'actions.edit' => 'Editar',

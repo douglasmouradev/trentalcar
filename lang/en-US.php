@@ -55,6 +55,7 @@ return [
     'flash.reservation_updated' => 'Reservation :code updated.',
     'flash.reservation_cancelled' => 'Reservation :code cancelled.',
     'flash.error' => 'Could not complete the operation.',
+    'fx.updated_hint' => 'USD→BRL rate updates automatically (about every hour).',
     'flash.validation_error' => 'Check required fields and try again.',
     'actions.new' => 'New',
     'actions.edit' => 'Edit',

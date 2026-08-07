@@ -5,7 +5,7 @@
         ? document.body.dataset.usdBrlRate
         : null;
       const n = raw ? parseFloat(raw) : NaN;
-      return Number.isFinite(n) && n > 0 ? n : 5.5;
+      return Number.isFinite(n) && n > 0 ? n : 5.1;
     })();
 
     const parseVal = (el) => {

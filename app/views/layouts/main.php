@@ -95,6 +95,7 @@ if ($userName !== '') {
             <?php endif; ?>
             <div class="topbar-spacer"></div>
             <?php if ($logged && !$isPartner): ?>
+            <span class="topbar-fx mono" title="<?= htmlspecialchars(Lang::get('fx.updated_hint'), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars(ExchangeRate::label(), ENT_QUOTES, 'UTF-8') ?></span>
             <button type="button" class="icon-btn search-toggle-btn" id="searchToggle" aria-label="<?= Lang::e('a11y.search') ?>" aria-expanded="false">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             </button>
